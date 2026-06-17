@@ -33,7 +33,7 @@ export function UnderDevelopmentPage() {
             />
           </header>
 
-          <div className="flex flex-col justify-center px-6 py-14 sm:px-8 sm:py-16 lg:px-10 lg:py-20">
+          <div className="grid gap-10 px-6 py-14 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-center lg:px-10 lg:py-20">
             <div className="max-w-4xl space-y-8">
               <div className="space-y-4">
                 <p className="text-sm uppercase tracking-[0.22em] text-[color:var(--muted)]">
@@ -47,6 +47,20 @@ export function UnderDevelopmentPage() {
               <p className="max-w-2xl text-base leading-8 text-[color:var(--muted)] sm:text-lg">
                 {content.description}
               </p>
+            </div>
+
+            <div className="overflow-hidden border border-[color:var(--border)] bg-[#f1ede6] shadow-[0_18px_50px_rgba(17,17,17,0.08)]">
+              <video
+                className="h-full min-h-[360px] w-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+              >
+                <source src="/Plate-.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
           </div>
 
