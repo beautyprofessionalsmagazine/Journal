@@ -6,9 +6,9 @@ import { cn } from "@/shared/lib/cn";
 const content: UnderDevelopmentContent = {
   label: "Journal",
   brand: "Beauty Professionals Magazine",
-  headline: "The site is currently under development",
+  headline: "Our website is currently under construction",
   description:
-    "Please come back later. We are preparing a new journal experience for beauty professionals.",
+    "For appointments or inquiries, please contact us at: +1(279)219-8019",
   footer: "\u00a9 2026 Beauty Professionals Magazine",
 };
 
