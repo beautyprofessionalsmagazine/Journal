@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Edit, EyeOff, Send, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-import { categoryConfigs } from "@/features/articles/data/categories";
-import { getAllTags } from "@/features/articles/lib/articles";
+import { getAllTags } from "@/features/articles/server/articles";
 import type { Article, ArticleStatus } from "@/features/articles/types/article.types";
+import { categoryConfigs } from "@/features/categories/data/categories";
 
 type AdminArticleTableProps = {
   articles: Article[];

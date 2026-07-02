@@ -1,5 +1,5 @@
 import type { Article } from "@/features/articles/types/article.types";
-import { formatArticleDate } from "@/features/articles/lib/articles";
+import { formatArticleDate } from "@/features/articles/server/articles";
 
 type ArticleMetadataProps = {
   article: Article;

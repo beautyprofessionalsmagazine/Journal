@@ -2,12 +2,12 @@
 
 import { type FormEvent, type ReactNode, useState } from "react";
 
-import { categoryConfigs } from "@/features/articles/data/categories";
 import type {
   Article,
   ArticleCategory,
   ArticleStatus,
 } from "@/features/articles/types/article.types";
+import { categoryConfigs } from "@/features/categories/data/categories";
 
 type AdminArticleFormProps = {
   article?: Article;

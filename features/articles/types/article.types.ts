@@ -1,12 +1,8 @@
+import type { CategoryName } from "@/features/categories/types/category.types";
+
 export type ArticleStatus = "draft" | "published";
 
-export type ArticleCategory =
-  | "Fashion"
-  | "Runway"
-  | "Shopping"
-  | "Beauty"
-  | "Culture"
-  | "Living";
+export type ArticleCategory = CategoryName;
 
 export type ArticleBodyBlock =
   | {

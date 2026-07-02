@@ -1,20 +1,24 @@
-import { categoryConfigs } from "@/features/articles/data/categories";
+import { categoryConfigs } from "@/features/categories/data/categories";
 
 export const mainNavigation = [
-  ...categoryConfigs,
+  ...categoryConfigs.map((category) => ({
+    name: category.name,
+    href: category.href,
+    subcategories: category.subcategories,
+  })),
   {
     name: "Video",
-    slug: "video",
+    href: "/video",
     subcategories: [],
   },
   {
     name: "PhotoVogue",
-    slug: "photovogue",
+    href: "/photovogue",
     subcategories: [],
   },
   {
     name: "Archive",
-    slug: "archive",
+    href: "/archive",
     subcategories: [],
   },
 ];

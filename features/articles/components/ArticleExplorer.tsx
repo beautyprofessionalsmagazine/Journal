@@ -4,12 +4,12 @@ import { useState } from "react";
 
 import { ArticleFilters } from "@/features/articles/components/ArticleFilters";
 import { ArticleGrid } from "@/features/articles/components/ArticleGrid";
-import { categoryConfigs } from "@/features/articles/data/categories";
-import { getAllTags } from "@/features/articles/lib/articles";
+import { getAllTags } from "@/features/articles/server/articles";
 import type {
   Article,
   ArticleCategory,
 } from "@/features/articles/types/article.types";
+import { categoryConfigs } from "@/features/categories/data/categories";
 
 type ArticleExplorerProps = {
   articles: Article[];
