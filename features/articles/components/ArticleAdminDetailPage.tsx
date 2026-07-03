@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AdminLayout } from "@/features/admin";
+import { ArticleBody } from "@/features/articles/components/ArticleBody";
 import { getArticleById } from "@/features/articles/server/article-queries";
+import type { TiptapDocument } from "@/features/articles/types/article";
 
 type ArticleAdminDetailPageProps = {
   id: string;
@@ -61,13 +63,11 @@ export async function ArticleAdminDetailPage({
 
           <div className="border border-black/15 p-6">
             <h3 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
-              Content JSON
+              Article body
             </h3>
-            <pre className="mt-5 overflow-x-auto bg-black px-5 py-4 text-sm leading-7 text-white">
-              {article.contentJson
-                ? JSON.stringify(article.contentJson, null, 2)
-                : "null"}
-            </pre>
+            <div className="mt-5">
+              <ArticleBody content={article.contentJson as TiptapDocument | null} />
+            </div>
           </div>
         </section>
 

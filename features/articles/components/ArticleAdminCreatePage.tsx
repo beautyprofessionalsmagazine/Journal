@@ -4,7 +4,7 @@ import { ArticleCreateForm } from "@/features/articles/components/ArticleCreateF
 export function ArticleAdminCreatePage() {
   return (
     <AdminLayout
-      description="Create an article record, store rich content JSON, and upload an optional cover image to Vercel Blob."
+      description="Create an article record, write the story in Tiptap, and upload an optional cover image to Vercel Blob."
       title="Create Article"
     >
       <ArticleCreateForm />

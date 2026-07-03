@@ -1,6 +1,5 @@
 "use server";
 
-import { put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ZodError } from "zod";
@@ -50,10 +49,6 @@ export async function createArticle(input: CreateArticleInput): Promise<Article>
     });
   }
 
-  const coverImageUrl = articleInput.coverImage
-    ? await uploadCoverImage(normalizedSlug, articleInput.coverImage)
-    : null;
-
   const publishedAt =
     articleInput.status === "published"
       ? articleInput.publishedAt ?? new Date()
@@ -68,13 +63,13 @@ export async function createArticle(input: CreateArticleInput): Promise<Article>
         category: articleInput.category,
         author: articleInput.author,
         description: articleInput.description ?? null,
-        coverImage: coverImageUrl,
-        coverImageAlt: coverImageUrl ? articleInput.coverImageAlt ?? null : null,
+        coverImage: articleInput.coverImage ?? null,
+        coverImageAlt: articleInput.coverImage ? articleInput.coverImageAlt ?? null : null,
         tags: articleInput.tags,
         status: articleInput.status,
         publishedAt,
         views: 0,
-        contentJson: articleInput.contentJson ?? null,
+        contentJson: articleInput.contentJson,
       })
       .returning();
 
@@ -91,7 +86,9 @@ export async function createArticle(input: CreateArticleInput): Promise<Article>
       });
     }
 
-    throw error;
+    throw new ArticleActionError(
+      "Unable to save the article to the database. Please try again.",
+    );
   }
 }
 
@@ -99,13 +96,10 @@ export async function createArticleAction(
   _previousState: CreateArticleFormState,
   formData: FormData,
 ): Promise<CreateArticleFormState> {
-  try {
-    const article = await createArticle(getCreateArticleInputFromFormData(formData));
+  let article: Article;
 
-    revalidatePath("/admin/articles");
-    revalidatePath("/admin/articles/create");
-    revalidatePath(`/admin/articles/${article.id}/edit`);
-    redirect(`/admin/articles/${article.id}/edit`);
+  try {
+    article = await createArticle(getCreateArticleInputFromFormData(formData));
   } catch (error) {
     if (error instanceof ArticleActionError) {
       return {
@@ -129,27 +123,11 @@ export async function createArticleAction(
       fieldErrors: {},
     };
   }
-}
 
-async function uploadCoverImage(slug: string, file: File) {
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-
-  if (!blobToken) {
-    throw new ArticleActionError(
-      "BLOB_READ_WRITE_TOKEN is missing. Add it before uploading cover images.",
-    );
-  }
-
-  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  const fileName = `articles/${slug}-${Date.now()}.${extension}`;
-  const uploadedFile = await put(fileName, file, {
-    access: "public",
-    addRandomSuffix: true,
-    contentType: file.type,
-    token: blobToken,
-  });
-
-  return uploadedFile.url;
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin/articles/create");
+  revalidatePath(`/admin/articles/${article.id}/edit`);
+  redirect(`/admin/articles/${article.id}/edit`);
 }
 
 function getFieldErrors(error: ZodError) {

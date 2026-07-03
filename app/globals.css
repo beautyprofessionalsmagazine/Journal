@@ -86,6 +86,35 @@ textarea {
   width: min(100%, 21rem);
 }
 
+.article-editor .ProseMirror {
+  min-height: 26rem;
+}
+
+.article-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: rgba(17, 17, 17, 0.38);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.article-editor .ProseMirror ul,
+.article-editor .ProseMirror ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.article-editor .ProseMirror blockquote {
+  margin: 0;
+}
+
+.article-editor .ProseMirror h2,
+.article-editor .ProseMirror h3,
+.article-editor .ProseMirror p,
+.article-editor .ProseMirror li {
+  margin: 0;
+}
+
 @media (min-width: 640px) {
   .mobile-text-lock {
     max-width: none;

@@ -2,6 +2,46 @@ export const articleStatusValues = ["draft", "published"] as const;
 
 export type ArticleStatus = (typeof articleStatusValues)[number];
 
+export type TiptapTextAlign = "left" | "center" | "right";
+
+export type TiptapMark =
+  | {
+      type: "bold";
+    }
+  | {
+      type: "italic";
+    }
+  | {
+      type: "underline";
+    }
+  | {
+      type: "link";
+      attrs?: {
+        href?: string;
+        target?: string | null;
+        rel?: string | null;
+      };
+    };
+
+export type TiptapNode = {
+  type: string;
+  attrs?: {
+    level?: number;
+    textAlign?: TiptapTextAlign;
+    href?: string;
+    target?: string | null;
+    rel?: string | null;
+  };
+  content?: TiptapNode[];
+  marks?: TiptapMark[];
+  text?: string;
+};
+
+export type TiptapDocument = {
+  type: "doc";
+  content: TiptapNode[];
+};
+
 export type Article = {
   id: string;
   title: string;
@@ -26,12 +66,12 @@ export type CreateArticleInput = {
   category: string;
   author: string;
   description?: string | null;
-  coverImage?: File | null;
+  coverImage?: string | null;
   coverImageAlt?: string | null;
   tags?: string[] | string | null;
   status: ArticleStatus;
   publishedAt?: Date | string | null;
-  contentJson?: unknown | string | null;
+  contentJson?: TiptapDocument | string | null;
 };
 
 export type CreateArticleFormValues = {
@@ -43,7 +83,7 @@ export type CreateArticleFormValues = {
   coverImageAlt: string;
   tags: string;
   status: ArticleStatus;
-  contentJson: string;
+  contentJson: TiptapDocument;
 };
 
 export type CreateArticleFieldErrors = Partial<
@@ -56,6 +96,15 @@ export type CreateArticleFormState = {
   fieldErrors: CreateArticleFieldErrors;
 };
 
+export const emptyTiptapDocument: TiptapDocument = {
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+    },
+  ],
+};
+
 export const emptyCreateArticleFormValues: CreateArticleFormValues = {
   title: "",
   slug: "",
@@ -65,7 +114,7 @@ export const emptyCreateArticleFormValues: CreateArticleFormValues = {
   coverImageAlt: "",
   tags: "",
   status: "draft",
-  contentJson: "",
+  contentJson: emptyTiptapDocument,
 };
 
 export const initialCreateArticleFormState: CreateArticleFormState = {

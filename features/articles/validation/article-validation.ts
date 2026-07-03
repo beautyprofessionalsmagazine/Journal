@@ -3,6 +3,8 @@ import { z } from "zod";
 import {
   articleStatusValues,
   type CreateArticleInput,
+  type TiptapDocument,
+  type TiptapNode,
 } from "@/features/articles/types/article";
 
 export const MAX_COVER_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -36,10 +38,10 @@ const createArticleInputSchema = z
       .nullish()
       .transform((value) => toNullableString(value)),
     coverImage: z
-      .custom<File | null | undefined>((value) => {
-        return value == null || value instanceof File;
-      }, "Cover image must be a file.")
-      .transform((value) => (value instanceof File && value.size > 0 ? value : null)),
+      .string()
+      .trim()
+      .nullish()
+      .transform((value) => toNullableString(value)),
     coverImageAlt: z
       .string()
       .trim()
@@ -72,9 +74,6 @@ const createArticleInputSchema = z
       .union([
         z.string(),
         z.record(z.string(), z.unknown()),
-        z.array(z.unknown()),
-        z.number(),
-        z.boolean(),
         z.null(),
         z.undefined(),
       ])
@@ -96,19 +95,37 @@ const createArticleInputSchema = z
       }),
   })
   .superRefine((value, context) => {
-    if (value.coverImage && !ALLOWED_COVER_IMAGE_TYPES.includes(value.coverImage.type as (typeof ALLOWED_COVER_IMAGE_TYPES)[number])) {
+    if (value.coverImage && !isValidUrl(value.coverImage)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["coverImage"],
-        message: "Cover image must be a JPG, PNG, WebP, AVIF, or GIF file.",
+        message: "Cover image URL is invalid. Please upload the image again.",
       });
     }
 
-    if (value.coverImage && value.coverImage.size > MAX_COVER_IMAGE_SIZE) {
+    if (!value.contentJson) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["coverImage"],
-        message: "Cover image must be 5 MB or smaller.",
+        path: ["contentJson"],
+        message: "Article body is required.",
+      });
+
+      return;
+    }
+
+    if (!isTiptapDocument(value.contentJson)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["contentJson"],
+        message: "Article body could not be processed. Please try again.",
+      });
+    }
+
+    if (isTiptapDocument(value.contentJson) && !hasMeaningfulTiptapContent(value.contentJson)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["contentJson"],
+        message: "Article body is required.",
       });
     }
   });
@@ -167,6 +184,20 @@ export function parseContentJson(value: unknown) {
   return JSON.parse(normalizedValue);
 }
 
+export function isTiptapDocument(value: unknown): value is TiptapDocument {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<TiptapDocument>;
+
+  return candidate.type === "doc" && Array.isArray(candidate.content);
+}
+
+export function hasMeaningfulTiptapContent(document: TiptapDocument) {
+  return document.content.some(hasMeaningfulTiptapNode);
+}
+
 export function getCreateArticleInputFromFormData(formData: FormData): CreateArticleInput {
   return {
     title: readString(formData, "title"),
@@ -174,7 +205,7 @@ export function getCreateArticleInputFromFormData(formData: FormData): CreateArt
     category: readString(formData, "category"),
     author: readString(formData, "author"),
     description: readString(formData, "description"),
-    coverImage: readFile(formData, "coverImage"),
+    coverImage: readString(formData, "coverImage"),
     coverImageAlt: readString(formData, "coverImageAlt"),
     tags: readString(formData, "tags"),
     status: readString(formData, "status") as CreateArticleInput["status"],
@@ -192,18 +223,28 @@ function readString(formData: FormData, fieldName: string) {
   return typeof value === "string" ? value : "";
 }
 
-function readFile(formData: FormData, fieldName: string) {
-  const value = formData.get(fieldName);
-
-  if (!(value instanceof File) || value.size === 0) {
-    return null;
-  }
-
-  return value;
-}
-
 function toNullableString(value: string | null | undefined) {
   const normalizedValue = value?.trim();
 
   return normalizedValue ? normalizedValue : null;
+}
+
+function hasMeaningfulTiptapNode(node: TiptapNode): boolean {
+  if (node.type === "text") {
+    return Boolean(node.text?.trim());
+  }
+
+  if (!Array.isArray(node.content)) {
+    return false;
+  }
+
+  return node.content.some(hasMeaningfulTiptapNode);
+}
+
+function isValidUrl(value: string) {
+  try {
+    return Boolean(new URL(value));
+  } catch {
+    return false;
+  }
 }
