@@ -11,7 +11,7 @@ export default function AdminOverviewPage() {
       action={
         <Link
           className="min-w-40 border border-black bg-white px-5 py-3 text-center [font-family:var(--font-editorial-sans)] text-sm font-semibold uppercase text-black transition hover:bg-black hover:text-white"
-          href="/admin/articles/new"
+          href="/admin/articles/create"
         >
           Create Article
         </Link>

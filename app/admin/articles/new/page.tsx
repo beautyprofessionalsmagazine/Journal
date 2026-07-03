@@ -1,12 +1,5 @@
-import { AdminArticleForm, AdminLayout } from "@/features/admin";
+import { redirect } from "next/navigation";
 
 export default function NewArticlePage() {
-  return (
-    <AdminLayout
-      description="Create a draft article in the local UI. Saving validates the form until persistence is connected."
-      title="New Article"
-    >
-      <AdminArticleForm />
-    </AdminLayout>
-  );
+  redirect("/admin/articles/create");
 }
