@@ -1,8 +1,8 @@
 import { ArticleHero } from "@/features/articles/components/ArticleHero";
-import { getFeaturedArticle } from "@/features/articles/server/articles";
+import { getFeaturedArticle } from "@/features/articles/server/article-queries";
 
-export function HomeHero() {
-  const featuredArticle = getFeaturedArticle();
+export async function HomeHero() {
+  const featuredArticle = await getFeaturedArticle();
 
   if (!featuredArticle) {
     return (

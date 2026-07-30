@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { getFeaturedArticle } from "@/features/articles/server/articles";
+import { getFeaturedArticle } from "@/features/articles/server/article-queries";
 import { PublicInfoPage } from "@/shared/components/public";
 
-export function CurrentIssuePage() {
-  const featuredArticle = getFeaturedArticle();
+export async function CurrentIssuePage() {
+  const featuredArticle = await getFeaturedArticle();
 
   return (
     <PublicInfoPage
@@ -19,7 +19,7 @@ export function CurrentIssuePage() {
             </Link>
           </h2>
           <p className="mt-4 max-w-2xl [font-family:var(--font-editorial-sans)] text-sm leading-6 text-black/62">
-            {featuredArticle.annotation}
+            {featuredArticle.description}
           </p>
         </article>
       ) : null}

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 import {
   ArticleDetailPage,
-  getArticleMetadata,
-  getArticleRouteParams,
+  getPublishedArticleBySlug,
+  getPublishedArticleRouteParams,
 } from "@/features/articles";
 
 type ArticleDetailRouteProps = {
@@ -12,8 +12,8 @@ type ArticleDetailRouteProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return getArticleRouteParams();
+export async function generateStaticParams() {
+  return getPublishedArticleRouteParams();
 }
 
 export async function generateMetadata({
@@ -21,7 +21,16 @@ export async function generateMetadata({
 }: ArticleDetailRouteProps): Promise<Metadata> {
   const { slug } = await params;
 
-  return getArticleMetadata(slug);
+  const article = await getPublishedArticleBySlug(slug);
+
+  if (!article) {
+    return {};
+  }
+
+  return {
+    title: article.title,
+    description: article.description,
+  };
 }
 
 export default async function Page({ params }: ArticleDetailRouteProps) {

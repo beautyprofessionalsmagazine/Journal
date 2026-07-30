@@ -1,5 +1,5 @@
 import { ArticleCard } from "@/features/articles/components/ArticleCard";
-import type { Article } from "@/features/articles/types/article.types";
+import type { Article } from "@/features/articles/types/article";
 
 type ArticleGridProps = {
   articles: Article[];

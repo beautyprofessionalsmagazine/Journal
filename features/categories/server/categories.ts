@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { getArticlesByCategory } from "@/features/articles/server/articles";
 import { categoryConfigs } from "@/features/categories/data/categories";
 import type {
   CategoryConfig,
@@ -25,12 +24,6 @@ export function getCategoryBySlug(slug: string) {
 
 export function getCategoryByName(name: CategoryName) {
   return categoryConfigs.find((category) => category.name === name);
-}
-
-export function getArticlesByCategorySlug(slug: string) {
-  const category = getCategoryBySlug(slug);
-
-  return category ? getArticlesByCategory(category.name) : [];
 }
 
 export function getCategoryMetadata(slug: string): Metadata {

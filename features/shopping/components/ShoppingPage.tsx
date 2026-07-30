@@ -1,9 +1,12 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
-import { getArticlesByCategory } from "@/features/articles/server/articles";
+import { listPublishedArticles } from "@/features/articles/server/article-queries";
 import { getCategoryByName } from "@/features/categories/server/categories";
 
-export function ShoppingPage() {
+export async function ShoppingPage() {
   const shoppingCategory = getCategoryByName("Shopping");
+  const articles = await listPublishedArticles({
+    category: "Shopping",
+  });
 
   return (
     <main className="bg-white">
@@ -17,7 +20,7 @@ export function ShoppingPage() {
           </p>
         </div>
         <ArticleExplorer
-          articles={getArticlesByCategory("Shopping")}
+          articles={articles}
           initialCategory="Shopping"
           title="Shopping Articles"
         />

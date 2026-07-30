@@ -1,7 +1,9 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
-import { getPublishedArticles } from "@/features/articles/server/articles";
+import { listPublishedArticles } from "@/features/articles/server/article-queries";
 
-export function ArticlesPage() {
+export async function ArticlesPage() {
+  const articles = await listPublishedArticles();
+
   return (
     <main className="bg-white">
       <section className="mx-auto flex max-w-[1440px] flex-col gap-10 px-5 py-14 sm:px-8 lg:px-12">
@@ -14,7 +16,7 @@ export function ArticlesPage() {
             and style coverage.
           </p>
         </div>
-        <ArticleExplorer articles={getPublishedArticles()} title="All Articles" />
+        <ArticleExplorer articles={articles} title="All Articles" />
       </section>
     </main>
   );

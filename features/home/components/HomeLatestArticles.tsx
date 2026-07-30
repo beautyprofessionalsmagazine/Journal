@@ -1,14 +1,14 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
 import {
   getFeaturedArticle,
-  getPublishedArticles,
-} from "@/features/articles/server/articles";
+  listPublishedArticles,
+} from "@/features/articles/server/article-queries";
 
-export function HomeLatestArticles() {
-  const featuredArticle = getFeaturedArticle();
-  const latestArticles = getPublishedArticles().filter(
-    (article) => article.id !== featuredArticle?.id,
-  );
+export async function HomeLatestArticles() {
+  const featuredArticle = await getFeaturedArticle();
+  const latestArticles = await listPublishedArticles({
+    excludeId: featuredArticle?.id,
+  });
 
   return (
     <section className="mx-auto max-w-[1440px] bg-white px-5 py-14 sm:px-8 lg:px-12">

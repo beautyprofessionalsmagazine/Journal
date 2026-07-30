@@ -4,16 +4,11 @@ import { useState } from "react";
 
 import { ArticleFilters } from "@/features/articles/components/ArticleFilters";
 import { ArticleGrid } from "@/features/articles/components/ArticleGrid";
-import { getAllTags } from "@/features/articles/server/articles";
-import type {
-  Article,
-  ArticleCategory,
-} from "@/features/articles/types/article.types";
-import { categoryConfigs } from "@/features/categories/data/categories";
+import type { Article } from "@/features/articles/types/article";
 
 type ArticleExplorerProps = {
   articles: Article[];
-  initialCategory?: ArticleCategory;
+  initialCategory?: string;
   title?: string;
 };
 
@@ -27,8 +22,12 @@ export function ArticleExplorer({
   const [tag, setTag] = useState("all");
   const [sort, setSort] = useState("latest");
 
-  const categories = categoryConfigs.map((item) => item.name);
-  const tags = getAllTags(articles);
+  const categories = Array.from(
+    new Set(articles.map((article) => article.category)),
+  ).sort();
+  const tags = Array.from(
+    new Set(articles.flatMap((article) => article.tags)),
+  ).sort();
 
   const normalizedQuery = query.trim().toLowerCase();
   const filteredArticles = [...articles]
@@ -47,11 +46,9 @@ export function ArticleExplorer({
 
       const searchable = [
         article.title,
-        article.subtitle,
-        article.annotation,
+        article.description ?? "",
         article.author,
         article.category,
-        article.subcategory,
         ...article.tags,
       ]
         .join(" ")
@@ -61,11 +58,11 @@ export function ArticleExplorer({
     })
     .sort((a, b) => {
       if (sort === "popular") {
-        return b.readingCount - a.readingCount;
+        return b.views - a.views;
       }
 
       return (
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0)
       );
     });
 
@@ -76,7 +73,7 @@ export function ArticleExplorer({
           {title}
         </h2>
         <p className="max-w-lg [font-family:var(--font-editorial-sans)] text-sm leading-6 text-black/62">
-          Search by title, subtitle, author, tags, or category.
+          Search by title, description, author, tags, or category.
         </p>
       </div>
       <ArticleFilters

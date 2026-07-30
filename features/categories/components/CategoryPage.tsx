@@ -1,23 +1,23 @@
 import { notFound } from "next/navigation";
 
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
-import {
-  getArticlesByCategorySlug,
-  getCategoryBySlug,
-} from "@/features/categories/server/categories";
+import { listPublishedArticles } from "@/features/articles/server/article-queries";
+import { getCategoryBySlug } from "@/features/categories/server/categories";
 
 type CategoryPageProps = {
   slug: string;
 };
 
-export function CategoryPage({ slug }: CategoryPageProps) {
+export async function CategoryPage({ slug }: CategoryPageProps) {
   const category = getCategoryBySlug(slug);
 
   if (!category) {
     notFound();
   }
 
-  const articles = getArticlesByCategorySlug(slug);
+  const articles = await listPublishedArticles({
+    category: category.name,
+  });
 
   return (
     <main className="bg-white">

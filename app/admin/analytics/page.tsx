@@ -1,48 +1,42 @@
 import { AdminLayout } from "@/features/admin";
-import { articles, getAdminStats } from "@/features/articles";
+import { getAdminStats, listArticles } from "@/features/articles";
 
-const readsByWeek = [
-  { label: "Week 1", value: 6200 },
-  { label: "Week 2", value: 7100 },
-  { label: "Week 3", value: 8400 },
-  { label: "Week 4", value: 9300 },
-];
-
-const readsByMonth = [
-  { label: "April", value: 12200 },
-  { label: "May", value: 24800 },
-  { label: "June", value: 31500 },
-];
-
-export default function AdminAnalyticsPage() {
-  const stats = getAdminStats();
+export default async function AdminAnalyticsPage() {
+  const [stats, articles] = await Promise.all([
+    getAdminStats(),
+    listArticles(),
+  ]);
   const popularArticles = [...articles]
-    .sort((a, b) => b.readingCount - a.readingCount)
+    .sort((a, b) => b.views - a.views)
     .slice(0, 5);
 
   return (
     <AdminLayout
-      description="Mocked local analytics for reads, tags, and popular articles."
+      description="Database-backed totals, tags, and popular articles."
       title="Analytics"
     >
       <div className="grid gap-8 xl:grid-cols-2">
-        <AnalyticsPanel items={readsByWeek} title="Reads by week" />
-        <AnalyticsPanel items={readsByMonth} title="Reads by month" />
+        <AnalyticsPanel
+          items={[
+            { label: "Published", value: stats.publishedCount },
+            { label: "Drafts", value: stats.draftCount },
+            { label: "Total views", value: stats.totalViews },
+          ]}
+          title="Database totals"
+        />
         <section className="border border-black/15 p-5">
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular tags
           </h2>
           <div className="mt-5 flex flex-wrap gap-2">
-            {[stats.popularTag, "Beauty", "Business", "Nails", "Culture"].map(
-              (tag) => (
+            {getTagsByViews(articles).map((tag) => (
                 <span
                   className="border border-black px-2 py-1 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase"
                   key={tag}
                 >
                   {tag}
                 </span>
-              ),
-            )}
+              ))}
           </div>
         </section>
         <section className="border border-black/15 p-5">
@@ -59,7 +53,7 @@ export default function AdminAnalyticsPage() {
                   {article.title}
                 </span>
                 <span className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
-                  {article.readingCount.toLocaleString()}
+                  {article.views.toLocaleString()}
                 </span>
               </li>
             ))}
@@ -79,7 +73,7 @@ type AnalyticsPanelProps = {
 };
 
 function AnalyticsPanel({ title, items }: AnalyticsPanelProps) {
-  const maxValue = Math.max(...items.map((item) => item.value));
+  const maxValue = Math.max(...items.map((item) => item.value), 1);
 
   return (
     <section className="border border-black/15 p-5">
@@ -104,4 +98,21 @@ function AnalyticsPanel({ title, items }: AnalyticsPanelProps) {
       </div>
     </section>
   );
+}
+
+function getTagsByViews(
+  articles: Awaited<ReturnType<typeof listArticles>>,
+) {
+  const tagViews = new Map<string, number>();
+
+  articles.forEach((article) => {
+    article.tags.forEach((tag) => {
+      tagViews.set(tag, (tagViews.get(tag) ?? 0) + article.views);
+    });
+  });
+
+  return [...tagViews.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([tag]) => tag);
 }

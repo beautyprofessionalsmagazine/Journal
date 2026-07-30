@@ -1,9 +1,7 @@
 "use client";
 
-import type { ArticleCategory } from "@/features/articles/types/article.types";
-
 type ArticleFiltersProps = {
-  categories: ArticleCategory[];
+  categories: string[];
   tags: string[];
   query: string;
   category: string;

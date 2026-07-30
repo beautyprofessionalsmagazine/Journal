@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 import { AdminLayout, AdminStatCard } from "@/features/admin";
-import { articles, getAdminStats } from "@/features/articles";
+import { getAdminStats } from "@/features/articles";
 
-export default function AdminOverviewPage() {
-  const stats = getAdminStats();
+export default async function AdminOverviewPage() {
+  const stats = await getAdminStats();
 
   return (
     <AdminLayout
@@ -16,7 +16,7 @@ export default function AdminOverviewPage() {
           Create Article
         </Link>
       }
-      description="A simple editorial control room for local article data, publishing status, and reading counts."
+      description="A database-backed editorial control room for publishing status and article views."
       title="Overview"
     >
       <div className="flex flex-col gap-10">
@@ -27,14 +27,14 @@ export default function AdminOverviewPage() {
             value={String(stats.totalArticles)}
           />
           <AdminStatCard
-            detail="Local seed reading counts"
-            label="Total readings"
-            value={stats.totalReadings.toLocaleString()}
+            detail="Across all database articles"
+            label="Total views"
+            value={stats.totalViews.toLocaleString()}
           />
           <AdminStatCard
             detail={stats.popularThisWeek?.title}
             label="Most popular this week"
-            value={stats.popularThisWeek?.readingCount.toLocaleString() ?? "0"}
+            value={stats.popularThisWeek?.views.toLocaleString() ?? "0"}
           />
           <AdminStatCard
             detail={stats.popularTag}
@@ -61,7 +61,7 @@ export default function AdminOverviewPage() {
                       {article.title}
                     </h3>
                     <p className="mt-1 [font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
-                      {article.category} / {article.subcategory}
+                      {article.category} / {article.author}
                     </p>
                   </div>
                   <span className="w-fit border border-black px-2 py-1 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase">
@@ -78,11 +78,11 @@ export default function AdminOverviewPage() {
             <dl className="mt-5 grid gap-4 [font-family:var(--font-editorial-sans)] text-sm">
               <div className="flex items-center justify-between border-b border-black/10 pb-3">
                 <dt>Published</dt>
-                <dd>{articles.filter((article) => article.status === "published").length}</dd>
+                <dd>{stats.publishedCount}</dd>
               </div>
               <div className="flex items-center justify-between border-b border-black/10 pb-3">
                 <dt>Drafts</dt>
-                <dd>{articles.filter((article) => article.status === "draft").length}</dd>
+                <dd>{stats.draftCount}</dd>
               </div>
               <div className="flex items-center justify-between border-b border-black/10 pb-3">
                 <dt>Popular this month</dt>

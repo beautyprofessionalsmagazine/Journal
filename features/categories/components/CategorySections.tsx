@@ -1,10 +1,20 @@
 import Link from "next/link";
 
 import { ArticleCard } from "@/features/articles/components/ArticleCard";
-import { getArticlesByCategory } from "@/features/articles/server/articles";
+import { listPublishedArticles } from "@/features/articles/server/article-queries";
 import { categoryConfigs } from "@/features/categories/data/categories";
 
-export function CategorySections() {
+export async function CategorySections() {
+  const sections = await Promise.all(
+    categoryConfigs.map(async (category) => ({
+      category,
+      articles: await listPublishedArticles({
+        category: category.name,
+        limit: 3,
+      }),
+    })),
+  );
+
   return (
     <section className="flex flex-col gap-14">
       <div className="border-b border-black pb-4">
@@ -12,10 +22,7 @@ export function CategorySections() {
           Sections
         </h2>
       </div>
-      {categoryConfigs.map((category) => {
-        const categoryArticles = getArticlesByCategory(category.name).slice(0, 3);
-
-        return (
+      {sections.map(({ category, articles }) => (
           <section className="grid gap-8 lg:grid-cols-[240px_1fr]" key={category.slug}>
             <div className="flex flex-col gap-4">
               <h3 className="[font-family:var(--font-editorial-title)] text-4xl font-bold text-black">
@@ -35,8 +42,8 @@ export function CategorySections() {
               ) : null}
             </div>
             <div className="grid gap-7 md:grid-cols-3">
-              {categoryArticles.length > 0 ? (
-                categoryArticles.map((article) => (
+              {articles.length > 0 ? (
+                articles.map((article) => (
                   <ArticleCard article={article} compact key={article.id} />
                 ))
               ) : (
@@ -46,8 +53,7 @@ export function CategorySections() {
               )}
             </div>
           </section>
-        );
-      })}
+      ))}
     </section>
   );
 }
