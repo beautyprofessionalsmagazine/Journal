@@ -143,6 +143,8 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: string) 
         return <em key={markKey}>{children}</em>;
       case "underline":
         return <u key={markKey}>{children}</u>;
+      case "strike":
+        return <s key={markKey}>{children}</s>;
       case "link":
         return (
           <a

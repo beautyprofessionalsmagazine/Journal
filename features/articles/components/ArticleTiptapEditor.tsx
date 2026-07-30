@@ -2,69 +2,99 @@
 
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
-import { EditorContent, type Editor, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Heading2,
-  Heading3,
-  Italic,
-  Link2,
-  List,
-  ListOrdered,
-  Pilcrow,
-  Quote,
-  Redo2,
-  RotateCcw,
-  Underline as UnderlineIcon,
-} from "lucide-react";
-import { type ComponentType, useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 
+import { ArticleTiptapToolbar } from "@/features/articles/components/ArticleTiptapToolbar";
 import type { TiptapDocument } from "@/features/articles/types/article";
+import { isSafeEditorLinkHref } from "@/features/articles/validation/article-validation";
 
 type ArticleTiptapEditorProps = {
   value: TiptapDocument;
   onChange: (value: TiptapDocument) => void;
+  onBlur?: () => void;
   error?: string;
 };
 
 export function ArticleTiptapEditor({
   value,
   onChange,
+  onBlur,
   error,
 }: ArticleTiptapEditorProps) {
+  const descriptionId = useId();
+  const errorId = useId();
+  const onChangeRef = useRef(onChange);
+  const onBlurRef = useRef(onBlur);
+  const lastEmittedDocumentRef = useRef("");
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    onBlurRef.current = onBlur;
+  }, [onBlur, onChange]);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
+        code: false,
+        codeBlock: false,
         heading: {
           levels: [2, 3],
         },
         link: {
           autolink: true,
+          defaultProtocol: "https",
+          isAllowedUri: (url) => isSafeEditorLinkHref(url),
           linkOnPaste: true,
           openOnClick: false,
+          protocols: ["http", "https", "mailto"],
         },
       }),
       Placeholder.configure({
-        placeholder: "Write the article body...",
+        placeholder: "Begin writing your story…",
       }),
       TextAlign.configure({
+        alignments: ["left", "center", "right"],
         types: ["heading", "paragraph"],
       }),
     ],
     content: value,
     editorProps: {
       attributes: {
+        "aria-describedby": descriptionId,
+        "aria-label": "Article body",
+        "aria-multiline": "true",
         class:
-          "min-h-[26rem] px-6 py-5 [font-family:var(--font-editorial-body-serif)] text-xl leading-9 text-black/82 outline-none",
+          "min-h-[28rem] max-w-full px-5 py-6 outline-none sm:min-h-[34rem] sm:px-8 sm:py-8",
+        role: "textbox",
       },
+      transformPastedHTML: sanitizePastedHtml,
     },
-    onUpdate: ({ editor: nextEditor }) => {
-      onChange(nextEditor.getJSON() as TiptapDocument);
+    onBlur: () => {
+      onBlurRef.current?.();
+    },
+    onUpdate: ({ editor: currentEditor }) => {
+      const nextDocument = currentEditor.getJSON() as TiptapDocument;
+      lastEmittedDocumentRef.current = JSON.stringify(nextDocument);
+      onChangeRef.current(nextDocument);
+    },
+  });
+
+  const editorStats = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => {
+      if (!currentEditor) {
+        return null;
+      }
+
+      const text = currentEditor.getText().trim();
+
+      return {
+        characters: text.length,
+        words: text ? text.split(/\s+/).length : 0,
+      };
     },
   });
 
@@ -73,119 +103,59 @@ export function ArticleTiptapEditor({
       return;
     }
 
-    const currentDocument = JSON.stringify(editor.getJSON());
     const nextDocument = JSON.stringify(value);
 
-    if (currentDocument !== nextDocument) {
+    if (nextDocument === lastEmittedDocumentRef.current) {
+      return;
+    }
+
+    if (JSON.stringify(editor.getJSON()) !== nextDocument) {
       editor.commands.setContent(value, {
         emitUpdate: false,
       });
     }
   }, [editor, value]);
 
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    editor.view.dom.setAttribute("aria-invalid", String(Boolean(error)));
+
+    if (error) {
+      editor.view.dom.setAttribute(
+        "aria-describedby",
+        `${descriptionId} ${errorId}`,
+      );
+    } else {
+      editor.view.dom.setAttribute("aria-describedby", descriptionId);
+    }
+  }, [descriptionId, editor, error, errorId]);
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2 border border-black/15 bg-black/[0.02] p-3">
-        <ToolbarButton
-          active={editor?.isActive("paragraph") ?? false}
-          icon={Pilcrow}
-          label="Paragraph"
-          onClick={() => editor?.chain().focus().setParagraph().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("heading", { level: 2 }) ?? false}
-          icon={Heading2}
-          label="Heading 2"
-          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("heading", { level: 3 }) ?? false}
-          icon={Heading3}
-          label="Heading 3"
-          onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("bold") ?? false}
-          icon={Bold}
-          label="Bold"
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("italic") ?? false}
-          icon={Italic}
-          label="Italic"
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("underline") ?? false}
-          icon={UnderlineIcon}
-          label="Underline"
-          onClick={() => editor?.chain().focus().toggleUnderline().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("bulletList") ?? false}
-          icon={List}
-          label="Bullet list"
-          onClick={() => editor?.chain().focus().toggleBulletList().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("orderedList") ?? false}
-          icon={ListOrdered}
-          label="Ordered list"
-          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("blockquote") ?? false}
-          icon={Quote}
-          label="Blockquote"
-          onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive("link") ?? false}
-          icon={Link2}
-          label="Link"
-          onClick={() => handleLinkAction(editor)}
-        />
-        <ToolbarButton
-          active={editor?.isActive({ textAlign: "left" }) ?? false}
-          icon={AlignLeft}
-          label="Align left"
-          onClick={() => editor?.chain().focus().setTextAlign("left").run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive({ textAlign: "center" }) ?? false}
-          icon={AlignCenter}
-          label="Align center"
-          onClick={() => editor?.chain().focus().setTextAlign("center").run()}
-        />
-        <ToolbarButton
-          active={editor?.isActive({ textAlign: "right" }) ?? false}
-          icon={AlignRight}
-          label="Align right"
-          onClick={() => editor?.chain().focus().setTextAlign("right").run()}
-        />
-        <ToolbarButton
-          disabled={!(editor?.can().undo() ?? false)}
-          icon={RotateCcw}
-          label="Undo"
-          onClick={() => editor?.chain().focus().undo().run()}
-        />
-        <ToolbarButton
-          disabled={!(editor?.can().redo() ?? false)}
-          icon={Redo2}
-          label="Redo"
-          onClick={() => editor?.chain().focus().redo().run()}
-        />
-      </div>
+    <div className="min-w-0">
       <div
-        className={`article-editor border bg-white ${
-          error ? "border-black" : "border-black/15"
+        className={`article-editor overflow-hidden border bg-white transition focus-within:border-black ${
+          error ? "border-red-700" : "border-black/15"
         }`}
       >
+        <ArticleTiptapToolbar editor={editor} />
         <EditorContent editor={editor} />
+        <div className="flex items-center justify-between gap-4 border-t border-black/10 bg-[#f8f8f6] px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-black/50">
+          <span id={descriptionId}>Rich text editor</span>
+          <span aria-live="polite">
+            {editorStats?.words ?? 0} words · {editorStats?.characters ?? 0}{" "}
+            characters
+          </span>
+        </div>
       </div>
       {error ? (
-        <p className="[font-family:var(--font-editorial-body-sans)] text-xs italic text-black/62">
+        <p
+          className="mt-2 text-xs text-red-700"
+          id={errorId}
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
@@ -193,67 +163,55 @@ export function ArticleTiptapEditor({
   );
 }
 
-type ToolbarButtonProps = {
-  active?: boolean;
-  disabled?: boolean;
-  icon: ComponentType<{
-    className?: string;
-    strokeWidth?: number;
-  }>;
-  label: string;
-  onClick: () => void;
-};
+const allowedPasteElements = new Set([
+  "A",
+  "B",
+  "BLOCKQUOTE",
+  "BR",
+  "EM",
+  "H2",
+  "H3",
+  "HR",
+  "I",
+  "LI",
+  "OL",
+  "P",
+  "S",
+  "STRIKE",
+  "STRONG",
+  "U",
+  "UL",
+]);
 
-function ToolbarButton({
-  active = false,
-  disabled = false,
-  icon: Icon,
-  label,
-  onClick,
-}: ToolbarButtonProps) {
-  return (
-    <button
-      aria-label={label}
-      className={`inline-flex size-10 items-center justify-center border transition ${
-        active
-          ? "border-black bg-black text-white"
-          : "border-black/15 bg-white text-black hover:border-black"
-      } disabled:cursor-not-allowed disabled:border-black/10 disabled:text-black/35`}
-      disabled={disabled}
-      onClick={onClick}
-      title={label}
-      type="button"
-    >
-      <Icon strokeWidth={1.75} />
-    </button>
-  );
-}
+function sanitizePastedHtml(html: string) {
+  const parsedDocument = new DOMParser().parseFromString(html, "text/html");
 
-function handleLinkAction(editor: Editor | null) {
-  if (!editor) {
-    return;
-  }
+  parsedDocument
+    .querySelectorAll(
+      "script, style, iframe, object, embed, form, input, button, textarea, select, meta, link",
+    )
+    .forEach((element) => element.remove());
 
-  const currentHref = editor.getAttributes("link").href as string | undefined;
-  const nextHref = window.prompt("Enter a link URL", currentHref ?? "https://");
+  Array.from(parsedDocument.body.querySelectorAll("*"))
+    .reverse()
+    .forEach((element) => {
+      if (!allowedPasteElements.has(element.tagName)) {
+        element.replaceWith(...Array.from(element.childNodes));
+        return;
+      }
 
-  if (nextHref === null) {
-    return;
-  }
+      const href =
+        element.tagName === "A" ? element.getAttribute("href") : null;
 
-  if (!nextHref.trim()) {
-    editor.chain().focus().extendMarkRange("link").unsetLink().run();
-    return;
-  }
+      Array.from(element.attributes).forEach((attribute) => {
+        element.removeAttribute(attribute.name);
+      });
 
-  editor
-    .chain()
-    .focus()
-    .extendMarkRange("link")
-    .setLink({
-      href: nextHref.trim(),
-      rel: "noopener noreferrer",
-      target: "_blank",
-    })
-    .run();
+      if (element.tagName === "A" && href && isSafeEditorLinkHref(href)) {
+        element.setAttribute("href", href);
+        element.setAttribute("rel", "noopener noreferrer");
+      }
+    });
+
+  return parsedDocument.body.innerHTML;
 }

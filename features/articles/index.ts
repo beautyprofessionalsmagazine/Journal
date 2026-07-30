@@ -1,4 +1,5 @@
 export { ArticleBody } from "./components/ArticleBody";
+export { ArticleAdminCreatePage } from "./components/ArticleAdminCreatePage";
 export { ArticleCard } from "./components/ArticleCard";
 export { ArticleDetailPage } from "./components/ArticleDetailPage";
 export { ArticleExplorer } from "./components/ArticleExplorer";

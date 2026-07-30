@@ -41,6 +41,7 @@ export async function ArticleAdminDetailPage({
                 alt={article.coverImageAlt ?? article.title}
                 className="object-cover"
                 fill
+                priority
                 sizes="(min-width: 1280px) 820px, 100vw"
                 src={article.coverImage}
               />

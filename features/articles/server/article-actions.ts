@@ -14,6 +14,7 @@ import type {
   CreateArticleInput,
 } from "@/features/articles/types/article";
 import {
+  getCreateArticleFieldErrors,
   getCreateArticleInputFromFormData,
   normalizeSlug,
   validateCreateArticleInput,
@@ -36,7 +37,7 @@ export async function createArticle(input: CreateArticleInput): Promise<Article>
   if (!parsedInput.success) {
     throw new ArticleActionError(
       "Please fix the highlighted fields and try again.",
-      getFieldErrors(parsedInput.error),
+      getCreateArticleFieldErrors(parsedInput.error),
     );
   }
 
@@ -118,7 +119,7 @@ export async function createArticleAction(
       return {
         status: "error",
         message: "Please fix the highlighted fields and try again.",
-        fieldErrors: getFieldErrors(error),
+        fieldErrors: getCreateArticleFieldErrors(error),
       };
     }
 
@@ -133,22 +134,4 @@ export async function createArticleAction(
   revalidatePath("/admin/articles/create");
   revalidatePath(`/admin/articles/${article.id}/edit`);
   redirect(`/admin/articles/${article.id}/edit`);
-}
-
-function getFieldErrors(error: ZodError) {
-  const flattened = error.flatten().fieldErrors as Record<
-    string,
-    string[] | undefined
-  >;
-  const fieldErrors: CreateArticleFieldErrors = {};
-
-  for (const [fieldName, messages] of Object.entries(flattened)) {
-    const firstMessage = messages?.[0];
-
-    if (firstMessage) {
-      fieldErrors[fieldName as keyof CreateArticleFieldErrors] = firstMessage;
-    }
-  }
-
-  return fieldErrors;
 }

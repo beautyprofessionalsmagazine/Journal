@@ -15,11 +15,15 @@ export type TiptapMark =
       type: "underline";
     }
   | {
+      type: "strike";
+    }
+  | {
       type: "link";
       attrs?: {
         href?: string;
         target?: string | null;
         rel?: string | null;
+        class?: string | null;
       };
     };
 
@@ -27,10 +31,12 @@ export type TiptapNode = {
   type: string;
   attrs?: {
     level?: number;
-    textAlign?: TiptapTextAlign;
+    textAlign?: TiptapTextAlign | null;
     href?: string;
     target?: string | null;
     rel?: string | null;
+    class?: string | null;
+    start?: number;
   };
   content?: TiptapNode[];
   marks?: TiptapMark[];
@@ -80,14 +86,16 @@ export type CreateArticleFormValues = {
   category: string;
   author: string;
   description: string;
+  coverImage: string;
   coverImageAlt: string;
   tags: string;
   status: ArticleStatus;
+  publishedAt: string;
   contentJson: TiptapDocument;
 };
 
 export type CreateArticleFieldErrors = Partial<
-  Record<keyof CreateArticleFormValues | "coverImage", string>
+  Record<keyof CreateArticleFormValues, string>
 >;
 
 export type CreateArticleFormState = {
@@ -111,9 +119,11 @@ export const emptyCreateArticleFormValues: CreateArticleFormValues = {
   category: "Beauty",
   author: "",
   description: "",
+  coverImage: "",
   coverImageAlt: "",
   tags: "",
   status: "draft",
+  publishedAt: "",
   contentJson: emptyTiptapDocument,
 };
 

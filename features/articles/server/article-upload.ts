@@ -1,9 +1,8 @@
 import { put } from "@vercel/blob";
 
 import {
-  ALLOWED_COVER_IMAGE_TYPES,
-  MAX_COVER_IMAGE_SIZE,
   normalizeSlug,
+  validateCoverImageFile,
 } from "@/features/articles/validation/article-validation";
 
 export class ArticleUploadError extends Error {
@@ -77,14 +76,10 @@ export async function uploadArticleCoverImageFromFormData(formData: FormData) {
 }
 
 function validateCoverImage(file: File) {
-  if (!ALLOWED_COVER_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_COVER_IMAGE_TYPES)[number])) {
-    throw new ArticleUploadError(
-      "Cover image must be a JPG, PNG, WebP, AVIF, or GIF file.",
-    );
-  }
+  const validationError = validateCoverImageFile(file);
 
-  if (file.size > MAX_COVER_IMAGE_SIZE) {
-    throw new ArticleUploadError("Cover image must be 5 MB or smaller.");
+  if (validationError) {
+    throw new ArticleUploadError(validationError);
   }
 }
 

@@ -1,9 +1,11 @@
-import { z } from "zod";
+import { type ZodError, z } from "zod";
 
 import {
   articleStatusValues,
   type CreateArticleInput,
+  type CreateArticleFieldErrors,
   type TiptapDocument,
+  type TiptapMark,
   type TiptapNode,
 } from "@/features/articles/types/article";
 
@@ -18,6 +20,24 @@ export const ALLOWED_COVER_IMAGE_TYPES = [
 ] as const;
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const allowedTiptapNodeTypes = new Set([
+  "paragraph",
+  "heading",
+  "bulletList",
+  "orderedList",
+  "listItem",
+  "blockquote",
+  "horizontalRule",
+  "hardBreak",
+  "text",
+]);
+const allowedTiptapMarkTypes = new Set([
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "link",
+]);
 
 const createArticleInputSchema = z
   .object({
@@ -103,6 +123,30 @@ const createArticleInputSchema = z
       });
     }
 
+    if (value.coverImage && !value.coverImageAlt) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["coverImageAlt"],
+        message: "Alt text is required when a cover image is selected.",
+      });
+    }
+
+    if (value.status === "published" && !value.description) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["description"],
+        message: "Description is required before publishing.",
+      });
+    }
+
+    if (value.status === "published" && !value.coverImage) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["coverImage"],
+        message: "A cover image is required before publishing.",
+      });
+    }
+
     if (!value.contentJson) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -121,7 +165,10 @@ const createArticleInputSchema = z
       });
     }
 
-    if (isTiptapDocument(value.contentJson) && !hasMeaningfulTiptapContent(value.contentJson)) {
+    if (
+      isTiptapDocument(value.contentJson) &&
+      !hasMeaningfulTiptapContent(value.contentJson)
+    ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["contentJson"],
@@ -185,13 +232,15 @@ export function parseContentJson(value: unknown) {
 }
 
 export function isTiptapDocument(value: unknown): value is TiptapDocument {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value)) {
     return false;
   }
 
-  const candidate = value as Partial<TiptapDocument>;
-
-  return candidate.type === "doc" && Array.isArray(candidate.content);
+  return (
+    value.type === "doc" &&
+    Array.isArray(value.content) &&
+    value.content.every(isTiptapNode)
+  );
 }
 
 export function hasMeaningfulTiptapContent(document: TiptapDocument) {
@@ -209,12 +258,65 @@ export function getCreateArticleInputFromFormData(formData: FormData): CreateArt
     coverImageAlt: readString(formData, "coverImageAlt"),
     tags: readString(formData, "tags"),
     status: readString(formData, "status") as CreateArticleInput["status"],
+    publishedAt: readString(formData, "publishedAt"),
     contentJson: readString(formData, "contentJson"),
   };
 }
 
 export function validateCreateArticleInput(input: CreateArticleInput) {
   return createArticleInputSchema.safeParse(input);
+}
+
+export function getCreateArticleFieldErrors(error: ZodError) {
+  const flattened = error.flatten().fieldErrors as Record<
+    string,
+    string[] | undefined
+  >;
+  const fieldErrors: CreateArticleFieldErrors = {};
+
+  for (const [fieldName, messages] of Object.entries(flattened)) {
+    const firstMessage = messages?.[0];
+
+    if (firstMessage) {
+      fieldErrors[fieldName as keyof CreateArticleFieldErrors] = firstMessage;
+    }
+  }
+
+  return fieldErrors;
+}
+
+export function validateCoverImageFile(file: Pick<File, "size" | "type">) {
+  if (
+    !ALLOWED_COVER_IMAGE_TYPES.includes(
+      file.type as (typeof ALLOWED_COVER_IMAGE_TYPES)[number],
+    )
+  ) {
+    return "Cover image must be a JPG, PNG, WebP, AVIF, or GIF file.";
+  }
+
+  if (file.size > MAX_COVER_IMAGE_SIZE) {
+    return "Cover image must be 5 MB or smaller.";
+  }
+
+  return null;
+}
+
+export function isSafeEditorLinkHref(value: string) {
+  const normalizedValue = value.trim();
+
+  if (
+    normalizedValue.startsWith("/") ||
+    normalizedValue.startsWith("#")
+  ) {
+    return true;
+  }
+
+  try {
+    const url = new URL(normalizedValue);
+    return ["http:", "https:", "mailto:"].includes(url.protocol);
+  } catch {
+    return false;
+  }
 }
 
 function readString(formData: FormData, fieldName: string) {
@@ -241,9 +343,72 @@ function hasMeaningfulTiptapNode(node: TiptapNode): boolean {
   return node.content.some(hasMeaningfulTiptapNode);
 }
 
+function isTiptapNode(value: unknown): value is TiptapNode {
+  if (
+    !isRecord(value) ||
+    typeof value.type !== "string" ||
+    !allowedTiptapNodeTypes.has(value.type)
+  ) {
+    return false;
+  }
+
+  if (value.type === "text" && typeof value.text !== "string") {
+    return false;
+  }
+
+  if (
+    value.type === "heading" &&
+    (!isRecord(value.attrs) ||
+      (value.attrs.level !== 2 && value.attrs.level !== 3))
+  ) {
+    return false;
+  }
+
+  if (
+    value.content !== undefined &&
+    (!Array.isArray(value.content) || !value.content.every(isTiptapNode))
+  ) {
+    return false;
+  }
+
+  if (
+    value.marks !== undefined &&
+    (!Array.isArray(value.marks) || !value.marks.every(isTiptapMark))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function isTiptapMark(value: unknown): value is TiptapMark {
+  if (
+    !isRecord(value) ||
+    typeof value.type !== "string" ||
+    !allowedTiptapMarkTypes.has(value.type)
+  ) {
+    return false;
+  }
+
+  if (value.type !== "link") {
+    return true;
+  }
+
+  return (
+    isRecord(value.attrs) &&
+    typeof value.attrs.href === "string" &&
+    isSafeEditorLinkHref(value.attrs.href)
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function isValidUrl(value: string) {
   try {
-    return Boolean(new URL(value));
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch {
     return false;
   }

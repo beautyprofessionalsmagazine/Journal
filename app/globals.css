@@ -80,6 +80,31 @@ textarea {
   border-color: #000000;
 }
 
+.article-form-control {
+  min-height: 3rem;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #ffffff;
+  padding: 0.75rem;
+  color: #111111;
+  font-family: var(--font-editorial-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.article-form-control:focus {
+  border-color: #111111;
+  box-shadow: 0 0 0 1px #111111;
+}
+
+.article-form-control[aria-invalid="true"] {
+  border-color: #b91c1c;
+}
+
 .mobile-text-lock {
   max-width: 21rem;
   overflow-wrap: break-word;
@@ -87,7 +112,23 @@ textarea {
 }
 
 .article-editor .ProseMirror {
-  min-height: 26rem;
+  min-height: 28rem;
+  max-width: 100%;
+  color: rgba(17, 17, 17, 0.88);
+  font-family: var(--font-editorial-body-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.article-editor .ProseMirror > * + * {
+  margin-top: 1.25em;
+}
+
+.article-editor .ProseMirror:focus {
+  outline: none;
 }
 
 .article-editor .ProseMirror p.is-editor-empty:first-child::before {
@@ -100,12 +141,68 @@ textarea {
 
 .article-editor .ProseMirror ul,
 .article-editor .ProseMirror ol {
-  margin: 0;
+  margin-bottom: 0;
+  margin-top: 1.25em;
   padding-left: 1.5rem;
 }
 
-.article-editor .ProseMirror blockquote {
+.article-editor .ProseMirror ul {
+  list-style: disc;
+}
+
+.article-editor .ProseMirror ol {
+  list-style: decimal;
+}
+
+.article-editor .ProseMirror li + li {
+  margin-top: 0.35rem;
+}
+
+.article-editor .ProseMirror li > p {
   margin: 0;
+}
+
+.article-editor .ProseMirror blockquote {
+  border-left: 2px solid #111111;
+  color: rgba(17, 17, 17, 0.68);
+  font-family: var(--font-editorial-title);
+  font-size: 1.35em;
+  font-style: italic;
+  line-height: 1.45;
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 1.35em;
+  padding-left: 1.25rem;
+}
+
+.article-editor .ProseMirror h2,
+.article-editor .ProseMirror h3 {
+  font-family: var(--font-editorial-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.article-editor .ProseMirror h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.article-editor .ProseMirror h3 {
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+}
+
+.article-editor .ProseMirror hr {
+  border: 0;
+  border-top: 1px solid rgba(17, 17, 17, 0.24);
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
+
+.article-editor .ProseMirror a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 .article-editor .ProseMirror h2,
@@ -113,6 +210,13 @@ textarea {
 .article-editor .ProseMirror p,
 .article-editor .ProseMirror li {
   margin: 0;
+}
+
+@media (min-width: 640px) {
+  .article-editor .ProseMirror {
+    min-height: 34rem;
+    font-size: 1.25rem;
+  }
 }
 
 @media (min-width: 640px) {
