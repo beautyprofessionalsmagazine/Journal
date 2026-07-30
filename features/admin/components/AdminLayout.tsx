@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { logoutAdminAction } from "@/features/admin/server/admin-auth-actions";
+
 type AdminLayoutProps = {
   title: string;
   description: string;
@@ -45,6 +47,14 @@ export function AdminLayout({
                 ))}
               </ul>
             </nav>
+            <form action={logoutAdminAction}>
+              <button
+                className="w-full border border-black/15 px-4 py-3 text-left [font-family:var(--font-editorial-sans)] text-sm font-semibold uppercase transition hover:border-black hover:bg-black hover:text-white"
+                type="submit"
+              >
+                Log out
+              </button>
+            </form>
           </div>
         </aside>
         <section className="flex flex-col">

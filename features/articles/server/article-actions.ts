@@ -6,6 +6,7 @@ import { ZodError } from "zod";
 
 import { articlesTable } from "@/features/articles/db/article-schema";
 import { getArticleBySlug } from "@/features/articles/server/article-queries";
+import { hasAdminSession } from "@/features/admin/server/admin-auth";
 import type {
   Article,
   CreateArticleFieldErrors,
@@ -96,6 +97,10 @@ export async function createArticleAction(
   _previousState: CreateArticleFormState,
   formData: FormData,
 ): Promise<CreateArticleFormState> {
+  if (!(await hasAdminSession())) {
+    redirect("/admin/login");
+  }
+
   let article: Article;
 
   try {
