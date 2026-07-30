@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
-import Underline from "@tiptap/extension-underline";
 import { EditorContent, type Editor, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
@@ -45,18 +43,17 @@ export function ArticleTiptapEditor({
         heading: {
           levels: [2, 3],
         },
+        link: {
+          autolink: true,
+          linkOnPaste: true,
+          openOnClick: false,
+        },
       }),
       Placeholder.configure({
         placeholder: "Write the article body...",
       }),
       TextAlign.configure({
         types: ["heading", "paragraph"],
-      }),
-      Underline,
-      Link.configure({
-        autolink: true,
-        linkOnPaste: true,
-        openOnClick: false,
       }),
     ],
     content: value,
