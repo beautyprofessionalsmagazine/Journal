@@ -1,12 +1,13 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
-import { listPublishedArticles } from "@/features/articles/server/article-queries";
+import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
 import { getCategoryByName } from "@/features/categories/server/categories";
 
-export async function ShoppingPage() {
+type ShoppingPageProps = {
+  filters?: PublishedArticleFilters;
+};
+
+export function ShoppingPage({ filters }: ShoppingPageProps) {
   const shoppingCategory = getCategoryByName("Shopping");
-  const articles = await listPublishedArticles({
-    category: "Shopping",
-  });
 
   return (
     <main className="bg-white">
@@ -20,8 +21,8 @@ export async function ShoppingPage() {
           </p>
         </div>
         <ArticleExplorer
-          articles={articles}
-          initialCategory="Shopping"
+          filters={filters}
+          fixedCategory="Shopping"
           title="Shopping Articles"
         />
       </section>

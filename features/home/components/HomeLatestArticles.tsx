@@ -1,18 +1,24 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
 import {
   getFeaturedArticle,
-  listPublishedArticles,
+  type PublishedArticleFilters,
 } from "@/features/articles/server/article-queries";
 
-export async function HomeLatestArticles() {
+type HomeLatestArticlesProps = {
+  filters?: PublishedArticleFilters;
+};
+
+export async function HomeLatestArticles({
+  filters,
+}: HomeLatestArticlesProps) {
   const featuredArticle = await getFeaturedArticle();
-  const latestArticles = await listPublishedArticles({
-    excludeId: featuredArticle?.id,
-  });
 
   return (
     <section className="mx-auto max-w-[1440px] bg-white px-5 py-14 sm:px-8 lg:px-12">
-      <ArticleExplorer articles={latestArticles} />
+      <ArticleExplorer
+        excludeId={featuredArticle?.id}
+        filters={filters}
+      />
     </section>
   );
 }

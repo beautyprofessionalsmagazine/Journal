@@ -1,23 +1,20 @@
 import { notFound } from "next/navigation";
 
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
-import { listPublishedArticles } from "@/features/articles/server/article-queries";
+import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
 import { getCategoryBySlug } from "@/features/categories/server/categories";
 
 type CategoryPageProps = {
+  filters?: PublishedArticleFilters;
   slug: string;
 };
 
-export async function CategoryPage({ slug }: CategoryPageProps) {
+export function CategoryPage({ filters, slug }: CategoryPageProps) {
   const category = getCategoryBySlug(slug);
 
   if (!category) {
     notFound();
   }
-
-  const articles = await listPublishedArticles({
-    category: category.name,
-  });
 
   return (
     <main className="bg-white">
@@ -31,8 +28,8 @@ export async function CategoryPage({ slug }: CategoryPageProps) {
           </p>
         </div>
         <ArticleExplorer
-          articles={articles}
-          initialCategory={category.name}
+          filters={filters}
+          fixedCategory={category.name}
           title={`${category.name} Articles`}
         />
       </section>

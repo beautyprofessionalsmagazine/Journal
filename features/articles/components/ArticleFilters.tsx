@@ -1,5 +1,8 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+
 type ArticleFiltersProps = {
   categories: string[];
   tags: string[];
@@ -8,10 +11,7 @@ type ArticleFiltersProps = {
   tag: string;
   sort: string;
   resultCount: number;
-  onQueryChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
-  onTagChange: (value: string) => void;
-  onSortChange: (value: string) => void;
+  categoryLocked?: boolean;
 };
 
 export function ArticleFilters({
@@ -22,21 +22,50 @@ export function ArticleFilters({
   tag,
   sort,
   resultCount,
-  onQueryChange,
-  onCategoryChange,
-  onTagChange,
-  onSortChange,
+  categoryLocked = false,
 }: ArticleFiltersProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  function updateFilter(
+    name: "q" | "category" | "tag" | "sort",
+    value: string,
+  ) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    const isDefaultValue =
+      !value ||
+      value === "all" ||
+      (name === "sort" && value === "latest");
+
+    if (isDefaultValue) {
+      nextSearchParams.delete(name);
+    } else {
+      nextSearchParams.set(name, value);
+    }
+
+    const queryString = nextSearchParams.toString();
+    const destination = queryString ? `${pathname}?${queryString}` : pathname;
+
+    startTransition(() => {
+      router.replace(destination, {
+        scroll: false,
+      });
+    });
+  }
+
   return (
     <section
       aria-label="Article filters"
+      aria-busy={isPending}
       className="grid gap-4 border-y border-black/15 py-5 lg:grid-cols-[minmax(240px,1.1fr)_repeat(3,minmax(150px,0.5fr))_auto] lg:items-end"
     >
       <label className="flex flex-col gap-2 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase text-black">
         Search
         <input
           className="min-h-11 border border-black/20 bg-white px-3 [font-family:var(--font-editorial-sans)] text-sm font-normal normal-case text-black outline-none transition focus:border-black"
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={(event) => updateFilter("q", event.target.value)}
           placeholder="Search articles"
           type="search"
           value={query}
@@ -46,7 +75,8 @@ export function ArticleFilters({
         Category
         <select
           className="min-h-11 border border-black/20 bg-white px-3 [font-family:var(--font-editorial-sans)] text-sm font-normal normal-case text-black outline-none transition focus:border-black"
-          onChange={(event) => onCategoryChange(event.target.value)}
+          disabled={categoryLocked}
+          onChange={(event) => updateFilter("category", event.target.value)}
           value={category}
         >
           <option value="all">All categories</option>
@@ -61,7 +91,7 @@ export function ArticleFilters({
         Tag
         <select
           className="min-h-11 border border-black/20 bg-white px-3 [font-family:var(--font-editorial-sans)] text-sm font-normal normal-case text-black outline-none transition focus:border-black"
-          onChange={(event) => onTagChange(event.target.value)}
+          onChange={(event) => updateFilter("tag", event.target.value)}
           value={tag}
         >
           <option value="all">All tags</option>
@@ -76,7 +106,7 @@ export function ArticleFilters({
         Sort
         <select
           className="min-h-11 border border-black/20 bg-white px-3 [font-family:var(--font-editorial-sans)] text-sm font-normal normal-case text-black outline-none transition focus:border-black"
-          onChange={(event) => onSortChange(event.target.value)}
+          onChange={(event) => updateFilter("sort", event.target.value)}
           value={sort}
         >
           <option value="latest">Latest</option>
@@ -84,7 +114,9 @@ export function ArticleFilters({
         </select>
       </label>
       <p className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
-        {resultCount} {resultCount === 1 ? "article" : "articles"}
+        {isPending
+          ? "Loading..."
+          : `${resultCount} ${resultCount === 1 ? "article" : "articles"}`}
       </p>
     </section>
   );

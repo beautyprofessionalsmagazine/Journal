@@ -1,9 +1,11 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
-import { listPublishedArticles } from "@/features/articles/server/article-queries";
+import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
 
-export async function ArticlesPage() {
-  const articles = await listPublishedArticles();
+type ArticlesPageProps = {
+  filters?: PublishedArticleFilters;
+};
 
+export function ArticlesPage({ filters }: ArticlesPageProps) {
   return (
     <main className="bg-white">
       <section className="mx-auto flex max-w-[1440px] flex-col gap-10 px-5 py-14 sm:px-8 lg:px-12">
@@ -16,7 +18,7 @@ export async function ArticlesPage() {
             and style coverage.
           </p>
         </div>
-        <ArticleExplorer articles={articles} title="All Articles" />
+        <ArticleExplorer filters={filters} title="All Articles" />
       </section>
     </main>
   );

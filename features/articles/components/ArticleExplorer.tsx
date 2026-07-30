@@ -1,70 +1,42 @@
-"use client";
-
-import { useState } from "react";
-
 import { ArticleFilters } from "@/features/articles/components/ArticleFilters";
 import { ArticleGrid } from "@/features/articles/components/ArticleGrid";
-import type { Article } from "@/features/articles/types/article";
+import {
+  getPublishedArticleFilterOptions,
+  listPublishedArticles,
+  type PublishedArticleFilters,
+} from "@/features/articles/server/article-queries";
 
 type ArticleExplorerProps = {
-  articles: Article[];
-  initialCategory?: string;
+  excludeId?: string;
+  filters?: PublishedArticleFilters;
+  fixedCategory?: string;
   title?: string;
 };
 
-export function ArticleExplorer({
-  articles,
-  initialCategory,
+export async function ArticleExplorer({
+  excludeId,
+  filters = {},
+  fixedCategory,
   title = "Latest Articles",
 }: ArticleExplorerProps) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>(initialCategory ?? "all");
-  const [tag, setTag] = useState("all");
-  const [sort, setSort] = useState("latest");
-
-  const categories = Array.from(
-    new Set(articles.map((article) => article.category)),
-  ).sort();
-  const tags = Array.from(
-    new Set(articles.flatMap((article) => article.tags)),
-  ).sort();
-
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredArticles = [...articles]
-    .filter((article) => {
-      if (category !== "all" && article.category !== category) {
-        return false;
-      }
-
-      if (tag !== "all" && !article.tags.includes(tag)) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      const searchable = [
-        article.title,
-        article.description ?? "",
-        article.author,
-        article.category,
-        ...article.tags,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return searchable.includes(normalizedQuery);
-    })
-    .sort((a, b) => {
-      if (sort === "popular") {
-        return b.views - a.views;
-      }
-
-      return (
-        (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0)
-      );
-    });
+  const effectiveFilters = {
+    ...filters,
+    category: fixedCategory ?? filters.category,
+    excludeId,
+  };
+  const [articles, options] = await Promise.all([
+    listPublishedArticles(effectiveFilters),
+    getPublishedArticleFilterOptions(),
+  ]);
+  const selectedCategory = fixedCategory ?? filters.category;
+  const categories =
+    selectedCategory && !options.categories.includes(selectedCategory)
+      ? [selectedCategory, ...options.categories]
+      : options.categories;
+  const tags =
+    filters.tag && !options.tags.includes(filters.tag)
+      ? [filters.tag, ...options.tags]
+      : options.tags;
 
   return (
     <section className="flex flex-col gap-8">
@@ -78,18 +50,15 @@ export function ArticleExplorer({
       </div>
       <ArticleFilters
         categories={categories}
-        category={category}
-        onCategoryChange={setCategory}
-        onQueryChange={setQuery}
-        onSortChange={setSort}
-        onTagChange={setTag}
-        query={query}
-        resultCount={filteredArticles.length}
-        sort={sort}
-        tag={tag}
+        category={selectedCategory ?? "all"}
+        categoryLocked={Boolean(fixedCategory)}
+        query={filters.query ?? ""}
+        resultCount={articles.length}
+        sort={filters.sort ?? "latest"}
+        tag={filters.tag ?? "all"}
         tags={tags}
       />
-      <ArticleGrid articles={filteredArticles} />
+      <ArticleGrid articles={articles} />
     </section>
   );
 }
