@@ -1,5 +1,6 @@
 import { ArticleCard } from "@/features/articles/components/ArticleCard";
 import type { Article } from "@/features/articles/types/article";
+import { EmptyState } from "@/shared/components/ui";
 
 type ArticleGridProps = {
   articles: Article[];
@@ -16,15 +17,7 @@ export function ArticleGrid({
 }: ArticleGridProps) {
   if (articles.length === 0) {
     return (
-      <div className="reveal border-y border-black py-[clamp(3.5rem,8vw,7rem)] text-center">
-        <p className="editorial-kicker text-black/45">Nothing matched</p>
-        <h3 className="mx-auto mt-3 max-w-xl [font-family:var(--font-editorial-title)] text-[clamp(2rem,6vw,3.5rem)] font-bold leading-none text-black">
-          {emptyTitle}
-        </h3>
-        <p className="mx-auto mt-3 max-w-xl [font-family:var(--font-editorial-sans)] text-sm leading-6 text-black/62">
-          {emptyDescription}
-        </p>
-      </div>
+      <EmptyState description={emptyDescription} title={emptyTitle} />
     );
   }
 

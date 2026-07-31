@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AdminNavLink } from "@/features/admin/components/AdminNavLink";
 import { logoutAdminAction } from "@/features/admin/server/admin-auth-actions";
 import { Button } from "@/shared/components/ui";
 
@@ -44,12 +45,10 @@ export function AdminLayout({
               <ul className="grid grid-cols-3 divide-x divide-black border-y border-black lg:grid-cols-1 lg:divide-x-0 lg:divide-y">
                 {adminNavigation.map((item) => (
                   <li key={item.href}>
-                    <Link
-                      className="focus-ring flex min-h-12 items-center justify-center px-2 text-center [font-family:var(--font-editorial-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-black hover:text-white lg:justify-start lg:px-3"
+                    <AdminNavLink
                       href={item.href}
-                    >
-                      {item.label}
-                    </Link>
+                      label={item.label}
+                    />
                   </li>
                 ))}
               </ul>

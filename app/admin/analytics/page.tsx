@@ -1,5 +1,6 @@
 import { AdminLayout } from "@/features/admin";
 import { getAdminStats, listArticles } from "@/features/articles";
+import { EmptyState } from "@/shared/components/ui";
 
 export default async function AdminAnalyticsPage() {
   const [stats, articles] = await Promise.all([
@@ -9,6 +10,7 @@ export default async function AdminAnalyticsPage() {
   const popularArticles = [...articles]
     .sort((a, b) => b.views - a.views)
     .slice(0, 5);
+  const popularTags = getTagsByViews(articles);
 
   return (
     <AdminLayout
@@ -31,8 +33,9 @@ export default async function AdminAnalyticsPage() {
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular tags
           </h2>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {getTagsByViews(articles).map((tag) => (
+          {popularTags.length > 0 ? (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {popularTags.map((tag) => (
                 <span
                   className="border border-black px-2 py-1 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase"
                   key={tag}
@@ -40,7 +43,17 @@ export default async function AdminAnalyticsPage() {
                   {tag}
                 </span>
               ))}
-          </div>
+            </div>
+          ) : (
+            <EmptyState
+              align="left"
+              className="mt-5"
+              description="Tag activity will appear after articles begin receiving views."
+              kicker="Analytics"
+              size="compact"
+              title="No tag data yet"
+            />
+          )}
         </section>
         <section
           className="surface-transition border border-black/15 p-5"
@@ -49,21 +62,32 @@ export default async function AdminAnalyticsPage() {
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular articles
           </h2>
-          <ol className="mt-5 grid gap-4">
-            {popularArticles.map((article) => (
-              <li
-                className="flex items-start justify-between gap-4 border-b border-black/10 pb-3"
-                key={article.id}
-              >
-                <span className="[font-family:var(--font-editorial-sans)] text-sm leading-6">
-                  {article.title}
-                </span>
-                <span className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
-                  {article.views.toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ol>
+          {popularArticles.length > 0 ? (
+            <ol className="mt-5 grid gap-4">
+              {popularArticles.map((article) => (
+                <li
+                  className="flex items-start justify-between gap-4 border-b border-black/10 pb-3"
+                  key={article.id}
+                >
+                  <span className="[font-family:var(--font-editorial-sans)] text-sm leading-6">
+                    {article.title}
+                  </span>
+                  <span className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
+                    {article.views.toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptyState
+              align="left"
+              className="mt-5"
+              description="View rankings will appear after published stories receive traffic."
+              kicker="Analytics"
+              size="compact"
+              title="No article activity yet"
+            />
+          )}
         </section>
       </div>
     </AdminLayout>

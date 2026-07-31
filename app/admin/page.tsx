@@ -1,6 +1,6 @@
 import { AdminLayout, AdminStatCard } from "@/features/admin";
 import { getAdminStats } from "@/features/articles";
-import { ButtonLink } from "@/shared/components/ui";
+import { ButtonLink, EmptyState } from "@/shared/components/ui";
 
 export default async function AdminOverviewPage() {
   const stats = await getAdminStats();
@@ -55,24 +55,35 @@ export default async function AdminOverviewPage() {
               </h2>
             </div>
             <div className="divide-y divide-black/10">
-              {stats.recentArticles.map((article) => (
-                <article
-                  className="grid gap-3 p-5 md:grid-cols-[1fr_auto] md:items-center"
-                  key={article.id}
-                >
-                  <div>
-                    <h3 className="[font-family:var(--font-editorial-title)] text-2xl font-bold">
-                      {article.title}
-                    </h3>
-                    <p className="mt-1 [font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
-                      {article.category} / {article.author}
-                    </p>
-                  </div>
-                  <span className="w-fit border border-black px-2 py-1 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase">
-                    {article.status}
-                  </span>
-                </article>
-              ))}
+              {stats.recentArticles.length > 0 ? (
+                stats.recentArticles.map((article) => (
+                  <article
+                    className="grid gap-3 p-5 md:grid-cols-[1fr_auto] md:items-center"
+                    key={article.id}
+                  >
+                    <div>
+                      <h3 className="[font-family:var(--font-editorial-title)] text-2xl font-bold">
+                        {article.title}
+                      </h3>
+                      <p className="mt-1 [font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
+                        {article.category} / {article.author}
+                      </p>
+                    </div>
+                    <span className="w-fit border border-black px-2 py-1 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase">
+                      {article.status}
+                    </span>
+                  </article>
+                ))
+              ) : (
+                <EmptyState
+                  align="left"
+                  className="border-0 px-5"
+                  description="New and recently updated records will appear here."
+                  kicker="Editorial desk"
+                  size="compact"
+                  title="No recent articles"
+                />
+              )}
             </div>
           </div>
           <div

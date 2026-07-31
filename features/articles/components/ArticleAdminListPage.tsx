@@ -2,7 +2,7 @@ import Image from "next/image";
 
 import { AdminLayout } from "@/features/admin";
 import { listArticles } from "@/features/articles/server/article-queries";
-import { ButtonLink } from "@/shared/components/ui";
+import { ButtonLink, EmptyState } from "@/shared/components/ui";
 
 export async function ArticleAdminListPage() {
   const articles = await listArticles();
@@ -23,14 +23,17 @@ export async function ArticleAdminListPage() {
       title="Articles"
     >
       {articles.length === 0 ? (
-        <div className="border-y border-black/15 py-16 text-center">
-          <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
-            No articles yet
-          </h2>
-          <p className="mt-3 [font-family:var(--font-editorial-sans)] text-sm text-black/62">
-            Create the first article to populate the Journal database.
-          </p>
-        </div>
+        <EmptyState
+          action={
+            <ButtonLink href="/admin/articles/create">
+              Create first article
+            </ButtonLink>
+          }
+          description="Create the first article to populate the Journal database."
+          headingLevel={2}
+          kicker="Editorial desk"
+          title="No articles yet"
+        />
       ) : (
         <>
           <div className="divide-y divide-black border-y border-black lg:hidden">

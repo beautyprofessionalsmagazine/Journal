@@ -81,7 +81,6 @@ export function Select({
   const generatedId = useId();
   const selectId = id ?? `select-${generatedId.replaceAll(":", "")}`;
   const labelId = `${selectId}-label`;
-  const valueId = `${selectId}-value`;
   const listboxId = `${selectId}-listbox`;
   const errorId = `${selectId}-error`;
   const hintId = `${selectId}-hint`;
@@ -430,7 +429,7 @@ export function Select({
         aria-haspopup="listbox"
         aria-invalid={Boolean(error) || invalid || undefined}
         aria-label={label ? undefined : ariaLabel}
-        aria-labelledby={label ? `${labelId} ${valueId}` : undefined}
+        aria-labelledby={label ? labelId : undefined}
         aria-required={required || undefined}
         className={cn(
           "min-h-12 w-full justify-between gap-3 px-3 text-left text-sm font-normal normal-case tracking-normal hover:translate-y-0",
@@ -450,7 +449,7 @@ export function Select({
       >
         <span className="flex min-w-0 items-center gap-2">
           {selectedOption?.icon ?? icon}
-          <span className="truncate" id={valueId}>
+          <span className="truncate">
             {selectedOption?.label ?? placeholder}
           </span>
         </span>

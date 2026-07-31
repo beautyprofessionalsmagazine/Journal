@@ -36,21 +36,13 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-button,
-input,
-select,
-summary,
-textarea {
-  font: inherit;
-}
-
-button,
+button:not(:disabled),
 summary {
   cursor: pointer;
 }
 
-img {
-  max-width: 100%;
+button:disabled {
+  cursor: not-allowed;
 }
 
 ::selection {
@@ -150,6 +142,12 @@ img {
 .article-form-control:focus {
   border-color: #111111;
   box-shadow: 0 0 0 1px #111111;
+}
+
+.input-control:focus-visible,
+.article-form-control:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
 }
 
 .input-control[aria-invalid="true"],

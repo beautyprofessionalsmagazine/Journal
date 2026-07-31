@@ -152,7 +152,7 @@ export function ArticleTiptapToolbar({
     <div className="border-b border-black/15 bg-[#f8f8f6] [contain:paint]">
       <div
         aria-label="Article formatting"
-        className="flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto p-2 [scrollbar-color:rgba(0,0,0,0.3)_transparent] [scrollbar-width:thin]"
+        className="flex max-w-full snap-x flex-nowrap items-center gap-1 overflow-x-auto overscroll-x-contain p-2 [scrollbar-color:rgba(0,0,0,0.3)_transparent] [scrollbar-width:thin]"
         role="toolbar"
       >
         <ToolbarButton
@@ -395,7 +395,7 @@ function ToolbarButton({
       aria-keyshortcuts={shortcut}
       aria-label={label}
       aria-pressed={active === undefined ? undefined : active}
-      className={`hover:translate-y-0 ${
+      className={`snap-start hover:translate-y-0 ${
         active
           ? "hover:bg-black hover:text-white"
           : "border-transparent hover:border-black/20 hover:bg-white hover:text-black"

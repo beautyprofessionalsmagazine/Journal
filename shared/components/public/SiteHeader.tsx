@@ -2,6 +2,7 @@
 
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   type MouseEvent as ReactMouseEvent,
   useEffect,
@@ -13,6 +14,7 @@ import { Button, ButtonLink } from "@/shared/components/ui";
 import { mainNavigation } from "@/shared/config/navigation";
 
 export function SiteHeader() {
+  const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -96,6 +98,11 @@ export function SiteHeader() {
           </Button>
 
           <Link
+            aria-current={
+              isRouteActive(pathname, "/current-issue")
+                ? "page"
+                : undefined
+            }
             className="focus-ring link-transition hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
             href="/current-issue"
           >
@@ -103,6 +110,7 @@ export function SiteHeader() {
           </Link>
 
           <Link
+            aria-current={pathname === "/" ? "page" : undefined}
             aria-label="Beauty Professionals Magazine home"
             className="focus-ring link-transition mx-auto flex min-h-11 max-w-[13rem] items-center text-center [font-family:var(--font-editorial-title)] text-[clamp(1.45rem,5.8vw,2rem)] font-bold leading-[0.88] tracking-[-0.025em] lg:max-w-none lg:text-[clamp(2.4rem,3.3vw,3.4rem)]"
             href="/"
@@ -112,12 +120,22 @@ export function SiteHeader() {
 
           <div className="flex items-center justify-end gap-4">
             <Link
+              aria-current={
+                isRouteActive(pathname, "/newsletter")
+                  ? "page"
+                  : undefined
+              }
               className="focus-ring link-transition hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
               href="/newsletter"
             >
               Newsletter
             </Link>
             <ButtonLink
+              aria-current={
+                isRouteActive(pathname, "/articles")
+                  ? "page"
+                  : undefined
+              }
               aria-label="Search articles"
               href="/articles"
               variant="icon"
@@ -137,9 +155,18 @@ export function SiteHeader() {
                 {item.subcategories.length > 0 ? (
                   <>
                     <Button
+                      aria-current={
+                        isRouteActive(pathname, item.href)
+                          ? "page"
+                          : undefined
+                      }
                       aria-controls={`desktop-${item.name}-menu`}
                       aria-expanded={openDropdown === item.name}
-                      className="px-1"
+                      className={`px-1 ${
+                        isRouteActive(pathname, item.href)
+                          ? "border-b-black"
+                          : ""
+                      }`}
                       onClick={() => toggleDropdown(item.name)}
                       variant="text"
                     >
@@ -161,6 +188,11 @@ export function SiteHeader() {
                       id={`desktop-${item.name}-menu`}
                     >
                       <Link
+                        aria-current={
+                          isRouteActive(pathname, item.href)
+                            ? "page"
+                            : undefined
+                        }
                         className="focus-ring link-transition block min-h-11 px-3 py-3"
                         href={item.href}
                       >
@@ -179,7 +211,16 @@ export function SiteHeader() {
                   </>
                 ) : (
                   <Link
-                    className="focus-ring link-transition inline-flex min-h-11 items-center"
+                    aria-current={
+                      isRouteActive(pathname, item.href)
+                        ? "page"
+                        : undefined
+                    }
+                    className={`focus-ring link-transition inline-flex min-h-11 min-w-11 items-center justify-center border-b ${
+                      isRouteActive(pathname, item.href)
+                        ? "border-black"
+                        : "border-transparent"
+                    }`}
                     href={item.href}
                   >
                     {item.name}
@@ -205,12 +246,22 @@ export function SiteHeader() {
         >
           <div className="grid grid-cols-2 border-y border-black">
             <Link
+              aria-current={
+                isRouteActive(pathname, "/current-issue")
+                  ? "page"
+                  : undefined
+              }
               className="focus-ring link-transition inline-flex min-h-12 items-center border-r border-black px-3 text-xs font-semibold uppercase tracking-[0.08em]"
               href="/current-issue"
             >
               Current Issue
             </Link>
             <Link
+              aria-current={
+                isRouteActive(pathname, "/newsletter")
+                  ? "page"
+                  : undefined
+              }
               className="focus-ring link-transition inline-flex min-h-12 items-center px-3 text-xs font-semibold uppercase tracking-[0.08em]"
               href="/newsletter"
             >
@@ -224,6 +275,11 @@ export function SiteHeader() {
                 {item.subcategories.length > 0 ? (
                   <>
                     <Button
+                      aria-current={
+                        isRouteActive(pathname, item.href)
+                          ? "page"
+                          : undefined
+                      }
                       aria-controls={`mobile-${item.name}-menu`}
                       aria-expanded={openDropdown === item.name}
                       className="min-h-14 w-full justify-between px-0 text-left [font-family:var(--font-editorial-title)] text-2xl font-bold normal-case tracking-[-0.02em] hover:translate-y-0 hover:border-transparent hover:bg-transparent"
@@ -250,6 +306,11 @@ export function SiteHeader() {
                       <div className="min-h-0">
                         <div className="grid grid-cols-2 gap-x-3 border-t border-black/10 pb-3 pt-2">
                           <Link
+                            aria-current={
+                              isRouteActive(pathname, item.href)
+                                ? "page"
+                                : undefined
+                            }
                             className="focus-ring link-transition col-span-2 flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.08em]"
                             href={item.href}
                           >
@@ -270,7 +331,16 @@ export function SiteHeader() {
                   </>
                 ) : (
                   <Link
-                    className="focus-ring link-transition flex min-h-14 items-center [font-family:var(--font-editorial-title)] text-2xl font-bold"
+                    aria-current={
+                      isRouteActive(pathname, item.href)
+                        ? "page"
+                        : undefined
+                    }
+                    className={`focus-ring link-transition flex min-h-14 items-center [font-family:var(--font-editorial-title)] text-2xl font-bold ${
+                      isRouteActive(pathname, item.href)
+                        ? "underline decoration-1 underline-offset-4"
+                        : ""
+                    }`}
                     href={item.href}
                   >
                     {item.name}
@@ -287,4 +357,8 @@ export function SiteHeader() {
       </div>
     </header>
   );
+}
+
+function isRouteActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }

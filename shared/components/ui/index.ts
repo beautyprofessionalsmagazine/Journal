@@ -13,3 +13,7 @@ export {
   type SelectProps,
 } from "@/shared/components/ui/Select";
 export { MotionProvider } from "@/shared/components/ui/MotionProvider";
+export {
+  EmptyState,
+  type EmptyStateProps,
+} from "@/shared/components/ui/EmptyState";
