@@ -727,7 +727,7 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-black bg-white/95 px-4 py-3 backdrop-blur-sm xl:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-black bg-white/95 px-4 py-3 backdrop-blur-sm lg:left-[17rem] xl:hidden">
         <div className="min-w-0">
           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-black/48">
             {isPublishing ? "Published" : "Draft"}
