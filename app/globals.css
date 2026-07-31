@@ -1,10 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f5f1;
-  --foreground: #111111;
-  --muted: #5f5a52;
-  --border: rgba(17, 17, 17, 0.14);
+  /* TODO: Replace fallbacks when licensed local font files are available. */
+  --font-editorial-title: "Arsenica Trial", Georgia, "Times New Roman", serif;
+  --font-editorial-sans: Raleway, Arial, sans-serif;
+  --font-editorial-body-serif: Garamond, Georgia, serif;
+  --font-editorial-body-sans: Involve, Arial, sans-serif;
+  --background: #ffffff;
+  --paper: #f6f4ef;
+  --foreground: #101010;
+  --muted: #626262;
+  --border: rgba(16, 16, 16, 0.16);
+  --page-padding: clamp(1rem, 3.2vw, 3rem);
+  --section-space: clamp(3.5rem, 7vw, 7.5rem);
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -14,24 +23,318 @@
 html {
   background: var(--background);
   color: var(--foreground);
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  min-width: 0;
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84) 0%, rgba(247, 245, 241, 0.94) 100%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-editorial-sans);
+  text-rendering: optimizeLegibility;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 ::selection {
   background: #111111;
-  color: #f7f5f1;
+  color: #ffffff;
+}
+
+:where(a, button, input, select, summary, textarea):focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+.focus-ring:focus-visible {
+  border-radius: 1px;
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+.link-transition {
+  transition:
+    color 160ms ease,
+    opacity 160ms ease,
+    text-decoration-color 160ms ease;
+}
+
+.surface-transition {
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms var(--ease-editorial);
+}
+
+.site-shell {
+  min-height: 100vh;
+  background-color: var(--paper);
+  background-image: url("/images/journal-bg.PNG");
+  background-attachment: scroll;
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+}
+
+.site-container {
+  width: min(100%, 90rem);
+  margin-inline: auto;
+  padding-inline: var(--page-padding);
+}
+
+.page-title {
+  max-width: 15ch;
+  overflow-wrap: anywhere;
+  font-family: var(--font-editorial-title);
+  font-size: clamp(3rem, 9vw, 7.5rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+}
+
+.section-title {
+  overflow-wrap: anywhere;
+  font-family: var(--font-editorial-title);
+  font-size: clamp(2.3rem, 5vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+.editorial-kicker {
+  font-family: var(--font-editorial-sans);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.input-control,
+.article-form-control {
+  min-height: 3rem;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: 0;
+  background: #ffffff;
+  padding: 0.75rem;
+  color: #111111;
+  font-family: var(--font-editorial-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.input-control:focus,
+.article-form-control:focus {
+  border-color: #111111;
+  box-shadow: 0 0 0 1px #111111;
+}
+
+.input-control:focus-visible,
+.article-form-control:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+.input-control[aria-invalid="true"],
+.article-form-control[aria-invalid="true"] {
+  border-color: #9f1d1d;
+}
+
+.article-editor .ProseMirror {
+  min-height: 25rem;
+  max-width: 100%;
+  color: rgba(17, 17, 17, 0.88);
+  font-family: var(--font-editorial-body-serif);
+  font-size: clamp(1.06rem, 1.4vw, 1.22rem);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.article-editor .ProseMirror > * + * {
+  margin-top: 1.15em;
+}
+
+.article-editor .ProseMirror:focus {
+  outline: none;
+}
+
+.article-editor .ProseMirror p.is-editor-empty:first-child::before {
+  height: 0;
+  float: left;
+  color: rgba(17, 17, 17, 0.38);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.article-editor .ProseMirror ul,
+.article-editor .ProseMirror ol {
+  margin-block: 1.25em 0;
+  padding-left: 1.5rem;
+}
+
+.article-editor .ProseMirror ul {
+  list-style: disc;
+}
+
+.article-editor .ProseMirror ol {
+  list-style: decimal;
+}
+
+.article-editor .ProseMirror li + li {
+  margin-top: 0.35rem;
+}
+
+.article-editor .ProseMirror li > p {
+  margin: 0;
+}
+
+.article-editor .ProseMirror blockquote {
+  margin: 1.35em 0 0;
+  border-left: 2px solid #111111;
+  padding-left: clamp(1rem, 3vw, 1.5rem);
+  color: rgba(17, 17, 17, 0.7);
+  font-family: var(--font-editorial-title);
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.article-editor .ProseMirror h2,
+.article-editor .ProseMirror h3 {
+  margin: 0;
+  font-family: var(--font-editorial-title);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+.article-editor .ProseMirror h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.article-editor .ProseMirror h3 {
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+}
+
+.article-editor .ProseMirror hr {
+  margin-block: 2rem;
+  border: 0;
+  border-top: 1px solid rgba(17, 17, 17, 0.24);
+}
+
+.article-editor .ProseMirror a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.article-editor .ProseMirror p,
+.article-editor .ProseMirror li {
+  margin: 0;
+}
+
+.page-transition {
+  animation: editorial-page-in 260ms ease-out both;
+}
+
+.reveal,
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 520ms ease,
+    transform 520ms var(--ease-editorial);
+}
+
+.reveal.is-visible,
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 {
+  transition-delay: 80ms;
+}
+
+.reveal-delay-2 {
+  transition-delay: 150ms;
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.25s ease-in-out infinite alternate;
+  background: #ecebe7;
+}
+
+@keyframes editorial-page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes skeleton-pulse {
+  from {
+    opacity: 0.42;
+  }
+  to {
+    opacity: 0.86;
+  }
+}
+
+@media (max-width: 639px) {
+  .article-editor .ProseMirror {
+    min-height: 22rem;
+  }
+}
+
+@media (hover: hover) {
+  .link-transition:hover {
+    opacity: 0.62;
+  }
+
+  .surface-transition:hover {
+    border-color: rgba(0, 0, 0, 0.32);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal,
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
 }
