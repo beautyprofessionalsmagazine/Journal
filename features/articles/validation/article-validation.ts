@@ -2,8 +2,8 @@ import { type ZodError, z } from "zod";
 
 import {
   articleStatusValues,
-  type CreateArticleInput,
-  type CreateArticleFieldErrors,
+  type ArticleInput,
+  type ArticleFieldErrors,
   type TiptapDocument,
   type TiptapMark,
   type TiptapNode,
@@ -247,7 +247,7 @@ export function hasMeaningfulTiptapContent(document: TiptapDocument) {
   return document.content.some(hasMeaningfulTiptapNode);
 }
 
-export function getCreateArticleInputFromFormData(formData: FormData): CreateArticleInput {
+export function getArticleInputFromFormData(formData: FormData): ArticleInput {
   return {
     title: readString(formData, "title"),
     slug: readString(formData, "slug"),
@@ -257,28 +257,28 @@ export function getCreateArticleInputFromFormData(formData: FormData): CreateArt
     coverImage: readString(formData, "coverImage"),
     coverImageAlt: readString(formData, "coverImageAlt"),
     tags: readString(formData, "tags"),
-    status: readString(formData, "status") as CreateArticleInput["status"],
+    status: readString(formData, "status") as ArticleInput["status"],
     publishedAt: readString(formData, "publishedAt"),
     contentJson: readString(formData, "contentJson"),
   };
 }
 
-export function validateCreateArticleInput(input: CreateArticleInput) {
+export function validateArticleInput(input: ArticleInput) {
   return createArticleInputSchema.safeParse(input);
 }
 
-export function getCreateArticleFieldErrors(error: ZodError) {
+export function getArticleFieldErrors(error: ZodError) {
   const flattened = error.flatten().fieldErrors as Record<
     string,
     string[] | undefined
   >;
-  const fieldErrors: CreateArticleFieldErrors = {};
+  const fieldErrors: ArticleFieldErrors = {};
 
   for (const [fieldName, messages] of Object.entries(flattened)) {
     const firstMessage = messages?.[0];
 
     if (firstMessage) {
-      fieldErrors[fieldName as keyof CreateArticleFieldErrors] = firstMessage;
+      fieldErrors[fieldName as keyof ArticleFieldErrors] = firstMessage;
     }
   }
 

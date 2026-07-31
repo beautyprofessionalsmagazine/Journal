@@ -151,7 +151,7 @@ export function ArticleTiptapToolbar({
     <div className="border-b border-black/15 bg-[#f8f8f6] [contain:paint]">
       <div
         aria-label="Article formatting"
-        className="flex max-w-full flex-wrap items-center gap-1 overflow-x-hidden p-2 [scrollbar-color:rgba(0,0,0,0.3)_transparent] [scrollbar-width:thin] sm:flex-nowrap sm:overflow-x-auto"
+        className="flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto p-2 [scrollbar-color:rgba(0,0,0,0.3)_transparent] [scrollbar-width:thin]"
         role="toolbar"
       >
         <ToolbarButton
@@ -307,7 +307,7 @@ export function ArticleTiptapToolbar({
             <input
               aria-describedby={linkError ? linkErrorId : undefined}
               aria-invalid={Boolean(linkError)}
-              className="min-h-10 w-full border border-black/20 bg-white px-3 text-sm outline-none transition focus:border-black"
+              className="min-h-11 w-full border border-black/20 bg-white px-3 text-sm outline-none transition focus:border-black"
               id={linkInputId}
               onChange={(event) => {
                 setLinkHref(event.target.value);
@@ -339,7 +339,7 @@ export function ArticleTiptapToolbar({
           </div>
           <div className="flex gap-2">
             <button
-              className="min-h-10 border border-black bg-black px-3 text-xs font-semibold uppercase text-white transition hover:bg-white hover:text-black"
+              className="min-h-11 border border-black bg-black px-3 text-xs font-semibold uppercase text-white transition hover:bg-white hover:text-black"
               onClick={applyLink}
               type="button"
             >
@@ -347,7 +347,7 @@ export function ArticleTiptapToolbar({
             </button>
             {toolbarState?.link ? (
               <button
-                className="min-h-10 border border-black/20 px-3 text-xs font-semibold uppercase transition hover:border-black"
+                className="min-h-11 border border-black/20 px-3 text-xs font-semibold uppercase transition hover:border-black"
                 onClick={removeLink}
                 type="button"
               >
@@ -356,7 +356,7 @@ export function ArticleTiptapToolbar({
             ) : null}
             <button
               aria-label="Close link editor"
-              className="inline-flex size-10 items-center justify-center border border-black/20 transition hover:border-black"
+              className="inline-flex size-11 items-center justify-center border border-black/20 transition hover:border-black"
               onClick={closeLinkEditor}
               type="button"
             >
@@ -398,7 +398,7 @@ function ToolbarButton({
       aria-keyshortcuts={shortcut}
       aria-label={label}
       aria-pressed={active === undefined ? undefined : active}
-      className={`inline-flex size-10 shrink-0 items-center justify-center border outline-none transition focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
+      className={`inline-flex size-11 shrink-0 items-center justify-center border outline-none transition focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
         active
           ? "border-black bg-black text-white"
           : "border-transparent text-black hover:border-black/20 hover:bg-white"

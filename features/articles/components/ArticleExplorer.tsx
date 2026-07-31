@@ -11,6 +11,7 @@ type ArticleExplorerProps = {
   filters?: PublishedArticleFilters;
   fixedCategory?: string;
   title?: string;
+  editorial?: boolean;
 };
 
 export async function ArticleExplorer({
@@ -18,6 +19,7 @@ export async function ArticleExplorer({
   filters = {},
   fixedCategory,
   title = "Latest Articles",
+  editorial = false,
 }: ArticleExplorerProps) {
   const effectiveFilters = {
     ...filters,
@@ -39,11 +41,14 @@ export async function ArticleExplorer({
       : options.tags;
 
   return (
-    <section className="flex flex-col gap-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <h2 className="[font-family:var(--font-editorial-title)] text-4xl font-bold text-black sm:text-5xl">
+    <section className="flex flex-col gap-[clamp(2rem,4vw,3.5rem)]">
+      <div className="flex flex-col gap-4 border-b border-black pb-5 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="editorial-kicker mb-2 text-black/45">The edit</p>
+          <h2 className="section-title">
           {title}
-        </h2>
+          </h2>
+        </div>
         <p className="max-w-lg [font-family:var(--font-editorial-sans)] text-sm leading-6 text-black/62">
           Search by title, description, author, tags, or category.
         </p>
@@ -52,13 +57,16 @@ export async function ArticleExplorer({
         categories={categories}
         category={selectedCategory ?? "all"}
         categoryLocked={Boolean(fixedCategory)}
+        key={`${filters.query ?? ""}:${selectedCategory ?? ""}:${filters.tag ?? ""}:${filters.sort ?? ""}`}
         query={filters.query ?? ""}
         resultCount={articles.length}
         sort={filters.sort ?? "latest"}
         tag={filters.tag ?? "all"}
         tags={tags}
       />
-      <ArticleGrid articles={articles} />
+      <div aria-live="polite" id="article-results">
+        <ArticleGrid articles={articles} editorial={editorial} />
+      </div>
     </section>
   );
 }

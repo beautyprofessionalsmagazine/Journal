@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { PublicInfoPage } from "@/shared/components/public";
 
 export function AccountPage() {
@@ -6,18 +8,18 @@ export function AccountPage() {
       description="Reader and contributor account access will live here when authentication is connected."
       title="Account"
     >
-      <div className="max-w-md border border-black/15 p-5">
-        <label className="flex flex-col gap-2 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase">
-          Email
-          <input
-            className="input-control"
-            placeholder="name@example.com"
-            type="email"
-          />
-        </label>
-        <button className="mt-5 border border-black bg-black px-5 py-3 [font-family:var(--font-editorial-sans)] text-sm font-semibold uppercase text-white">
-          Continue
-        </button>
+      <div className="max-w-2xl border-y border-black py-10">
+        <p className="editorial-kicker text-black/45">Access not yet open</p>
+        <h2 className="mt-4 [font-family:var(--font-editorial-title)] text-[clamp(2rem,5vw,3.6rem)] font-bold leading-none">
+          Reader accounts are still in development.
+        </h2>
+        <p className="mt-5 text-sm leading-7 text-black/62">
+          No credentials are being collected at this stage. The public
+          Journal remains available without an account.
+        </p>
+        <Link className="button-primary mt-7" href="/articles">
+          Continue reading
+        </Link>
       </div>
     </PublicInfoPage>
   );

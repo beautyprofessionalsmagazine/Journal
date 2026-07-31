@@ -1,13 +1,23 @@
 export function ArticlesLoading() {
   return (
-    <main className="bg-white px-5 py-14 text-black sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-8">
-        <div className="h-36 max-w-3xl border-y border-black/15" />
-        <div className="h-20 border-y border-black/15" />
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          <div className="h-96 border border-black/15" />
-          <div className="h-96 border border-black/15" />
-          <div className="h-96 border border-black/15" />
+    <main
+      aria-busy="true"
+      aria-label="Loading articles"
+      className="bg-white py-[var(--section-space)] text-black"
+    >
+      <div className="site-container">
+        <div className="skeleton-pulse h-28 max-w-3xl" />
+        <div className="mt-14 h-16 border-y border-black/15 py-3">
+          <div className="skeleton-pulse h-full w-48" />
+        </div>
+        <div className="mt-10 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((item) => (
+            <div className="space-y-4" key={item}>
+              <div className="skeleton-pulse aspect-[4/3]" />
+              <div className="skeleton-pulse h-9 w-4/5" />
+              <div className="skeleton-pulse h-5 w-2/3" />
+            </div>
+          ))}
         </div>
       </div>
     </main>

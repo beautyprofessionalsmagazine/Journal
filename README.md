@@ -1,6 +1,7 @@
 # Beauty Professionals Magazine / Journal
 
-A minimal premium black-and-white editorial website built with Next.js. The current setup renders the same Under Development page on `/` and on all unmatched routes.
+A premium black-and-white editorial website built with Next.js, Drizzle,
+TipTap, and Vercel Blob.
 
 ## Stack
 
@@ -23,6 +24,12 @@ npm run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000).
+
+Public article pages use the development fixtures in
+`features/articles/data/article-fixtures.ts` during `next dev`. The fixtures
+are rendered in memory and are never inserted into the database. Set
+`USE_DATABASE_ARTICLES=true` when you want the public site to read local
+database records instead. Admin pages always use database records.
 
 ## Build
 

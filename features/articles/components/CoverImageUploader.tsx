@@ -339,7 +339,7 @@ export function CoverImageUploader({
         <div className="flex shrink-0 gap-2">
           <button
             aria-label={hasImage ? "Replace cover image" : "Choose cover image"}
-            className="inline-flex size-10 items-center justify-center border border-black/15 outline-none transition hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+            className="inline-flex size-11 items-center justify-center border border-black/15 outline-none transition hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
             onClick={openFilePicker}
             title={hasImage ? "Replace image" : "Choose image"}
             type="button"
@@ -349,7 +349,7 @@ export function CoverImageUploader({
           {hasImage || isUploading || uploadError ? (
             <button
               aria-label="Remove cover image"
-              className="inline-flex size-10 items-center justify-center border border-black/15 outline-none transition hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+              className="inline-flex size-11 items-center justify-center border border-black/15 outline-none transition hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
               onClick={removeImage}
               title="Remove image"
               type="button"

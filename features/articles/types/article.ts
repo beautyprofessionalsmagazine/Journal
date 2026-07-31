@@ -64,9 +64,11 @@ export type Article = {
   contentJson: unknown | null;
   createdAt: Date;
   updatedAt: Date;
+  /** Development-fixture hint. Production feature selection falls back to popularity. */
+  featured?: boolean;
 };
 
-export type CreateArticleInput = {
+export type ArticleInput = {
   title: string;
   slug: string;
   category: string;
@@ -80,7 +82,7 @@ export type CreateArticleInput = {
   contentJson?: TiptapDocument | string | null;
 };
 
-export type CreateArticleFormValues = {
+export type ArticleFormValues = {
   title: string;
   slug: string;
   category: string;
@@ -94,14 +96,14 @@ export type CreateArticleFormValues = {
   contentJson: TiptapDocument;
 };
 
-export type CreateArticleFieldErrors = Partial<
-  Record<keyof CreateArticleFormValues, string>
+export type ArticleFieldErrors = Partial<
+  Record<keyof ArticleFormValues, string>
 >;
 
-export type CreateArticleFormState = {
+export type ArticleFormState = {
   status: "idle" | "error";
   message?: string;
-  fieldErrors: CreateArticleFieldErrors;
+  fieldErrors: ArticleFieldErrors;
 };
 
 export const emptyTiptapDocument: TiptapDocument = {
@@ -113,7 +115,7 @@ export const emptyTiptapDocument: TiptapDocument = {
   ],
 };
 
-export const emptyCreateArticleFormValues: CreateArticleFormValues = {
+export const emptyArticleFormValues: ArticleFormValues = {
   title: "",
   slug: "",
   category: "Beauty",
@@ -127,7 +129,41 @@ export const emptyCreateArticleFormValues: CreateArticleFormValues = {
   contentJson: emptyTiptapDocument,
 };
 
-export const initialCreateArticleFormState: CreateArticleFormState = {
+export const initialArticleFormState: ArticleFormState = {
   status: "idle",
   fieldErrors: {},
 };
+
+export function getArticleFormValues(article: Article): ArticleFormValues {
+  return {
+    title: article.title,
+    slug: article.slug,
+    category: article.category,
+    author: article.author,
+    description: article.description ?? "",
+    coverImage: article.coverImage ?? "",
+    coverImageAlt: article.coverImageAlt ?? "",
+    tags: article.tags.join(", "),
+    status: article.status,
+    publishedAt: article.publishedAt
+      ? toLocalDateTimeInputValue(article.publishedAt)
+      : "",
+    contentJson: isTiptapDocumentShape(article.contentJson)
+      ? article.contentJson
+      : emptyTiptapDocument,
+  };
+}
+
+function isTiptapDocumentShape(value: unknown): value is TiptapDocument {
+  return (
+    Boolean(value) &&
+    typeof value === "object" &&
+    (value as { type?: unknown }).type === "doc" &&
+    Array.isArray((value as { content?: unknown }).content)
+  );
+}
+
+function toLocalDateTimeInputValue(value: Date) {
+  const offset = value.getTimezoneOffset() * 60_000;
+  return new Date(value.getTime() - offset).toISOString().slice(0, 16);
+}

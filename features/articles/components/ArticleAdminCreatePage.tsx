@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AdminLayout } from "@/features/admin";
-import { ArticleCreateForm } from "@/features/articles/components/ArticleCreateForm";
+import { ArticleEditorForm } from "@/features/articles/components/ArticleEditorForm";
 
 export function ArticleAdminCreatePage() {
   return (
@@ -17,7 +17,7 @@ export function ArticleAdminCreatePage() {
       description="Shape the story, prepare its cover, and choose when it enters the Journal."
       title="Create Article"
     >
-      <ArticleCreateForm />
+      <ArticleEditorForm />
     </AdminLayout>
   );
 }

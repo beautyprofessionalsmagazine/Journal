@@ -8,11 +8,15 @@ type ArticleBodyProps = {
 
 export function ArticleBody({ content }: ArticleBodyProps) {
   if (content?.type !== "doc") {
-    return null;
+    return (
+      <div className="mx-auto max-w-[54rem] border-y border-black/15 py-10 text-sm leading-7 text-black/58">
+        This article body is not available.
+      </div>
+    );
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-7">
+    <div className="mx-auto flex max-w-[54rem] min-w-0 flex-col gap-[clamp(1.4rem,3vw,2rem)] [overflow-wrap:anywhere]">
       {content.content.map((node, index) =>
         renderTiptapNode(node, `node-${index}`),
       )}
@@ -28,7 +32,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     case "paragraph":
       return (
         <p
-          className="[font-family:var(--font-editorial-body-serif)] text-xl leading-9 text-black/82"
+          className="[font-family:var(--font-editorial-body-serif)] text-[clamp(1.12rem,2vw,1.32rem)] leading-[1.78] text-black/82"
           key={key}
           style={style}
         >
@@ -40,8 +44,8 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
       const HeadingTag = getHeadingTag(level);
       const headingClassName =
         level === 2
-          ? "border-t border-black pt-8 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-tight text-black"
-          : "[font-family:var(--font-editorial-title)] text-3xl font-bold leading-tight text-black";
+          ? "mt-[clamp(2rem,5vw,4rem)] border-t border-black pt-[clamp(1.5rem,4vw,2.5rem)] [font-family:var(--font-editorial-title)] text-[clamp(2.3rem,6vw,4.5rem)] font-bold leading-[0.98] tracking-[-0.035em] text-black"
+          : "mt-[clamp(1rem,3vw,2rem)] [font-family:var(--font-editorial-title)] text-[clamp(1.8rem,4vw,3rem)] font-bold leading-[1.02] tracking-[-0.025em] text-black";
 
       return (
         <HeadingTag className={headingClassName} key={key} style={style}>
@@ -52,7 +56,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     case "bulletList":
       return (
         <ul
-          className="list-disc pl-6 [font-family:var(--font-editorial-body-serif)] text-xl leading-9 text-black/82"
+          className="list-disc space-y-3 pl-6 [font-family:var(--font-editorial-body-serif)] text-[clamp(1.1rem,2vw,1.28rem)] leading-[1.7] text-black/82 marker:text-black"
           key={key}
         >
           {node.content?.map((childNode, index) =>
@@ -63,7 +67,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     case "orderedList":
       return (
         <ol
-          className="list-decimal pl-6 [font-family:var(--font-editorial-body-serif)] text-xl leading-9 text-black/82"
+          className="list-decimal space-y-3 pl-6 [font-family:var(--font-editorial-body-serif)] text-[clamp(1.1rem,2vw,1.28rem)] leading-[1.7] text-black/82 marker:font-semibold marker:text-black"
           key={key}
         >
           {node.content?.map((childNode, index) =>
@@ -74,7 +78,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     case "listItem":
       return (
         <li className="pl-1" key={key}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 [&_p]:text-[inherit] [&_p]:leading-[inherit]">
             {node.content?.map((childNode, index) =>
               renderTiptapNode(childNode, `${key}-item-${index}`),
             )}
@@ -84,7 +88,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
     case "blockquote":
       return (
         <blockquote
-          className="my-5 border-y border-black py-8 [font-family:var(--font-editorial-title)] text-3xl font-bold leading-tight text-black sm:text-4xl"
+          className="my-[clamp(1.5rem,4vw,3rem)] border-y border-black py-[clamp(2rem,5vw,4rem)] [font-family:var(--font-editorial-title)] text-[clamp(2rem,6vw,4.25rem)] font-bold leading-[1.02] tracking-[-0.035em] text-black [&_p]:text-[inherit] [&_p]:leading-[inherit]"
           key={key}
           style={style}
         >
@@ -96,7 +100,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
         </blockquote>
       );
     case "horizontalRule":
-      return <hr className="border-black/15" key={key} />;
+      return <hr className="my-4 border-black/20" key={key} />;
     case "text":
       return <Fragment key={key}>{applyMarks(node.text ?? "", node.marks, key)}</Fragment>;
     default:
@@ -145,18 +149,21 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: string) 
         return <u key={markKey}>{children}</u>;
       case "strike":
         return <s key={markKey}>{children}</s>;
-      case "link":
+      case "link": {
+        const href = mark.attrs?.href ?? "#";
+        const isInternal = href.startsWith("/") || href.startsWith("#");
         return (
           <a
-            className="underline underline-offset-4"
-            href={mark.attrs?.href ?? "#"}
+            className="rounded-sm underline decoration-1 underline-offset-4 transition-colors hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            href={href}
             key={markKey}
-            rel={mark.attrs?.rel ?? "noopener noreferrer"}
-            target={mark.attrs?.target ?? "_blank"}
+            rel={isInternal ? undefined : mark.attrs?.rel ?? "noopener noreferrer"}
+            target={isInternal ? undefined : mark.attrs?.target ?? "_blank"}
           >
             {children}
           </a>
         );
+      }
       default:
         return <Fragment key={markKey}>{children}</Fragment>;
     }

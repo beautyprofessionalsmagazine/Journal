@@ -30,7 +30,76 @@ export async function ArticleAdminListPage() {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto border border-black/15">
+        <>
+          <div className="divide-y divide-black border-y border-black lg:hidden">
+            {articles.map((article) => (
+              <article className="py-6" key={article.id}>
+                <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-[#eceae4]">
+                    {article.coverImage ? (
+                      <Image
+                        alt={article.coverImageAlt ?? article.title}
+                        className="object-cover"
+                        fill
+                        sizes="88px"
+                        src={article.coverImage}
+                      />
+                    ) : (
+                      <span className="flex h-full items-center justify-center [font-family:var(--font-editorial-title)] text-5xl font-bold text-black/15">
+                        {article.category.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="border border-black px-2 py-1 text-[0.62rem] font-semibold uppercase">
+                        {article.status}
+                      </span>
+                      <span className="text-xs text-black/48">
+                        {article.category}
+                      </span>
+                    </div>
+                    <h2 className="mt-3 [overflow-wrap:anywhere] [font-family:var(--font-editorial-title)] text-2xl font-bold leading-[1.02]">
+                      {article.title}
+                    </h2>
+                    <p className="mt-2 truncate text-xs text-black/48">
+                      /{article.slug}
+                    </p>
+                  </div>
+                </div>
+                <dl className="mt-5 grid grid-cols-3 border-y border-black/10 py-3 text-xs">
+                  <div>
+                    <dt className="font-semibold uppercase text-black/45">
+                      Author
+                    </dt>
+                    <dd className="mt-1">{article.author}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold uppercase text-black/45">
+                      Views
+                    </dt>
+                    <dd className="mt-1">{article.views.toLocaleString()}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold uppercase text-black/45">
+                      Updated
+                    </dt>
+                    <dd className="mt-1">
+                      {article.updatedAt.toLocaleDateString()}
+                    </dd>
+                  </div>
+                </dl>
+                <Link
+                  className="button-primary mt-4 w-full"
+                  href={`/admin/articles/${article.id}/edit`}
+                >
+                  Edit article
+                </Link>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto border border-black/15 lg:block">
           <table className="w-full min-w-[980px] border-collapse text-left">
             <thead className="border-b border-black/15 bg-black text-white">
               <tr className="[font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase">
@@ -112,14 +181,15 @@ export async function ArticleAdminListPage() {
                       className="inline-flex min-h-11 items-center justify-center border border-black/20 px-4 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase transition hover:border-black"
                       href={`/admin/articles/${article.id}/edit`}
                     >
-                      View
+                      Edit
                     </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </AdminLayout>
   );

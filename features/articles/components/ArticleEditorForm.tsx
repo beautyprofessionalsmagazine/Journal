@@ -24,42 +24,65 @@ import {
   CoverImageUploader,
   type CoverImageUploadState,
 } from "@/features/articles/components/CoverImageUploader";
-import { createArticleAction } from "@/features/articles/server/article-actions";
 import {
-  emptyCreateArticleFormValues,
-  type CreateArticleFieldErrors,
-  type CreateArticleFormValues,
-  initialCreateArticleFormState,
+  createArticleAction,
+  updateArticleAction,
+} from "@/features/articles/server/article-actions";
+import {
+  emptyArticleFormValues,
+  getArticleFormValues,
+  type Article,
+  type ArticleFieldErrors,
+  type ArticleFormValues,
+  initialArticleFormState,
 } from "@/features/articles/types/article";
 import {
-  getCreateArticleFieldErrors,
+  getArticleFieldErrors,
   hasMeaningfulTiptapContent,
   normalizeSlug,
-  validateCreateArticleInput,
+  validateArticleInput,
 } from "@/features/articles/validation/article-validation";
 import { categoryConfigs } from "@/features/categories/data/categories";
 
-const initialValues: CreateArticleFormValues = {
-  ...emptyCreateArticleFormValues,
+const emptyInitialValues: ArticleFormValues = {
+  ...emptyArticleFormValues,
   contentJson: {
-    ...emptyCreateArticleFormValues.contentJson,
-    content: [...emptyCreateArticleFormValues.contentJson.content],
+    ...emptyArticleFormValues.contentJson,
+    content: [...emptyArticleFormValues.contentJson.content],
   },
 };
-const initialValuesSnapshot = JSON.stringify(initialValues);
 
-export function ArticleCreateForm() {
+type ArticleEditorFormProps = {
+  article?: Article;
+};
+
+export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
+  const initialValues = useMemo(
+    () => (article ? getArticleFormValues(article) : emptyInitialValues),
+    [article],
+  );
+  const initialValuesSnapshot = useMemo(
+    () => JSON.stringify(initialValues),
+    [initialValues],
+  );
+  const articleAction = useMemo(
+    () =>
+      article
+        ? updateArticleAction.bind(null, article.id)
+        : createArticleAction,
+    [article],
+  );
   const [serverState, formAction, isPending] = useActionState(
-    createArticleAction,
-    initialCreateArticleFormState,
+    articleAction,
+    initialArticleFormState,
   );
   const [values, setValues] =
-    useState<CreateArticleFormValues>(initialValues);
+    useState<ArticleFormValues>(initialValues);
   const [isSlugManual, setIsSlugManual] = useState(false);
   const [clientErrors, setClientErrors] =
-    useState<CreateArticleFieldErrors>({});
+    useState<ArticleFieldErrors>({});
   const [changedSinceServer, setChangedSinceServer] = useState<
-    Partial<Record<keyof CreateArticleFormValues, boolean>>
+    Partial<Record<keyof ArticleFormValues, boolean>>
   >({});
   const [clientMessage, setClientMessage] = useState<string | null>(null);
   const [coverUploadState, setCoverUploadState] =
@@ -81,7 +104,7 @@ export function ArticleCreateForm() {
   );
   const isDirty = useMemo(
     () => JSON.stringify(values) !== initialValuesSnapshot,
-    [values],
+    [initialValuesSnapshot, values],
   );
   const readinessItems = useMemo(
     () => [
@@ -124,9 +147,9 @@ export function ArticleCreateForm() {
     }
   }, [serverState]);
 
-  function updateField<Key extends keyof CreateArticleFormValues>(
+  function updateField<Key extends keyof ArticleFormValues>(
     field: Key,
-    value: CreateArticleFormValues[Key],
+    value: ArticleFormValues[Key],
   ) {
     setValues((currentValues) => ({
       ...currentValues,
@@ -158,7 +181,7 @@ export function ArticleCreateForm() {
     updateField("slug", normalizeSlug(values.title));
   }
 
-  function clearFieldError(field: keyof CreateArticleFormValues) {
+  function clearFieldError(field: keyof ArticleFormValues) {
     setClientErrors((currentErrors) => {
       if (!currentErrors[field]) {
         return currentErrors;
@@ -175,11 +198,11 @@ export function ArticleCreateForm() {
     setClientMessage(null);
   }
 
-  function validateField(field: keyof CreateArticleFormValues) {
-    const validationResult = validateCreateArticleInput(values);
+  function validateField(field: keyof ArticleFormValues) {
+    const validationResult = validateArticleInput(values);
     const fieldError = validationResult.success
       ? undefined
-      : getCreateArticleFieldErrors(validationResult.error)[field];
+      : getArticleFieldErrors(validationResult.error)[field];
 
     setClientErrors((currentErrors) => ({
       ...currentErrors,
@@ -187,7 +210,7 @@ export function ArticleCreateForm() {
     }));
   }
 
-  function getFieldError(field: keyof CreateArticleFormValues) {
+  function getFieldError(field: keyof ArticleFormValues) {
     return (
       clientErrors[field] ??
       (changedSinceServer[field]
@@ -218,11 +241,11 @@ export function ArticleCreateForm() {
       return;
     }
 
-    const validationResult = validateCreateArticleInput(values);
+    const validationResult = validateArticleInput(values);
 
     if (!validationResult.success) {
       event.preventDefault();
-      setClientErrors(getCreateArticleFieldErrors(validationResult.error));
+      setClientErrors(getArticleFieldErrors(validationResult.error));
       setChangedSinceServer({});
       setClientMessage("Review the highlighted fields before saving.");
       window.requestAnimationFrame(() => focusFirstInvalidField(formRef.current));
@@ -237,6 +260,7 @@ export function ArticleCreateForm() {
   }
 
   const isPublishing = values.status === "published";
+  const isEditing = Boolean(article);
   const submitDisabled =
     isPending ||
     isSubmitLocked ||
@@ -254,7 +278,7 @@ export function ArticleCreateForm() {
   return (
     <form
       action={formAction}
-      className="min-w-0"
+      className="min-w-0 pb-24 xl:pb-0"
       noValidate
       onSubmit={handleSubmit}
       ref={formRef}
@@ -309,7 +333,7 @@ export function ArticleCreateForm() {
                   }
                   aria-invalid={Boolean(getFieldError("title"))}
                   autoFocus
-                  className="w-full border-0 border-b border-black/20 bg-transparent pb-3 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-[1.05] outline-none transition placeholder:text-black/25 focus:border-black sm:text-5xl lg:text-6xl"
+                  className="min-h-11 w-full border-0 border-b border-black/20 bg-transparent pb-3 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-[1.05] outline-none transition placeholder:text-black/25 focus:border-black sm:text-5xl lg:text-6xl"
                   id="article-title"
                   name="title"
                   onBlur={() => validateField("title")}
@@ -332,7 +356,7 @@ export function ArticleCreateForm() {
                 <FormField
                   action={
                     <button
-                      className="inline-flex items-center gap-1 text-[0.65rem] font-semibold uppercase text-black/55 underline decoration-black/25 underline-offset-4 transition hover:text-black"
+                      className="inline-flex min-h-11 items-center gap-1 px-2 text-[0.65rem] font-semibold uppercase text-black/55 underline decoration-black/25 underline-offset-4 transition hover:text-black"
                       onClick={resumeAutomaticSlug}
                       type="button"
                     >
@@ -582,7 +606,7 @@ export function ArticleCreateForm() {
                   onChange={(event) =>
                     updateField(
                       "status",
-                      event.target.value as CreateArticleFormValues["status"],
+                      event.target.value as ArticleFormValues["status"],
                     )
                   }
                   required
@@ -684,21 +708,53 @@ export function ArticleCreateForm() {
                 ) : isPublishing ? (
                   <>
                     <Send aria-hidden="true" size={16} />
-                    Publish article
+                    {isEditing ? "Update & publish" : "Publish article"}
                   </>
                 ) : (
                   <>
                     <Save aria-hidden="true" size={16} />
-                    Save draft
+                    {isEditing ? "Update draft" : "Save draft"}
                   </>
                 )}
               </button>
               <p className="text-center text-[0.7rem] leading-5 text-black/45">
-                You’ll review the stored article after saving.
+                {isEditing
+                  ? "Changes replace the stored article after validation."
+                  : "You’ll review the stored article after saving."}
               </p>
             </div>
           </section>
         </aside>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-black bg-white/95 px-4 py-3 backdrop-blur-sm xl:hidden">
+        <div className="min-w-0">
+          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-black/48">
+            {isPublishing ? "Published" : "Draft"}
+          </p>
+          <p className="truncate text-sm font-semibold">
+            {values.title || "Untitled article"}
+          </p>
+        </div>
+        <button
+          className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border border-black bg-black px-4 text-xs font-semibold uppercase text-white outline-none transition hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={submitDisabled}
+          type="submit"
+        >
+          {isPending || isSubmitLocked ? (
+            <span
+              aria-label="Saving"
+              className="size-4 animate-spin rounded-full border-2 border-white/35 border-t-white"
+            />
+          ) : (
+            <Save aria-hidden="true" size={15} />
+          )}
+          {isPending || isSubmitLocked
+            ? "Saving"
+            : isEditing
+              ? "Save changes"
+              : "Save article"}
+        </button>
       </div>
     </form>
   );

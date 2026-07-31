@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm";
 
 import { articlesTable } from "@/features/articles/db/article-schema";
+import { developmentArticleFixtures } from "@/features/articles/data/article-fixtures";
 import type {
   Article,
   ArticleStatus,
@@ -59,6 +60,10 @@ export async function getArticleById(id: string): Promise<Article | null> {
 export async function listPublishedArticles(
   filters: PublishedArticleFilters = {},
 ): Promise<Article[]> {
+  if (shouldUseDevelopmentFixtures()) {
+    return filterDevelopmentArticles(filters);
+  }
+
   const conditions: SQL[] = [eq(articlesTable.status, "published")];
   const category = filters.category?.trim();
   const tag = filters.tag?.trim();
@@ -111,6 +116,15 @@ export async function listPublishedArticles(
 export async function getPublishedArticleBySlug(
   slug: string,
 ): Promise<Article | null> {
+  if (shouldUseDevelopmentFixtures()) {
+    return (
+      developmentArticleFixtures.find(
+        (article) =>
+          article.status === "published" && article.slug === slug,
+      ) ?? null
+    );
+  }
+
   const [article] = await db
     .select()
     .from(articlesTable)
@@ -126,6 +140,23 @@ export async function getPublishedArticleBySlug(
 }
 
 export async function getFeaturedArticle(): Promise<Article | null> {
+  if (shouldUseDevelopmentFixtures()) {
+    const selectedArticle = developmentArticleFixtures.find(
+      (article) => article.status === "published" && article.featured,
+    );
+
+    if (selectedArticle) {
+      return selectedArticle;
+    }
+
+    const [popularArticle] = await filterDevelopmentArticles({
+      limit: 1,
+      sort: "popular",
+    });
+
+    return popularArticle ?? null;
+  }
+
   const [article] = await listPublishedArticles({
     limit: 1,
     sort: "popular",
@@ -138,6 +169,25 @@ export async function getRelatedArticles(
   article: Article,
   limit = 3,
 ): Promise<Article[]> {
+  if (shouldUseDevelopmentFixtures()) {
+    return developmentArticleFixtures
+      .filter(
+        (candidate) =>
+          candidate.status === "published" &&
+          candidate.id !== article.id &&
+          (candidate.category === article.category ||
+            candidate.tags.some((tag) => article.tags.includes(tag))),
+      )
+      .sort(
+        (a, b) =>
+          Number(b.category === article.category) -
+            Number(a.category === article.category) ||
+          (b.publishedAt?.getTime() ?? 0) -
+            (a.publishedAt?.getTime() ?? 0),
+      )
+      .slice(0, limit);
+  }
+
   const relatedMatch =
     article.tags.length > 0
       ? or(
@@ -161,6 +211,21 @@ export async function getRelatedArticles(
 }
 
 export async function getPublishedArticleFilterOptions() {
+  if (shouldUseDevelopmentFixtures()) {
+    const articles = developmentArticleFixtures.filter(
+      (article) => article.status === "published",
+    );
+
+    return {
+      categories: Array.from(
+        new Set(articles.map((article) => article.category)),
+      ).sort(),
+      tags: Array.from(
+        new Set(articles.flatMap((article) => article.tags)),
+      ).sort(),
+    };
+  }
+
   const rows = await db
     .select({
       category: articlesTable.category,
@@ -178,6 +243,12 @@ export async function getPublishedArticleFilterOptions() {
 }
 
 export async function getPublishedArticleRouteParams() {
+  if (shouldUseDevelopmentFixtures()) {
+    return developmentArticleFixtures
+      .filter((article) => article.status === "published")
+      .map(({ slug }) => ({ slug }));
+  }
+
   return db
     .select({
       slug: articlesTable.slug,
@@ -224,4 +295,67 @@ function getMostPopularTag(articles: Article[]) {
   });
 
   return [...tagViews.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "None";
+}
+
+function shouldUseDevelopmentFixtures() {
+  return (
+    process.env.NODE_ENV === "development" &&
+    process.env.USE_DATABASE_ARTICLES !== "true"
+  );
+}
+
+async function filterDevelopmentArticles(
+  filters: PublishedArticleFilters,
+): Promise<Article[]> {
+  const category = filters.category?.trim().toLowerCase();
+  const tag = filters.tag?.trim().toLowerCase();
+  const query = filters.query?.trim().toLowerCase();
+  let articles = developmentArticleFixtures.filter(
+    (article) => article.status === "published",
+  );
+
+  if (category) {
+    articles = articles.filter(
+      (article) => article.category.toLowerCase() === category,
+    );
+  }
+
+  if (tag) {
+    articles = articles.filter((article) =>
+      article.tags.some((item) => item.toLowerCase() === tag),
+    );
+  }
+
+  if (query) {
+    articles = articles.filter((article) =>
+      [
+        article.title,
+        article.description ?? "",
+        article.author,
+        article.category,
+        article.tags.join(" "),
+        JSON.stringify(article.contentJson),
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query),
+    );
+  }
+
+  if (filters.excludeId) {
+    articles = articles.filter(
+      (article) => article.id !== filters.excludeId,
+    );
+  }
+
+  articles.sort((a, b) =>
+    filters.sort === "popular"
+      ? b.views - a.views ||
+        (b.publishedAt?.getTime() ?? 0) -
+          (a.publishedAt?.getTime() ?? 0)
+      : (b.publishedAt?.getTime() ?? 0) -
+        (a.publishedAt?.getTime() ?? 0),
+  );
+
+  return filters.limit ? articles.slice(0, filters.limit) : articles;
 }

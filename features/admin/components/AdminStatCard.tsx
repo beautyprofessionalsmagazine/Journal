@@ -6,11 +6,11 @@ type AdminStatCardProps = {
 
 export function AdminStatCard({ label, value, detail }: AdminStatCardProps) {
   return (
-    <article className="border border-black/15 bg-white p-5">
+    <article className="border-t border-black bg-white py-5">
       <p className="[font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase text-black/58">
         {label}
       </p>
-      <p className="mt-4 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-none text-black">
+      <p className="mt-4 [overflow-wrap:anywhere] [font-family:var(--font-editorial-title)] text-[clamp(2.6rem,5vw,4.4rem)] font-bold leading-none text-black">
         {value}
       </p>
       {detail ? (

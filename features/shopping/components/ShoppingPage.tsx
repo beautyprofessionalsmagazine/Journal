@@ -11,20 +11,27 @@ export function ShoppingPage({ filters }: ShoppingPageProps) {
 
   return (
     <main className="bg-white">
-      <section className="mx-auto flex max-w-[1440px] flex-col gap-10 px-5 py-14 sm:px-8 lg:px-12">
-        <div className="max-w-3xl border-b border-black pb-8">
-          <h1 className="[font-family:var(--font-editorial-title)] text-6xl font-bold leading-none text-black sm:text-7xl">
+      <section className="site-container py-[var(--section-space)]">
+        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div>
+            <p className="editorial-kicker mb-3 text-black/45">
+              Considered objects
+            </p>
+            <h1 className="page-title">
             Shopping
-          </h1>
-          <p className="mt-5 [font-family:var(--font-editorial-sans)] text-lg leading-8 text-black/68">
+            </h1>
+          </div>
+          <p className="max-w-xl text-[clamp(1rem,1.8vw,1.25rem)] leading-8 text-black/64 lg:justify-self-end">
             {shoppingCategory?.description}
           </p>
+        </header>
+        <div className="mt-[clamp(3rem,6vw,6rem)]">
+          <ArticleExplorer
+            filters={filters}
+            fixedCategory="Shopping"
+            title="Shopping Stories"
+          />
         </div>
-        <ArticleExplorer
-          filters={filters}
-          fixedCategory="Shopping"
-          title="Shopping Articles"
-        />
       </section>
     </main>
   );

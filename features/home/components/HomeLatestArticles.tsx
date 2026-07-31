@@ -14,11 +14,15 @@ export async function HomeLatestArticles({
   const featuredArticle = await getFeaturedArticle();
 
   return (
-    <section className="mx-auto max-w-[1440px] bg-white px-5 py-14 sm:px-8 lg:px-12">
-      <ArticleExplorer
-        excludeId={featuredArticle?.id}
-        filters={filters}
-      />
+    <section className="bg-white py-[var(--section-space)]">
+      <div className="site-container">
+        <ArticleExplorer
+          editorial
+          excludeId={featuredArticle?.id}
+          filters={filters}
+          title="Latest Stories"
+        />
+      </div>
     </section>
   );
 }
