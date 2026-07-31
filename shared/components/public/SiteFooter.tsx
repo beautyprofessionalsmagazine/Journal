@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ButtonLink } from "@/shared/components/ui";
 import { mainNavigation, serviceNavigation } from "@/shared/config/navigation";
 
 export function SiteFooter() {
@@ -19,9 +20,9 @@ export function SiteFooter() {
               Independent reporting on the people, techniques, ideas, and
               culture shaping beauty work now.
             </p>
-            <Link className="button-primary mt-2" href="/newsletter">
+            <ButtonLink className="mt-2" href="/newsletter">
               Read the newsletter
-            </Link>
+            </ButtonLink>
           </div>
 
           <FooterNavigation

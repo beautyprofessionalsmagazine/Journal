@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/shared/components/ui";
 
 export default function NotFound() {
   return (
@@ -11,12 +11,12 @@ export default function NotFound() {
           to the Journal to continue reading.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link className="button-primary" href="/">
+          <ButtonLink href="/">
             Return home
-          </Link>
-          <Link className="button-secondary" href="/articles">
+          </ButtonLink>
+          <ButtonLink href="/articles" variant="secondary">
             Browse articles
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </main>

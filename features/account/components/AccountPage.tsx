@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { PublicInfoPage } from "@/shared/components/public";
+import { ButtonLink } from "@/shared/components/ui";
 
 export function AccountPage() {
   return (
@@ -17,9 +16,9 @@ export function AccountPage() {
           No credentials are being collected at this stage. The public
           Journal remains available without an account.
         </p>
-        <Link className="button-primary mt-7" href="/articles">
+        <ButtonLink className="mt-7" href="/articles">
           Continue reading
-        </Link>
+        </ButtonLink>
       </div>
     </PublicInfoPage>
   );

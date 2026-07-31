@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/shared/components/ui";
+
 export default function GlobalError({
   reset,
 }: {
@@ -15,9 +17,9 @@ export default function GlobalError({
           A temporary error interrupted this page. Try once more; your place
           in the Journal will remain here.
         </p>
-        <button className="button-primary mt-8" onClick={reset} type="button">
+        <Button className="mt-8" onClick={reset}>
           Try again
-        </button>
+        </Button>
       </div>
     </main>
   );

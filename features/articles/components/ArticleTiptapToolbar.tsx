@@ -32,6 +32,7 @@ import {
 } from "react";
 
 import { isSafeEditorLinkHref } from "@/features/articles/validation/article-validation";
+import { Button } from "@/shared/components/ui";
 
 type ArticleTiptapToolbarProps = {
   editor: Editor | null;
@@ -338,30 +339,26 @@ export function ArticleTiptapToolbar({
             ) : null}
           </div>
           <div className="flex gap-2">
-            <button
-              className="min-h-11 border border-black bg-black px-3 text-xs font-semibold uppercase text-white transition hover:bg-white hover:text-black"
+            <Button
               onClick={applyLink}
-              type="button"
             >
               Apply
-            </button>
+            </Button>
             {toolbarState?.link ? (
-              <button
-                className="min-h-11 border border-black/20 px-3 text-xs font-semibold uppercase transition hover:border-black"
+              <Button
                 onClick={removeLink}
-                type="button"
+                variant="secondary"
               >
                 Remove
-              </button>
+              </Button>
             ) : null}
-            <button
+            <Button
               aria-label="Close link editor"
-              className="inline-flex size-11 items-center justify-center border border-black/20 transition hover:border-black"
               onClick={closeLinkEditor}
-              type="button"
+              variant="icon"
             >
               <X aria-hidden="true" size={16} />
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
@@ -393,27 +390,28 @@ function ToolbarButton({
   }
 
   return (
-    <button
+    <Button
       aria-describedby={tooltipId}
       aria-keyshortcuts={shortcut}
       aria-label={label}
       aria-pressed={active === undefined ? undefined : active}
-      className={`inline-flex size-11 shrink-0 items-center justify-center border outline-none transition focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
+      className={`hover:translate-y-0 ${
         active
-          ? "border-black bg-black text-white"
-          : "border-transparent text-black hover:border-black/20 hover:bg-white"
-      } disabled:cursor-not-allowed disabled:border-transparent disabled:bg-transparent disabled:text-black/25`}
+          ? "hover:bg-black hover:text-white"
+          : "border-transparent hover:border-black/20 hover:bg-white hover:text-black"
+      } disabled:border-transparent disabled:bg-transparent disabled:text-black/40`}
       disabled={disabled}
       onClick={onClick}
       onMouseDown={preserveEditorSelection}
+      size="icon"
       title={shortcut ? `${label} (${shortcut})` : label}
-      type="button"
+      variant={active ? "primary" : "icon"}
     >
       <Icon aria-hidden="true" size={18} strokeWidth={1.75} />
       <span className="sr-only" id={tooltipId} role="tooltip">
         {shortcut ? `${label}, ${shortcut}` : label}
       </span>
-    </button>
+    </Button>
   );
 }
 

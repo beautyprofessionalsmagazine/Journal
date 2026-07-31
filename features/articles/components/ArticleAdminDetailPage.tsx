@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AdminLayout } from "@/features/admin";
 import { ArticleEditorForm } from "@/features/articles/components/ArticleEditorForm";
 import { getArticleById } from "@/features/articles/server/article-queries";
+import { ButtonLink } from "@/shared/components/ui";
 
 type ArticleAdminDetailPageProps = {
   id: string;
@@ -23,19 +23,16 @@ export async function ArticleAdminDetailPage({
       action={
         <div className="flex flex-wrap gap-3">
           {article.status === "published" ? (
-            <Link
-              className="inline-flex min-h-11 items-center justify-center border border-black/20 px-4 text-xs font-semibold uppercase transition hover:border-black"
+            <ButtonLink
               href={`/articles/${article.slug}`}
+              variant="secondary"
             >
               View live
-            </Link>
+            </ButtonLink>
           ) : null}
-          <Link
-            className="inline-flex min-h-11 items-center justify-center border border-black bg-black px-4 text-xs font-semibold uppercase text-white transition hover:bg-white hover:text-black"
-            href="/admin/articles/create"
-          >
+          <ButtonLink href="/admin/articles/create">
             New article
-          </Link>
+          </ButtonLink>
         </div>
       }
       description="Edit the canonical article record, rich-text body, cover, and publishing settings."

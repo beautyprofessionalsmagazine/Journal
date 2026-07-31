@@ -43,6 +43,7 @@ import {
   validateArticleInput,
 } from "@/features/articles/validation/article-validation";
 import { categoryConfigs } from "@/features/categories/data/categories";
+import { Button } from "@/shared/components/ui";
 
 const emptyInitialValues: ArticleFormValues = {
   ...emptyArticleFormValues,
@@ -355,14 +356,15 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
               <div className="mt-7 grid gap-5 md:grid-cols-2">
                 <FormField
                   action={
-                    <button
-                      className="inline-flex min-h-11 items-center gap-1 px-2 text-[0.65rem] font-semibold uppercase text-black/55 underline decoration-black/25 underline-offset-4 transition hover:text-black"
+                    <Button
+                      className="min-h-11 px-2 text-black/55 underline decoration-black/25 underline-offset-4 hover:text-black"
                       onClick={resumeAutomaticSlug}
-                      type="button"
+                      size="sm"
+                      variant="text"
                     >
                       <RotateCcw aria-hidden="true" size={11} />
                       Reset
-                    </button>
+                    </Button>
                   }
                   error={getFieldError("slug")}
                   id="article-slug"
@@ -690,22 +692,23 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                 </ul>
               </div>
 
-              <button
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 border border-black bg-black px-4 text-sm font-semibold uppercase text-white outline-none transition hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-black/65 disabled:text-white"
+              <Button
+                className="w-full"
                 disabled={submitDisabled}
+                isLoading={
+                  isPending ||
+                  isSubmitLocked ||
+                  coverUploadState.isUploading
+                }
+                loadingLabel={
+                  coverUploadState.isUploading
+                    ? "Uploading cover…"
+                    : "Saving…"
+                }
+                size="lg"
                 type="submit"
               >
-                {isPending || isSubmitLocked ? (
-                  <>
-                    <span
-                      aria-hidden="true"
-                      className="size-4 animate-spin rounded-full border-2 border-white/35 border-t-white"
-                    />
-                    Saving…
-                  </>
-                ) : coverUploadState.isUploading ? (
-                  "Uploading cover…"
-                ) : isPublishing ? (
+                {isPublishing ? (
                   <>
                     <Send aria-hidden="true" size={16} />
                     {isEditing ? "Update & publish" : "Publish article"}
@@ -716,7 +719,7 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                     {isEditing ? "Update draft" : "Save draft"}
                   </>
                 )}
-              </button>
+              </Button>
               <p className="text-center text-[0.7rem] leading-5 text-black/45">
                 {isEditing
                   ? "Changes replace the stored article after validation."
@@ -736,25 +739,17 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
             {values.title || "Untitled article"}
           </p>
         </div>
-        <button
-          className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border border-black bg-black px-4 text-xs font-semibold uppercase text-white outline-none transition hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        <Button
+          className="min-w-[9rem]"
           disabled={submitDisabled}
+          isLoading={isPending || isSubmitLocked}
+          loadingLabel="Saving"
+          size="lg"
           type="submit"
         >
-          {isPending || isSubmitLocked ? (
-            <span
-              aria-label="Saving"
-              className="size-4 animate-spin rounded-full border-2 border-white/35 border-t-white"
-            />
-          ) : (
-            <Save aria-hidden="true" size={15} />
-          )}
-          {isPending || isSubmitLocked
-            ? "Saving"
-            : isEditing
-              ? "Save changes"
-              : "Save article"}
-        </button>
+          <Save aria-hidden="true" size={15} />
+          {isEditing ? "Save changes" : "Save article"}
+        </Button>
       </div>
     </form>
   );

@@ -4,6 +4,8 @@ import { Filter, RotateCcw, Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState, useTransition } from "react";
 
+import { Button } from "@/shared/components/ui";
+
 type ArticleFiltersProps = {
   categories: string[];
   tags: string[];
@@ -83,12 +85,12 @@ export function ArticleFilters({
       className="border-y border-black"
     >
       <div className="flex min-h-16 items-center justify-between gap-4 py-2">
-        <button
+        <Button
           aria-controls="article-filter-controls"
           aria-expanded={isOpen}
-          className="focus-ring inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] lg:hidden"
+          className="px-0 lg:hidden"
           onClick={() => setIsOpen((current) => !current)}
-          type="button"
+          variant="text"
         >
           {isOpen ? (
             <X aria-hidden="true" size={17} />
@@ -101,7 +103,7 @@ export function ArticleFilters({
               {activeCount}
             </span>
           ) : null}
-        </button>
+        </Button>
 
         <p className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/58">
           {isPending
@@ -110,14 +112,14 @@ export function ArticleFilters({
         </p>
 
         {activeCount > 0 ? (
-          <button
-            className="focus-ring hidden min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
+          <Button
+            className="hidden px-0 lg:inline-flex"
             onClick={resetFilters}
-            type="button"
+            variant="text"
           >
             <RotateCcw aria-hidden="true" size={15} />
             Reset
-          </button>
+          </Button>
         ) : (
           <span className="hidden lg:block" />
         )}
@@ -153,13 +155,16 @@ export function ArticleFilters({
                   type="search"
                   value={searchDraft}
                 />
-                <button
+                <Button
                   aria-label="Search articles"
-                  className="focus-ring inline-flex size-12 shrink-0 items-center justify-center border border-black bg-black text-white transition-colors hover:bg-white hover:text-black"
+                  className="size-12 min-h-12"
+                  isLoading={isPending}
+                  loadingLabel=""
+                  size="icon"
                   type="submit"
                 >
                   <Search aria-hidden="true" size={18} />
-                </button>
+                </Button>
               </div>
             </form>
 
@@ -184,14 +189,14 @@ export function ArticleFilters({
             />
 
             {activeCount > 0 ? (
-              <button
-                className="button-secondary gap-2 lg:hidden"
+              <Button
+                className="lg:hidden"
                 onClick={resetFilters}
-                type="button"
+                variant="secondary"
               >
                 <RotateCcw aria-hidden="true" size={15} />
                 Reset all
-              </button>
+              </Button>
             ) : null}
           </div>
         </div>

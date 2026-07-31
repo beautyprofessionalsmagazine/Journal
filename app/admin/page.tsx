@@ -1,7 +1,6 @@
-import Link from "next/link";
-
 import { AdminLayout, AdminStatCard } from "@/features/admin";
 import { getAdminStats } from "@/features/articles";
+import { ButtonLink } from "@/shared/components/ui";
 
 export default async function AdminOverviewPage() {
   const stats = await getAdminStats();
@@ -9,12 +8,14 @@ export default async function AdminOverviewPage() {
   return (
     <AdminLayout
       action={
-        <Link
-          className="min-w-40 border border-black bg-white px-5 py-3 text-center [font-family:var(--font-editorial-sans)] text-sm font-semibold uppercase text-black transition hover:bg-black hover:text-white"
+        <ButtonLink
+          className="min-w-40"
           href="/admin/articles/create"
+          size="lg"
+          variant="secondary"
         >
           Create Article
-        </Link>
+        </ButtonLink>
       }
       description="A database-backed editorial control room for publishing status and article views."
       title="Overview"

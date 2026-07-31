@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { AdminLayout } from "@/features/admin";
 import { listArticles } from "@/features/articles/server/article-queries";
+import { ButtonLink } from "@/shared/components/ui";
 
 export async function ArticleAdminListPage() {
   const articles = await listArticles();
@@ -10,12 +10,14 @@ export async function ArticleAdminListPage() {
   return (
     <AdminLayout
       action={
-        <Link
-          className="min-w-40 border border-black bg-white px-5 py-3 text-center [font-family:var(--font-editorial-sans)] text-sm font-semibold uppercase text-black transition hover:bg-black hover:text-white"
+        <ButtonLink
+          className="min-w-40"
           href="/admin/articles/create"
+          size="lg"
+          variant="secondary"
         >
           Create Article
-        </Link>
+        </ButtonLink>
       }
       description="Review the database-backed article records created from the admin flow."
       title="Articles"
@@ -89,12 +91,12 @@ export async function ArticleAdminListPage() {
                     </dd>
                   </div>
                 </dl>
-                <Link
-                  className="button-primary mt-4 w-full"
+                <ButtonLink
+                  className="mt-4 w-full"
                   href={`/admin/articles/${article.id}/edit`}
                 >
                   Edit article
-                </Link>
+                </ButtonLink>
               </article>
             ))}
           </div>
@@ -177,12 +179,12 @@ export async function ArticleAdminListPage() {
                     {article.updatedAt.toLocaleDateString()}
                   </td>
                   <td className="px-4 py-4">
-                    <Link
-                      className="inline-flex min-h-11 items-center justify-center border border-black/20 px-4 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase transition hover:border-black"
+                    <ButtonLink
                       href={`/admin/articles/${article.id}/edit`}
+                      variant="outline"
                     >
                       Edit
-                    </Link>
+                    </ButtonLink>
                   </td>
                 </tr>
               ))}

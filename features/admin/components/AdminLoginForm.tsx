@@ -6,6 +6,7 @@ import {
   loginAdminAction,
   type AdminLoginState,
 } from "@/features/admin/server/admin-auth-actions";
+import { Button } from "@/shared/components/ui";
 
 const initialState: AdminLoginState = {};
 
@@ -39,13 +40,15 @@ export function AdminLoginForm() {
           {state.error}
         </p>
       ) : null}
-      <button
-        className="min-h-12 border border-black bg-black px-5 [font-family:var(--font-editorial-sans)] text-sm font-semibold uppercase text-white transition hover:bg-white hover:text-black disabled:cursor-wait disabled:opacity-60"
+      <Button
         disabled={isPending}
+        isLoading={isPending}
+        loadingLabel="Signing in…"
+        size="lg"
         type="submit"
       >
-        {isPending ? "Signing in..." : "Sign in"}
-      </button>
+        Sign in
+      </Button>
     </form>
   );
 }

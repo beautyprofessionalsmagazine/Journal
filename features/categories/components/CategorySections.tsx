@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArticleCard } from "@/features/articles/components/ArticleCard";
 import { listPublishedArticles } from "@/features/articles/server/article-queries";
 import { categoryConfigs } from "@/features/categories/data/categories";
+import { ButtonLink } from "@/shared/components/ui";
 
 export async function CategorySections() {
   const sections = await Promise.all(
@@ -55,9 +56,9 @@ export async function CategorySections() {
                   ))}
                 </div>
               ) : null}
-              <Link className="button-secondary" href={category.href}>
+              <ButtonLink href={category.href} variant="secondary">
                 View section
-              </Link>
+              </ButtonLink>
             </div>
             <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
               {articles.length > 0 ? (

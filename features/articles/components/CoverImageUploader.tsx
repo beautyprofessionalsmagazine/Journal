@@ -12,6 +12,7 @@ import Image from "next/image";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { validateCoverImageFile } from "@/features/articles/validation/article-validation";
+import { Button } from "@/shared/components/ui";
 
 export type CoverImageUploadState = {
   error: string | null;
@@ -295,10 +296,10 @@ export function CoverImageUploader({
             ) : null}
           </div>
         ) : (
-          <button
-            className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-3 px-6 text-center outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-black"
+          <Button
+            className="aspect-[4/3] h-auto w-full flex-col gap-3 border-transparent px-6 normal-case tracking-normal hover:translate-y-0 hover:bg-white"
             onClick={openFilePicker}
-            type="button"
+            variant="text"
           >
             {isUploading ? (
               <LoaderCircle
@@ -316,7 +317,7 @@ export function CoverImageUploader({
             <span className="max-w-52 text-xs font-normal normal-case leading-5 text-black/55">
               JPG, PNG, WebP, AVIF, or GIF · 5 MB max
             </span>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -337,25 +338,24 @@ export function CoverImageUploader({
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <button
+          <Button
             aria-label={hasImage ? "Replace cover image" : "Choose cover image"}
-            className="inline-flex size-11 items-center justify-center border border-black/15 outline-none transition hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
             onClick={openFilePicker}
             title={hasImage ? "Replace image" : "Choose image"}
-            type="button"
+            variant="icon"
           >
             <Upload aria-hidden="true" size={17} strokeWidth={1.6} />
-          </button>
+          </Button>
           {hasImage || isUploading || uploadError ? (
-            <button
+            <Button
               aria-label="Remove cover image"
-              className="inline-flex size-11 items-center justify-center border border-black/15 outline-none transition hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
               onClick={removeImage}
               title="Remove image"
-              type="button"
+              variant="destructive"
+              size="icon"
             >
               <Trash2 aria-hidden="true" size={17} strokeWidth={1.6} />
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -374,19 +374,21 @@ export function CoverImageUploader({
           <div className="min-w-0 flex-1">
             <p>{helperMessage}</p>
             {uploadError && canRetry ? (
-              <button
-                className="mt-2 inline-flex min-h-9 items-center gap-2 border border-red-800 px-3 text-[0.7rem] font-semibold uppercase transition hover:bg-red-800 hover:text-white"
+              <Button
+                className="mt-2 min-h-9"
                 disabled={isUploading}
+                isLoading={isUploading}
+                loadingLabel="Retrying"
                 onClick={retryUpload}
-                type="button"
+                size="sm"
+                variant="destructive"
               >
                 <RefreshCw
                   aria-hidden="true"
-                  className={isUploading ? "animate-spin" : undefined}
                   size={14}
                 />
                 Retry upload
-              </button>
+              </Button>
             ) : null}
           </div>
         </div>

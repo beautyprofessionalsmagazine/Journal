@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { ArticleMetadata } from "@/features/articles/components/ArticleMetadata";
 import type { Article } from "@/features/articles/types/article";
+import { ButtonLink } from "@/shared/components/ui";
 
 type ArticleHeroProps = {
   article: Article;
@@ -47,10 +48,10 @@ export function ArticleHero({ article }: ArticleHeroProps) {
             <ArticleMetadata article={article} />
           </div>
 
-          <Link className="button-primary mt-8 w-fit gap-2" href={href}>
+          <ButtonLink className="mt-8 w-fit" href={href}>
             Read cover story
             <ArrowUpRight aria-hidden="true" size={16} />
-          </Link>
+          </ButtonLink>
         </div>
 
         <Link

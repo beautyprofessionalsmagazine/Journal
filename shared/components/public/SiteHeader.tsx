@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 
+import { Button, ButtonLink } from "@/shared/components/ui";
 import { mainNavigation } from "@/shared/config/navigation";
 
 export function SiteHeader() {
@@ -78,20 +79,21 @@ export function SiteHeader() {
     >
       <div className="site-container">
         <div className="grid min-h-[4.75rem] grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 lg:min-h-[7rem] lg:grid-cols-[10rem_minmax(0,1fr)_10rem]">
-          <button
+          <Button
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            className="focus-ring inline-flex size-11 items-center justify-center lg:hidden"
+            className="lg:hidden"
             onClick={() => setIsMenuOpen((current) => !current)}
-            type="button"
+            size="icon"
+            variant="text"
           >
             {isMenuOpen ? (
               <X aria-hidden="true" size={22} strokeWidth={1.5} />
             ) : (
               <Menu aria-hidden="true" size={23} strokeWidth={1.5} />
             )}
-          </button>
+          </Button>
 
           <Link
             className="focus-ring hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
@@ -115,13 +117,13 @@ export function SiteHeader() {
             >
               Newsletter
             </Link>
-            <Link
+            <ButtonLink
               aria-label="Search articles"
-              className="focus-ring inline-flex size-11 items-center justify-center border border-black transition-[background-color,color] hover:bg-black hover:text-white"
               href="/articles"
+              variant="icon"
             >
               <Search aria-hidden="true" size={20} strokeWidth={1.5} />
-            </Link>
+            </ButtonLink>
           </div>
         </div>
 
@@ -134,12 +136,12 @@ export function SiteHeader() {
               <li className="relative" key={item.href}>
                 {item.subcategories.length > 0 ? (
                   <>
-                    <button
+                    <Button
                       aria-controls={`desktop-${item.name}-menu`}
                       aria-expanded={openDropdown === item.name}
-                      className="focus-ring inline-flex min-h-11 items-center gap-1.5"
+                      className="px-1"
                       onClick={() => toggleDropdown(item.name)}
-                      type="button"
+                      variant="text"
                     >
                       {item.name}
                       <ChevronDown
@@ -149,7 +151,7 @@ export function SiteHeader() {
                         }`}
                         size={13}
                       />
-                    </button>
+                    </Button>
                     <div
                       className={`absolute left-1/2 top-full z-50 w-64 -translate-x-1/2 border border-black bg-white p-2 shadow-[0_18px_45px_rgba(0,0,0,0.1)] transition-[opacity,transform] duration-200 ${
                         openDropdown === item.name
@@ -221,12 +223,12 @@ export function SiteHeader() {
               <li key={item.href}>
                 {item.subcategories.length > 0 ? (
                   <>
-                    <button
+                    <Button
                       aria-controls={`mobile-${item.name}-menu`}
                       aria-expanded={openDropdown === item.name}
-                      className="focus-ring flex min-h-14 w-full items-center justify-between text-left [font-family:var(--font-editorial-title)] text-2xl font-bold"
+                      className="min-h-14 w-full justify-between px-0 text-left [font-family:var(--font-editorial-title)] text-2xl font-bold normal-case tracking-[-0.02em] hover:translate-y-0 hover:border-transparent hover:bg-transparent"
                       onClick={() => toggleDropdown(item.name)}
-                      type="button"
+                      variant="text"
                     >
                       {item.name}
                       <ChevronDown
@@ -236,7 +238,7 @@ export function SiteHeader() {
                         }`}
                         size={18}
                       />
-                    </button>
+                    </Button>
                     <div
                       className={`overflow-hidden transition-[opacity,transform] duration-200 ${
                         openDropdown === item.name

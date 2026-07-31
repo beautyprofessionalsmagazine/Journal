@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { logoutAdminAction } from "@/features/admin/server/admin-auth-actions";
+import { Button } from "@/shared/components/ui";
 
 type AdminLayoutProps = {
   title: string;
@@ -54,12 +55,14 @@ export function AdminLayout({
               </ul>
             </nav>
             <form action={logoutAdminAction} className="lg:mt-auto">
-              <button
-                className="focus-ring flex min-h-12 w-full items-center justify-center border border-black/20 px-4 [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.06em] transition-colors hover:border-black hover:bg-black hover:text-white lg:justify-start"
+              <Button
+                className="w-full lg:justify-start"
+                size="lg"
                 type="submit"
+                variant="secondary"
               >
                 Log out
-              </button>
+              </Button>
             </form>
           </div>
         </aside>

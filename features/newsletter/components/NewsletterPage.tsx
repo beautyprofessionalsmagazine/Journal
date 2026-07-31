@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { PublicInfoPage } from "@/shared/components/public";
+import { ButtonLink } from "@/shared/components/ui";
 
 export function NewsletterPage() {
   return (
@@ -20,12 +19,12 @@ export function NewsletterPage() {
             publication updates.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link className="button-primary" href="/archive">
+            <ButtonLink href="/archive">
               Read the archive
-            </Link>
-            <Link className="button-secondary" href="/contacts">
+            </ButtonLink>
+            <ButtonLink href="/contacts" variant="secondary">
               Contact editorial
-            </Link>
+            </ButtonLink>
           </div>
         </div>
       </div>

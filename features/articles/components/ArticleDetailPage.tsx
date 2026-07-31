@@ -12,6 +12,7 @@ import {
   getRelatedArticles,
 } from "@/features/articles/server/article-queries";
 import type { TiptapDocument } from "@/features/articles/types/article";
+import { ButtonLink } from "@/shared/components/ui";
 
 type ArticleDetailPageProps = {
   slug: string;
@@ -91,9 +92,9 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
           <p className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/58">
             {article.views.toLocaleString()} views
           </p>
-          <Link className="button-secondary" href="/articles">
+          <ButtonLink href="/articles" variant="secondary">
             Return to all stories
-          </Link>
+          </ButtonLink>
         </footer>
       </article>
 

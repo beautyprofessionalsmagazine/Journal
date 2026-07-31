@@ -1,5 +1,6 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+
+import { ButtonLink } from "@/shared/components/ui";
 
 type PublicInfoPageProps = {
   title: string;
@@ -38,9 +39,9 @@ export function PublicInfoPage({
               </p>
             </div>
           )}
-          <Link className="button-secondary mt-10" href="/articles">
+          <ButtonLink className="mt-10" href="/articles" variant="secondary">
             Browse the journal
-          </Link>
+          </ButtonLink>
         </div>
       </section>
     </main>
