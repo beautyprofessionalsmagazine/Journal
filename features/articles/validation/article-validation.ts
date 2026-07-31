@@ -9,8 +9,6 @@ import {
   type TiptapNode,
 } from "@/features/articles/types/article";
 
-export const MAX_COVER_IMAGE_SIZE = 5 * 1024 * 1024;
-
 export const ALLOWED_COVER_IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
@@ -292,10 +290,6 @@ export function validateCoverImageFile(file: Pick<File, "size" | "type">) {
     )
   ) {
     return "Cover image must be a JPG, PNG, WebP, AVIF, or GIF file.";
-  }
-
-  if (file.size > MAX_COVER_IMAGE_SIZE) {
-    return "Cover image must be 5 MB or smaller.";
   }
 
   return null;

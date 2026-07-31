@@ -14,6 +14,11 @@ import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { validateCoverImageFile } from "@/features/articles/validation/article-validation";
 import { Button } from "@/shared/components/ui";
 
+const TARGET_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 2560;
+const INITIAL_WEBP_QUALITY = 0.9;
+const MIN_WEBP_QUALITY = 0.5;
+
 export type CoverImageUploadState = {
   error: string | null;
   isUploading: boolean;
@@ -68,7 +73,33 @@ export function CoverImageUploader({
       return;
     }
 
-    selectedFileRef.current = file;
+    const validationError = validateCoverImageFile(file);
+
+    if (validationError) {
+      setUploadError(validationError);
+      setIsUploading(false);
+      onUploadStateChange({ error: validationError, isUploading: false });
+      return;
+    }
+
+    let fileToUpload = file;
+
+    if (file.size > TARGET_IMAGE_SIZE) {
+      setIsUploading(true);
+      onUploadStateChange({ error: null, isUploading: true });
+
+      try {
+        fileToUpload = await compressCoverImage(file);
+      } catch {
+        const message = "This image could not be optimized. Please choose another image.";
+        setUploadError(message);
+        setIsUploading(false);
+        onUploadStateChange({ error: message, isUploading: false });
+        return;
+      }
+    }
+
+    selectedFileRef.current = fileToUpload;
     setFileName(file.name);
     setUploadError(null);
     setCanRetry(false);
@@ -81,27 +112,15 @@ export function CoverImageUploader({
     uploadControllerRef.current?.abort();
     revokeObjectUrl();
 
-    if (file.type.startsWith("image/")) {
-      const localPreviewUrl = URL.createObjectURL(file);
+    if (fileToUpload.type.startsWith("image/")) {
+      const localPreviewUrl = URL.createObjectURL(fileToUpload);
       objectUrlRef.current = localPreviewUrl;
       setPreviewUrl(localPreviewUrl);
     } else {
       setPreviewUrl(null);
     }
 
-    const validationError = validateCoverImageFile(file);
-
-    if (validationError) {
-      setUploadError(validationError);
-      setIsUploading(false);
-      onUploadStateChange({
-        error: validationError,
-        isUploading: false,
-      });
-      return;
-    }
-
-    await uploadFile(file);
+    await uploadFile(fileToUpload);
   }
 
   async function uploadFile(file: File) {
@@ -315,7 +334,7 @@ export function CoverImageUploader({
               {isUploading ? "Uploading image" : "Add cover image"}
             </span>
             <span className="max-w-52 text-xs font-normal normal-case leading-5 text-black/55">
-              JPG, PNG, WebP, AVIF, or GIF · 5 MB max
+              JPG, PNG, WebP, AVIF, or GIF · larger images are optimized automatically
             </span>
           </Button>
         )}
@@ -395,6 +414,75 @@ export function CoverImageUploader({
       ) : null}
     </div>
   );
+}
+
+async function compressCoverImage(file: File) {
+  const image = await loadLocalImage(file);
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+  const largestDimension = Math.max(width, height);
+
+  if (largestDimension > MAX_IMAGE_DIMENSION) {
+    const scale = MAX_IMAGE_DIMENSION / largestDimension;
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Canvas is unavailable.");
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+
+  let quality = INITIAL_WEBP_QUALITY;
+  let compressed = await canvasToFile(canvas, quality, file.name);
+
+  while (compressed.size > TARGET_IMAGE_SIZE && quality > MIN_WEBP_QUALITY) {
+    quality = Math.max(MIN_WEBP_QUALITY, quality - 0.1);
+    compressed = await canvasToFile(canvas, quality, file.name);
+  }
+
+  return compressed;
+}
+
+function loadLocalImage(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Image could not be loaded."));
+    };
+    image.src = objectUrl;
+  });
+}
+
+function canvasToFile(
+  canvas: HTMLCanvasElement,
+  quality: number,
+  fileName: string,
+) {
+  return new Promise<File>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Image compression failed."));
+        return;
+      }
+
+      const name = `${fileName.replace(/\.[^.]+$/, "")}.webp`;
+      resolve(new File([blob], name, { type: "image/webp" }));
+    }, "image/webp", quality);
+  });
 }
 
 function isSafeUploadedImageUrl(value: string) {
