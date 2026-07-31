@@ -4,7 +4,7 @@ import { Filter, RotateCcw, Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState, useTransition } from "react";
 
-import { Button } from "@/shared/components/ui";
+import { Button, Select } from "@/shared/components/ui";
 
 type ArticleFiltersProps = {
   categories: string[];
@@ -168,23 +168,38 @@ export function ArticleFilters({
               </div>
             </form>
 
-            <FilterSelect
+            <Select
               disabled={categoryLocked}
               label="Category"
               onChange={(value) => navigateWithUpdates({ category: value })}
-              options={categories}
+              options={[
+                { label: "All categories", value: "all" },
+                ...categories.map((item) => ({
+                  label: item,
+                  value: item,
+                })),
+              ]}
               value={category}
             />
-            <FilterSelect
+            <Select
               label="Tag"
               onChange={(value) => navigateWithUpdates({ tag: value })}
-              options={tags}
+              options={[
+                { label: "All tags", value: "all" },
+                ...tags.map((item) => ({
+                  label: item,
+                  value: item,
+                })),
+              ]}
               value={tag}
             />
-            <FilterSelect
+            <Select
               label="Sort"
               onChange={(value) => navigateWithUpdates({ sort: value })}
-              options={["latest", "popular"]}
+              options={[
+                { label: "Latest", value: "latest" },
+                { label: "Popular", value: "popular" },
+              ]}
               value={sort}
             />
 
@@ -202,49 +217,5 @@ export function ArticleFilters({
         </div>
       </div>
     </section>
-  );
-}
-
-type FilterSelectProps = {
-  disabled?: boolean;
-  label: "Category" | "Tag" | "Sort";
-  onChange: (value: string) => void;
-  options: string[];
-  value: string;
-};
-
-function FilterSelect({
-  disabled = false,
-  label,
-  onChange,
-  options,
-  value,
-}: FilterSelectProps) {
-  const defaultLabel =
-    label === "Category"
-      ? "All categories"
-      : label === "Tag"
-        ? "All tags"
-        : null;
-
-  return (
-    <label className="editorial-kicker flex flex-col gap-2">
-      {label}
-      <select
-        className="input-control appearance-none disabled:cursor-not-allowed disabled:bg-black/[0.04] disabled:text-black/50"
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        {defaultLabel ? <option value="all">{defaultLabel}</option> : null}
-        {options.map((item) => (
-          <option key={item} value={item}>
-            {label === "Sort"
-              ? item.charAt(0).toUpperCase() + item.slice(1)
-              : item}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }

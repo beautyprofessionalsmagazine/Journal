@@ -43,7 +43,7 @@ import {
   validateArticleInput,
 } from "@/features/articles/validation/article-validation";
 import { categoryConfigs } from "@/features/categories/data/categories";
-import { Button } from "@/shared/components/ui";
+import { Button, Select } from "@/shared/components/ui";
 
 const emptyInitialValues: ArticleFormValues = {
   ...emptyArticleFormValues,
@@ -426,24 +426,26 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                   label="Category"
                   required
                 >
-                  <select
-                    aria-invalid={Boolean(getFieldError("category"))}
-                    className="article-form-control"
+                  <Select
+                    ariaDescribedBy={
+                      getFieldError("category")
+                        ? "article-category-error"
+                        : undefined
+                    }
                     id="article-category"
+                    invalid={Boolean(getFieldError("category"))}
                     name="category"
                     onBlur={() => validateField("category")}
-                    onChange={(event) =>
-                      updateField("category", event.target.value)
+                    onChange={(value) =>
+                      updateField("category", value)
                     }
+                    options={categoryConfigs.map((category) => ({
+                      label: category.name,
+                      value: category.name,
+                    }))}
                     required
                     value={values.category}
-                  >
-                    {categoryConfigs.map((category) => (
-                      <option key={category.slug} value={category.name}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </FormField>
 
                 <FormField
@@ -600,23 +602,28 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                 label="Status"
                 required
               >
-                <select
-                  aria-invalid={Boolean(getFieldError("status"))}
-                  className="article-form-control"
+                <Select
+                  ariaDescribedBy={
+                    getFieldError("status")
+                      ? "article-status-error"
+                      : undefined
+                  }
                   id="article-status"
+                  invalid={Boolean(getFieldError("status"))}
                   name="status"
-                  onChange={(event) =>
+                  onChange={(value) =>
                     updateField(
                       "status",
-                      event.target.value as ArticleFormValues["status"],
+                      value as ArticleFormValues["status"],
                     )
                   }
+                  options={[
+                    { label: "Draft", value: "draft" },
+                    { label: "Published", value: "published" },
+                  ]}
                   required
                   value={values.status}
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                </select>
+                />
               </FormField>
 
               {isPublishing ? (

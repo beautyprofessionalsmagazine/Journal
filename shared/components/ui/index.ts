@@ -7,3 +7,8 @@ export {
   type ButtonSize,
   type ButtonVariant,
 } from "@/shared/components/ui/Button";
+export {
+  Select,
+  type SelectOption,
+  type SelectProps,
+} from "@/shared/components/ui/Select";
