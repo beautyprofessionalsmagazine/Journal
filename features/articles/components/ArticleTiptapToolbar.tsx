@@ -149,7 +149,7 @@ export function ArticleTiptapToolbar({
   const isDisabled = !editor;
 
   return (
-    <div className="border-b border-black/15 bg-[#f8f8f6] [contain:paint]">
+    <div className="sticky top-0 z-20 border-b border-black/15 bg-[#f8f8f6] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
       <div
         aria-label="Article formatting"
         className="flex max-w-full snap-x flex-nowrap items-center gap-1 overflow-x-auto overscroll-x-contain p-2 [scrollbar-color:rgba(0,0,0,0.3)_transparent] [scrollbar-width:thin]"

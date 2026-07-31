@@ -136,7 +136,7 @@ export function ArticleTiptapEditor({
   return (
     <div className="min-w-0">
       <div
-        className={`article-editor overflow-hidden border bg-white transition focus-within:border-black ${
+        className={`article-editor border bg-white transition focus-within:border-black ${
           error ? "border-red-700" : "border-black/15"
         }`}
       >
