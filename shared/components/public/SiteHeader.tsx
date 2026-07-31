@@ -96,7 +96,7 @@ export function SiteHeader() {
           </Button>
 
           <Link
-            className="focus-ring hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
+            className="focus-ring link-transition hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
             href="/current-issue"
           >
             Current Issue
@@ -104,7 +104,7 @@ export function SiteHeader() {
 
           <Link
             aria-label="Beauty Professionals Magazine home"
-            className="focus-ring mx-auto flex min-h-11 max-w-[13rem] items-center text-center [font-family:var(--font-editorial-title)] text-[clamp(1.45rem,5.8vw,2rem)] font-bold leading-[0.88] tracking-[-0.025em] lg:max-w-none lg:text-[clamp(2.4rem,3.3vw,3.4rem)]"
+            className="focus-ring link-transition mx-auto flex min-h-11 max-w-[13rem] items-center text-center [font-family:var(--font-editorial-title)] text-[clamp(1.45rem,5.8vw,2rem)] font-bold leading-[0.88] tracking-[-0.025em] lg:max-w-none lg:text-[clamp(2.4rem,3.3vw,3.4rem)]"
             href="/"
           >
             Beauty Professionals Magazine
@@ -112,7 +112,7 @@ export function SiteHeader() {
 
           <div className="flex items-center justify-end gap-4">
             <Link
-              className="focus-ring hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
+              className="focus-ring link-transition hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
               href="/newsletter"
             >
               Newsletter
@@ -161,14 +161,14 @@ export function SiteHeader() {
                       id={`desktop-${item.name}-menu`}
                     >
                       <Link
-                        className="focus-ring block min-h-11 px-3 py-3"
+                        className="focus-ring link-transition block min-h-11 px-3 py-3"
                         href={item.href}
                       >
                         All {item.name}
                       </Link>
                       {item.subcategories.map((subcategory) => (
                         <Link
-                          className="focus-ring block min-h-11 border-t border-black/10 px-3 py-3 font-normal text-black/64 transition-colors hover:text-black"
+                          className="focus-ring link-transition block min-h-11 border-t border-black/10 px-3 py-3 font-normal text-black/64 hover:text-black"
                           href={`${item.href}?tag=${encodeURIComponent(subcategory)}`}
                           key={subcategory}
                         >
@@ -179,7 +179,7 @@ export function SiteHeader() {
                   </>
                 ) : (
                   <Link
-                    className="focus-ring inline-flex min-h-11 items-center"
+                    className="focus-ring link-transition inline-flex min-h-11 items-center"
                     href={item.href}
                   >
                     {item.name}
@@ -205,13 +205,13 @@ export function SiteHeader() {
         >
           <div className="grid grid-cols-2 border-y border-black">
             <Link
-              className="focus-ring inline-flex min-h-12 items-center border-r border-black px-3 text-xs font-semibold uppercase tracking-[0.08em]"
+              className="focus-ring link-transition inline-flex min-h-12 items-center border-r border-black px-3 text-xs font-semibold uppercase tracking-[0.08em]"
               href="/current-issue"
             >
               Current Issue
             </Link>
             <Link
-              className="focus-ring inline-flex min-h-12 items-center px-3 text-xs font-semibold uppercase tracking-[0.08em]"
+              className="focus-ring link-transition inline-flex min-h-12 items-center px-3 text-xs font-semibold uppercase tracking-[0.08em]"
               href="/newsletter"
             >
               Newsletter
@@ -250,14 +250,14 @@ export function SiteHeader() {
                       <div className="min-h-0">
                         <div className="grid grid-cols-2 gap-x-3 border-t border-black/10 pb-3 pt-2">
                           <Link
-                            className="focus-ring col-span-2 flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.08em]"
+                            className="focus-ring link-transition col-span-2 flex min-h-11 items-center text-xs font-semibold uppercase tracking-[0.08em]"
                             href={item.href}
                           >
                             View all {item.name}
                           </Link>
                           {item.subcategories.map((subcategory) => (
                             <Link
-                              className="focus-ring flex min-h-11 items-center text-sm text-black/65"
+                              className="focus-ring link-transition flex min-h-11 items-center text-sm text-black/65"
                               href={`${item.href}?tag=${encodeURIComponent(subcategory)}`}
                               key={subcategory}
                             >
@@ -270,7 +270,7 @@ export function SiteHeader() {
                   </>
                 ) : (
                   <Link
-                    className="focus-ring flex min-h-14 items-center [font-family:var(--font-editorial-title)] text-2xl font-bold"
+                    className="focus-ring link-transition flex min-h-14 items-center [font-family:var(--font-editorial-title)] text-2xl font-bold"
                     href={item.href}
                   >
                     {item.name}

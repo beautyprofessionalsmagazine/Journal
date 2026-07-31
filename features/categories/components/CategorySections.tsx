@@ -32,6 +32,7 @@ export async function CategorySections() {
         {sections.map(({ category, articles }, sectionIndex) => (
           <section
             className="grid gap-8 border-b border-black/25 py-[clamp(2.5rem,6vw,5rem)] lg:grid-cols-[minmax(12rem,0.55fr)_minmax(0,1.8fr)]"
+            data-reveal
             key={category.slug}
           >
             <div className="flex flex-col items-start gap-5">

@@ -35,7 +35,7 @@ export async function ArticleAdminListPage() {
         <>
           <div className="divide-y divide-black border-y border-black lg:hidden">
             {articles.map((article) => (
-              <article className="py-6" key={article.id}>
+              <article className="py-6" data-reveal key={article.id}>
                 <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4">
                   <div className="relative aspect-[4/5] overflow-hidden bg-[#eceae4]">
                     {article.coverImage ? (
@@ -101,7 +101,10 @@ export async function ArticleAdminListPage() {
             ))}
           </div>
 
-          <div className="hidden overflow-x-auto border border-black/15 lg:block">
+          <div
+            className="surface-transition hidden overflow-x-auto border border-black/15 lg:block"
+            data-reveal
+          >
           <table className="w-full min-w-[980px] border-collapse text-left">
             <thead className="border-b border-black/15 bg-black text-white">
               <tr className="[font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase">

@@ -11,7 +11,7 @@ export function SiteFooter() {
           <div className="flex flex-col items-start gap-6">
             <p className="editorial-kicker text-black/52">The Journal</p>
             <Link
-              className="focus-ring max-w-[12ch] [font-family:var(--font-editorial-title)] text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[0.86] tracking-[-0.045em]"
+              className="focus-ring link-transition max-w-[12ch] [font-family:var(--font-editorial-title)] text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[0.86] tracking-[-0.045em]"
               href="/"
             >
               Beauty Professionals Magazine
@@ -68,7 +68,7 @@ function FooterNavigation({ label, items }: FooterNavigationProps) {
         {items.map((item) => (
           <li key={item.href}>
             <Link
-              className="focus-ring flex min-h-11 items-center border-b border-black/10 text-sm text-black/65 transition-colors hover:text-black"
+              className="focus-ring link-transition flex min-h-11 items-center border-b border-black/10 text-sm text-black/65 hover:text-black"
               href={item.href}
             >
               {item.name}

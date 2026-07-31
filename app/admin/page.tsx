@@ -45,7 +45,10 @@ export default async function AdminOverviewPage() {
         </section>
 
         <section className="grid gap-8 xl:grid-cols-[1fr_360px]">
-          <div className="border border-black/15">
+          <div
+            className="surface-transition border border-black/15"
+            data-reveal
+          >
             <div className="border-b border-black/15 p-5">
               <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
                 Recent Articles
@@ -72,7 +75,10 @@ export default async function AdminOverviewPage() {
               ))}
             </div>
           </div>
-          <div className="border border-black/15 p-5">
+          <div
+            className="surface-transition border border-black/15 p-5"
+            data-reveal
+          >
             <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
               Publishing Split
             </h2>

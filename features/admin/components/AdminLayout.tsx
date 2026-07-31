@@ -67,7 +67,10 @@ export function AdminLayout({
           </div>
         </aside>
         <section className="flex min-w-0 flex-col" id="admin-content">
-          <header className="border-b border-black px-[var(--page-padding)] py-[clamp(2rem,5vw,4.5rem)]">
+          <header
+            className="border-b border-black px-[var(--page-padding)] py-[clamp(2rem,5vw,4.5rem)]"
+            data-reveal
+          >
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="flex max-w-3xl flex-col gap-2">
                 <p className="editorial-kicker text-black/45">

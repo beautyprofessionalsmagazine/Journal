@@ -92,6 +92,8 @@ export function Select({
   const typeaheadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedValue, setHighlightedValue] = useState<string | null>(
     null,
@@ -150,8 +152,16 @@ export function Select({
 
   const close = useCallback(
     (restoreFocus = false) => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+
       setIsOpen(false);
-      setPosition(null);
+      closeTimerRef.current = setTimeout(() => {
+        setIsMounted(false);
+        setPosition(null);
+        closeTimerRef.current = null;
+      }, 150);
       onBlur?.();
 
       if (restoreFocus) {
@@ -175,15 +185,21 @@ export function Select({
             : enabledOptions.find((option) => option.value === value) ??
               enabledOptions[0];
 
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+
       setHighlightedValue(initialOption?.value ?? null);
       updatePosition();
-      setIsOpen(true);
+      setIsMounted(true);
+      window.requestAnimationFrame(() => setIsOpen(true));
     },
     [disabled, enabledOptions, updatePosition, value],
   );
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMounted) {
       return;
     }
 
@@ -210,7 +226,7 @@ export function Select({
       window.removeEventListener("resize", handleViewportChange);
       window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [close, isOpen, updatePosition]);
+  }, [close, isMounted, updatePosition]);
 
   useEffect(() => {
     if (!isOpen || !highlightedValue) {
@@ -226,6 +242,9 @@ export function Select({
     () => () => {
       if (typeaheadTimerRef.current) {
         clearTimeout(typeaheadTimerRef.current);
+      }
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
       }
     },
     [],
@@ -460,10 +479,16 @@ export function Select({
         </p>
       ) : null}
 
-      {isOpen && position
+      {isMounted && position
         ? createPortal(
             <div
-              className="fixed z-[1000] overflow-y-auto overscroll-contain border border-black bg-white p-1 shadow-[0_18px_50px_rgba(0,0,0,0.16)] [scrollbar-color:rgba(0,0,0,0.35)_transparent] [scrollbar-width:thin]"
+              aria-hidden={!isOpen}
+              className={cn(
+                "fixed z-[1000] overflow-y-auto overscroll-contain border border-black bg-white p-1 shadow-[0_18px_50px_rgba(0,0,0,0.16)] transition-[opacity,transform] duration-150 ease-out [scrollbar-color:rgba(0,0,0,0.35)_transparent] [scrollbar-width:thin]",
+                isOpen
+                  ? "translate-y-0 opacity-100"
+                  : "pointer-events-none -translate-y-1 opacity-0",
+              )}
               id={listboxId}
               ref={panelRef}
               role="listbox"

@@ -33,6 +33,7 @@ export function ArticleCard({
           : "flex flex-col gap-5",
         isPrimary && "md:col-span-2 xl:col-span-2",
       )}
+      data-reveal
     >
       <Link
         className={cn(

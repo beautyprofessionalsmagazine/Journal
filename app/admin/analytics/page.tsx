@@ -24,7 +24,10 @@ export default async function AdminAnalyticsPage() {
           ]}
           title="Database totals"
         />
-        <section className="border border-black/15 p-5">
+        <section
+          className="surface-transition border border-black/15 p-5"
+          data-reveal
+        >
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular tags
           </h2>
@@ -39,7 +42,10 @@ export default async function AdminAnalyticsPage() {
               ))}
           </div>
         </section>
-        <section className="border border-black/15 p-5">
+        <section
+          className="surface-transition border border-black/15 p-5"
+          data-reveal
+        >
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular articles
           </h2>
@@ -76,7 +82,10 @@ function AnalyticsPanel({ title, items }: AnalyticsPanelProps) {
   const maxValue = Math.max(...items.map((item) => item.value), 1);
 
   return (
-    <section className="border border-black/15 p-5">
+    <section
+      className="surface-transition border border-black/15 p-5"
+      data-reveal
+    >
       <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
         {title}
       </h2>
