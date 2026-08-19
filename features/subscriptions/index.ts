@@ -1,4 +1,5 @@
 export { SubscribePage } from "./components/SubscribePage";
+export { SubscriptionAdminPage } from "./components/SubscriptionAdminPage";
 export {
   getGroupedSubscriptions,
   listDistributionPartners,
