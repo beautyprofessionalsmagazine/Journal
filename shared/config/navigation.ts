@@ -25,6 +25,7 @@ export const mainNavigation = [
 
 export const serviceNavigation = [
   { name: "About", slug: "about" },
+  { name: "Subscribe", slug: "subscribe" },
   { name: "Contacts", slug: "contacts" },
   { name: "Collaboration", slug: "collaboration" },
   { name: "Careers", slug: "careers" },

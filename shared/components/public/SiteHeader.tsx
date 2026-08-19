@@ -80,7 +80,7 @@ export function SiteHeader() {
       ref={headerRef}
     >
       <div className="site-container">
-        <div className="grid min-h-[4.75rem] grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 lg:min-h-[7rem] lg:grid-cols-[10rem_minmax(0,1fr)_10rem]">
+        <div className="grid min-h-[4.75rem] grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 lg:min-h-[7rem] lg:grid-cols-[15rem_minmax(0,1fr)_15rem]">
           <Button
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
@@ -97,17 +97,28 @@ export function SiteHeader() {
             )}
           </Button>
 
-          <Link
-            aria-current={
-              isRouteActive(pathname, "/current-issue")
-                ? "page"
-                : undefined
-            }
-            className="focus-ring link-transition hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
-            href="/current-issue"
-          >
-            Current Issue
-          </Link>
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link
+              aria-current={
+                isRouteActive(pathname, "/current-issue")
+                  ? "page"
+                  : undefined
+              }
+              className="focus-ring link-transition inline-flex min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em]"
+              href="/current-issue"
+            >
+              Current Issue
+            </Link>
+            <Link
+              aria-current={
+                isRouteActive(pathname, "/subscribe") ? "page" : undefined
+              }
+              className="focus-ring link-transition inline-flex min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em]"
+              href="/subscribe"
+            >
+              Subscribe
+            </Link>
+          </div>
 
           <Link
             aria-current={pathname === "/" ? "page" : undefined}
@@ -244,7 +255,7 @@ export function SiteHeader() {
           aria-label="Mobile navigation"
           className="site-container flex min-h-full flex-col py-5"
         >
-          <div className="grid grid-cols-2 border-y border-black">
+          <div className="grid grid-cols-3 border-y border-black">
             <Link
               aria-current={
                 isRouteActive(pathname, "/current-issue")
@@ -255,6 +266,15 @@ export function SiteHeader() {
               href="/current-issue"
             >
               Current Issue
+            </Link>
+            <Link
+              aria-current={
+                isRouteActive(pathname, "/subscribe") ? "page" : undefined
+              }
+              className="focus-ring link-transition inline-flex min-h-12 items-center border-r border-black px-3 text-xs font-semibold uppercase tracking-[0.08em]"
+              href="/subscribe"
+            >
+              Subscribe
             </Link>
             <Link
               aria-current={
