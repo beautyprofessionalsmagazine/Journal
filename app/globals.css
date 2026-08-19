@@ -24,6 +24,14 @@ html {
   background: var(--background);
   color: var(--foreground);
   scroll-behavior: smooth;
+  /* Keeps the sticky site header from covering anything scrolled into view. */
+  scroll-padding-top: 5.75rem;
+}
+
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: 11rem;
+  }
 }
 
 body {
@@ -118,41 +126,47 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.input-control,
-.article-form-control {
-  min-height: 3rem;
-  width: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.22);
-  border-radius: 0;
-  background: #ffffff;
-  padding: 0.75rem;
-  color: #111111;
-  font-family: var(--font-editorial-sans);
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  outline: none;
-  transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
-}
+/*
+ * Layered so Tailwind utilities win: `input-control pl-10` must be able to
+ * make room for a leading icon instead of losing to the shorthand below.
+ */
+@layer components {
+  .input-control,
+  .article-form-control {
+    min-height: 3rem;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.22);
+    border-radius: 0;
+    background: #ffffff;
+    padding: 0.75rem;
+    color: #111111;
+    font-family: var(--font-editorial-sans);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    outline: none;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease;
+  }
 
-.input-control:focus,
-.article-form-control:focus {
-  border-color: #111111;
-  box-shadow: 0 0 0 1px #111111;
-}
+  .input-control:focus,
+  .article-form-control:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 1px #111111;
+  }
 
-.input-control:focus-visible,
-.article-form-control:focus-visible {
-  outline: 2px solid #111111;
-  outline-offset: 2px;
-}
+  .input-control:focus-visible,
+  .article-form-control:focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: 2px;
+  }
 
-.input-control[aria-invalid="true"],
-.article-form-control[aria-invalid="true"] {
-  border-color: #9f1d1d;
+  .input-control[aria-invalid="true"],
+  .article-form-control[aria-invalid="true"] {
+    border-color: #9f1d1d;
+  }
 }
 
 .article-editor .ProseMirror {
