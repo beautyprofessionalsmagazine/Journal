@@ -82,6 +82,7 @@ export async function createSubscriptionAction(
   ]);
 
   revalidatePath("/admin/subscriptions");
+  revalidatePath("/admin/distributors");
 
   return {
     status: "success",
@@ -119,7 +120,9 @@ export async function updateSubscriptionStatusAction(
   }
 
   revalidatePath("/admin/subscriptions");
+  revalidatePath("/admin/distributors");
   revalidatePath("/where-to-find");
+  revalidatePath("/");
 
   return { ok: true as const };
 }
@@ -142,6 +145,7 @@ export async function updateSubscriptionDeliveryStatusAction(
     .where(eq(subscriptionsTable.id, id));
 
   revalidatePath("/admin/subscriptions");
+  revalidatePath("/admin/distributors");
 
   return { ok: true as const };
 }

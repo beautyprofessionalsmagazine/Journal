@@ -1,3 +1,4 @@
+import { HomeDistribution } from "@/features/home/components/HomeDistribution";
 import { HomeFeaturedCategories } from "@/features/home/components/HomeFeaturedCategories";
 import { HomeHero } from "@/features/home/components/HomeHero";
 import { HomeLatestArticles } from "@/features/home/components/HomeLatestArticles";
@@ -12,6 +13,7 @@ export function HomePage({ filters }: HomePageProps) {
     <main>
       <HomeHero />
       <HomeLatestArticles filters={filters} />
+      <HomeDistribution />
       <HomeFeaturedCategories />
     </main>
   );

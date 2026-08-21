@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 
 import { subscriptionsTable } from "@/features/subscriptions/db/subscription-schema";
 import {
@@ -72,19 +72,15 @@ export async function getGroupedSubscriptions(): Promise<GroupedSubscriptions> {
 }
 
 /**
- * Approved salons and schools are Official Distribution Partners and are the
- * pins rendered on the public "Where to Find" map.
+ * Salon and school subscriptions are the distributors: every one of them owns
+ * an address point on the public "Where to Find" map, live once approved.
+ * `/admin/distributors` lists them all, the map renders the eligible ones.
  */
-export async function listDistributionPartners(): Promise<Subscription[]> {
+export async function listDistributorSubscriptions(): Promise<Subscription[]> {
   return db
     .select()
     .from(subscriptionsTable)
-    .where(
-      and(
-        eq(subscriptionsTable.status, "active"),
-        inArray(subscriptionsTable.type, ["salon", "school"]),
-      ),
-    )
+    .where(inArray(subscriptionsTable.type, ["salon", "school"]))
     .orderBy(desc(subscriptionsTable.createdAt));
 }
 

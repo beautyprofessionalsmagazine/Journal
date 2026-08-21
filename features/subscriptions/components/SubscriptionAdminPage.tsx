@@ -1,8 +1,6 @@
-import { Mail, Package } from "lucide-react";
+import { Mail, MapPin, Package } from "lucide-react";
 
 import { AdminLayout, AdminStatCard } from "@/features/admin";
-import { SiteSettingsButton } from "@/features/site-settings/components/SiteSettingsButton";
-import { getSiteSettings } from "@/features/site-settings/server/site-settings-queries";
 import { SubscriptionStatusControls } from "@/features/subscriptions/components/SubscriptionStatusControls";
 import { isResendConfigured } from "@/features/subscriptions/server/subscription-email";
 import { getGroupedSubscriptions } from "@/features/subscriptions/server/subscription-queries";
@@ -16,18 +14,20 @@ import {
   type Subscription,
 } from "@/features/subscriptions/types/subscription";
 import { getUsStateName } from "@/shared/config/us-states";
-import { EmptyState } from "@/shared/components/ui";
+import { ButtonLink, EmptyState } from "@/shared/components/ui";
 
 export async function SubscriptionAdminPage() {
-  const [{ digital, physical, stats }, siteSettings] = await Promise.all([
-    getGroupedSubscriptions(),
-    getSiteSettings(),
-  ]);
+  const { digital, physical, stats } = await getGroupedSubscriptions();
   const emailReady = isResendConfigured();
 
   return (
     <AdminLayout
-      action={<SiteSettingsButton settings={siteSettings} />}
+      action={
+        <ButtonLink href="/admin/distributors" size="lg" variant="secondary">
+          <MapPin aria-hidden="true" size={15} />
+          Distributors
+        </ButtonLink>
+      }
       description="Every subscription request, split into digital delivery and printed distribution."
       title="Subscriptions"
     >
@@ -87,7 +87,7 @@ export async function SubscriptionAdminPage() {
 
         <SubscriptionGroup
           count={physical.length}
-          description="Salons, schools, brands, distributors, Med Spas, and clinics receiving printed copies. Approved locations appear on the Where to Find map."
+          description="Salons, schools, brands, distributors, Med Spas, and clinics receiving printed copies. Their address points are managed on the Distributors page."
           icon={<Package aria-hidden="true" size={16} />}
           kicker="Shipped in print"
           title="Physical subscriptions"

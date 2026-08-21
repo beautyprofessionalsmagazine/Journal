@@ -2,7 +2,12 @@ import { DistributionMap } from "@/features/distribution/components/Distribution
 import { listDistributionLocations } from "@/features/distribution/server/distribution-queries";
 import { ButtonLink } from "@/shared/components/ui";
 
-export async function WhereToFindPage() {
+type WhereToFindPageProps = {
+  /** Address point to open the map on, linked from `/admin/distributors`. */
+  focusId?: string;
+};
+
+export async function WhereToFindPage({ focusId }: WhereToFindPageProps) {
   const locations = await listDistributionLocations();
   const stateCount = new Set(locations.map((location) => location.stateCode))
     .size;
@@ -47,7 +52,7 @@ export async function WhereToFindPage() {
         </header>
 
         <div className="reveal reveal-delay-1 mt-[clamp(2rem,4vw,3.5rem)]">
-          <DistributionMap locations={locations} />
+          <DistributionMap focusId={focusId} locations={locations} />
         </div>
 
         <div className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start">

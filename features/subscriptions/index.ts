@@ -2,7 +2,7 @@ export { SubscribePage } from "./components/SubscribePage";
 export { SubscriptionAdminPage } from "./components/SubscriptionAdminPage";
 export {
   getGroupedSubscriptions,
-  listDistributionPartners,
+  listDistributorSubscriptions,
   listSubscriptions,
 } from "./server/subscription-queries";
 export type {

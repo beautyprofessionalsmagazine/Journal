@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin, Search, X } from "lucide-react";
-import { useMemo, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 
 import {
   US_MAP_VIEW_BOX,
@@ -16,6 +16,11 @@ import { Button } from "@/shared/components/ui";
 
 type DistributionMapProps = {
   locations: DistributionLocation[];
+  /**
+   * Id of a single address point to open the map on, set by the `location`
+   * query parameter the admin distributors table links with.
+   */
+  focusId?: string;
 };
 
 /** Small states need their count badge nudged clear of the coastline. */
@@ -31,10 +36,23 @@ const badgeOffsets: Record<string, [number, number]> = {
   VT: [-8, -10],
 };
 
-export function DistributionMap({ locations }: DistributionMapProps) {
+export function DistributionMap({ locations, focusId }: DistributionMapProps) {
   const [query, setQuery] = useState("");
-  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [selectedState, setSelectedState] = useState<string | null>(
+    () =>
+      locations.find((location) => location.id === focusId)?.stateCode ?? null,
+  );
   const [hoveredState, setHoveredState] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!focusId) {
+      return;
+    }
+
+    document
+      .getElementById(`location-${focusId}`)
+      ?.scrollIntoView({ block: "center" });
+  }, [focusId]);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -323,11 +341,23 @@ export function DistributionMap({ locations }: DistributionMapProps) {
                   </h3>
                   <ul className="divide-y divide-black/10">
                     {stateLocations.map((location) => (
-                      <li className="px-4 py-4" key={location.id}>
+                      <li
+                        className={`px-4 py-4 ${
+                          location.id === focusId
+                            ? "bg-black/[0.045] outline outline-2 -outline-offset-2 outline-black"
+                            : ""
+                        }`}
+                        id={`location-${location.id}`}
+                        key={location.id}
+                      >
                         <div className="flex items-start gap-3">
                           <MapPin
                             aria-hidden="true"
-                            className="mt-1 shrink-0 text-black/45"
+                            className={`mt-1 shrink-0 ${
+                              location.id === focusId
+                                ? "text-black"
+                                : "text-black/45"
+                            }`}
                             size={15}
                           />
                           <div className="min-w-0">

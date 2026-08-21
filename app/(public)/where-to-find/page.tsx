@@ -15,6 +15,16 @@ export const metadata: Metadata = {
     "Find Beauty Professionals Magazine at salons, beauty schools, Med Spas, and clinics across the United States. Search by state, city, or ZIP Code.",
 };
 
-export default function Page() {
-  return <WhereToFindPage />;
+type WhereToFindRouteProps = {
+  searchParams: Promise<{ location?: string | string[] }>;
+};
+
+export default async function Page({ searchParams }: WhereToFindRouteProps) {
+  const { location } = await searchParams;
+
+  return (
+    <WhereToFindPage
+      focusId={Array.isArray(location) ? location[0] : location}
+    />
+  );
 }

@@ -47,6 +47,20 @@ Three subscription types are collected at `/subscribe` and stored in the
 subscription (`status` → Active) automatically publishes it as an Official
 Distribution Partner on the public map.
 
+## Distributors
+
+`/admin/distributors` is the map's control room. It lists every salon and
+school subscription — the distributors — with the address point each one holds
+on `/where-to-find`, and says whether that point is live (`Published`) or not
+(`Awaiting approval`, `Canceled`, `Address incomplete`). **View on map** opens
+`/where-to-find?location=<id>` with the point selected and highlighted. The
+editorial office address is edited from the **Office address** button on this
+page.
+
+`getDistributionPointIssue` in `features/distribution/types/distribution.ts` is
+the single rule for publishing a point; the public map and this table both read
+it, so they cannot disagree about what is live.
+
 ### Email delivery
 
 Email runs on Resend over plain `fetch`, so no package is required. Set
@@ -57,9 +71,10 @@ is logged and skipped — the admin page shows which mode is active.
 ## Where to Find map
 
 `/where-to-find` renders an interactive US map, searchable by state, city, or
-ZIP Code. Its pins come from two sources: the office address in the
-`site_settings` table (edited from the **Office address** button on
-`/admin/subscriptions`) and every approved salon / school subscription.
+ZIP Code, and is linked from the landing page. Its pins come from two sources:
+the office address in the `site_settings` table (edited from the **Office
+address** button on `/admin/distributors`) and every approved salon / school
+subscription.
 
 State outlines are pre-generated into
 `features/distribution/data/us-state-shapes.ts` from public-domain U.S. Census

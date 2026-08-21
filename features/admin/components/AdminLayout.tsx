@@ -16,6 +16,7 @@ const adminNavigation = [
   { label: "Overview", href: "/admin" },
   { label: "Articles", href: "/admin/articles" },
   { label: "Subscriptions", href: "/admin/subscriptions" },
+  { label: "Distributors", href: "/admin/distributors" },
   { label: "Analytics", href: "/admin/analytics" },
 ];
 

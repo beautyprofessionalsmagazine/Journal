@@ -54,8 +54,9 @@ export async function updateSiteSettingsAction(
     };
   }
 
-  revalidatePath("/admin/subscriptions");
+  revalidatePath("/admin/distributors");
   revalidatePath("/where-to-find");
+  revalidatePath("/");
 
   return {
     status: "success",
