@@ -2,6 +2,7 @@
 
 import { AlertCircle, Check, Plus, X } from "lucide-react";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { createDistributorAction } from "@/features/subscriptions/server/subscription-actions";
 import {
@@ -79,7 +80,12 @@ function AddDistributorDialog({ onClose }: { onClose: () => void }) {
     setValues((current) => ({ ...current, [field]: value }));
   }
 
-  return (
+  /**
+   * The admin header animates in with a `transform`, which would make it the
+   * containing block for a `fixed` overlay and clip the dialog to the header.
+   * Rendering into `document.body` keeps the overlay covering the viewport.
+   */
+  return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/45 p-4 py-[max(1rem,6vh)]"
       onPointerDown={(event) => {
@@ -358,6 +364,7 @@ function AddDistributorDialog({ onClose }: { onClose: () => void }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
