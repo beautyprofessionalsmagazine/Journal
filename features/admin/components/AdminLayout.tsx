@@ -71,6 +71,7 @@ export function AdminLayout({
           <header
             className="border-b border-black px-[var(--page-padding)] py-[clamp(2rem,5vw,4.5rem)]"
             data-reveal
+            suppressHydrationWarning
           >
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="flex max-w-3xl flex-col gap-2">

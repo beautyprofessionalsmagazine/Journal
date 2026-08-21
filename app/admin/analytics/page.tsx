@@ -29,6 +29,7 @@ export default async function AdminAnalyticsPage() {
         <section
           className="surface-transition border border-black/15 p-5"
           data-reveal
+          suppressHydrationWarning
         >
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular tags
@@ -58,6 +59,7 @@ export default async function AdminAnalyticsPage() {
         <section
           className="surface-transition border border-black/15 p-5"
           data-reveal
+          suppressHydrationWarning
         >
           <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
             Popular articles
@@ -109,6 +111,7 @@ function AnalyticsPanel({ title, items }: AnalyticsPanelProps) {
     <section
       className="surface-transition border border-black/15 p-5"
       data-reveal
+      suppressHydrationWarning
     >
       <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
         {title}

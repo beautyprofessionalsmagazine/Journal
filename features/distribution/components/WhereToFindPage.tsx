@@ -15,7 +15,7 @@ export async function WhereToFindPage({ focusId }: WhereToFindPageProps) {
   return (
     <main className="bg-white">
       <section className="site-container py-[var(--section-space)]">
-        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.15fr_0.85fr] lg:items-end" suppressHydrationWarning>
           <div>
             <p className="editorial-kicker mb-3 text-black/45">
               Distribution network
@@ -51,11 +51,11 @@ export async function WhereToFindPage({ focusId }: WhereToFindPageProps) {
           </div>
         </header>
 
-        <div className="reveal reveal-delay-1 mt-[clamp(2rem,4vw,3.5rem)]">
+        <div className="reveal reveal-delay-1 mt-[clamp(2rem,4vw,3.5rem)]" suppressHydrationWarning>
           <DistributionMap focusId={focusId} locations={locations} />
         </div>
 
-        <div className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start">
+        <div className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start" suppressHydrationWarning>
           <p className="editorial-kicker text-black/45">Become a partner</p>
           <div className="max-w-xl">
             <h2 className="[font-family:var(--font-editorial-title)] text-[clamp(1.8rem,4vw,3rem)] font-bold leading-none">

@@ -5,7 +5,7 @@ export function SubscribePage() {
   return (
     <main className="bg-white">
       <section className="site-container py-[var(--section-space)]">
-        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.1fr_0.9fr] lg:items-end" suppressHydrationWarning>
           <div>
             <p className="editorial-kicker mb-3 text-black/45">
               Beauty Professionals Magazine
@@ -19,11 +19,11 @@ export function SubscribePage() {
           </p>
         </header>
 
-        <div className="reveal reveal-delay-1 mt-[clamp(2.5rem,5vw,4.5rem)]">
+        <div className="reveal reveal-delay-1 mt-[clamp(2.5rem,5vw,4.5rem)]" suppressHydrationWarning>
           <SubscriptionPlans />
         </div>
 
-        <div className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start">
+        <div className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start" suppressHydrationWarning>
           <p className="editorial-kicker text-black/45">Already a partner</p>
           <div className="max-w-xl">
             <h2 className="[font-family:var(--font-editorial-title)] text-[clamp(1.8rem,4vw,3rem)] font-bold leading-none">

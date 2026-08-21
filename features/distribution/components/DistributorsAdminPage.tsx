@@ -49,7 +49,7 @@ export async function DistributorsAdminPage() {
           />
         </section>
 
-        <section className="min-w-0" data-reveal>
+        <section className="min-w-0" data-reveal suppressHydrationWarning>
           <div className="flex flex-col gap-4 border-b border-black pb-5 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
               <p className="editorial-kicker flex items-center gap-2 text-black/45">

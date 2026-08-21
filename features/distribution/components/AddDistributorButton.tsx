@@ -44,12 +44,13 @@ function AddDistributorDialog({ onClose }: { onClose: () => void }) {
     initialDistributorFormState,
   );
   const [values, setValues] = useState(emptyDistributorFormValues);
-  const panelRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      // An open Select handles Escape first and marks the event, so the first
+      // press closes the dropdown and only the next one closes the dialog.
+      if (event.key === "Escape" && !event.defaultPrevented) {
         onClose();
       }
     }
@@ -89,7 +90,11 @@ function AddDistributorDialog({ onClose }: { onClose: () => void }) {
     <div
       className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/45 p-4 py-[max(1rem,6vh)]"
       onPointerDown={(event) => {
-        if (!panelRef.current?.contains(event.target as Node)) {
+        // Only a press on the backdrop itself closes the dialog. Testing
+        // "outside the panel" instead would also catch the Select listboxes:
+        // they are portaled to the body but still bubble through this handler,
+        // so picking an option would dismiss the whole dialog.
+        if (event.target === event.currentTarget) {
           onClose();
         }
       }}
@@ -98,7 +103,6 @@ function AddDistributorDialog({ onClose }: { onClose: () => void }) {
         aria-labelledby="add-distributor-heading"
         aria-modal="true"
         className="w-full max-w-xl border border-black bg-white"
-        ref={panelRef}
         role="dialog"
       >
         <div className="flex items-start justify-between gap-4 border-b border-black px-5 py-4">

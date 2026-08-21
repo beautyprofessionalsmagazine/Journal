@@ -6,7 +6,7 @@ type AdminStatCardProps = {
 
 export function AdminStatCard({ label, value, detail }: AdminStatCardProps) {
   return (
-    <article className="border-t border-black bg-white py-5" data-reveal>
+    <article className="border-t border-black bg-white py-5" data-reveal suppressHydrationWarning>
       <p className="[font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase text-black/58">
         {label}
       </p>

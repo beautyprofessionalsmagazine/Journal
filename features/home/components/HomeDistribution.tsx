@@ -19,6 +19,7 @@ export async function HomeDistribution() {
         <div
           className="grid gap-[clamp(1.5rem,4vw,3rem)] lg:grid-cols-[1.15fr_0.85fr] lg:items-end"
           data-reveal
+          suppressHydrationWarning
         >
           <div>
             <p className="editorial-kicker flex items-center gap-2 text-black/45">

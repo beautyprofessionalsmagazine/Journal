@@ -9,6 +9,15 @@ type MotionProviderProps = {
 
 const revealSelector = ".reveal, [data-reveal]";
 
+/**
+ * Reveal state lives in the DOM rather than in React: this provider adds
+ * `is-visible` as elements scroll into view. Because route segments hydrate
+ * behind their own Suspense boundaries, that class can land on markup React has
+ * streamed but not hydrated yet — which React would report as a hydration
+ * mismatch and then undo, leaving the element stuck at `opacity: 0`. Every
+ * element carrying `.reveal` / `data-reveal` therefore also sets
+ * `suppressHydrationWarning`, telling React this one class is ours to manage.
+ */
 export function MotionProvider({ children }: MotionProviderProps) {
   const pathname = usePathname();
 
