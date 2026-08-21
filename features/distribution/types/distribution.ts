@@ -4,7 +4,7 @@ import type {
 } from "@/features/subscriptions/types/subscription";
 import { getUsStateName } from "@/shared/config/us-states";
 
-export type DistributionLocationKind = "office" | "salon" | "school";
+export type DistributionLocationKind = "salon" | "school";
 
 export type DistributionLocation = {
   id: string;
@@ -20,7 +20,6 @@ export type DistributionLocation = {
 };
 
 export const distributionKindLabels: Record<DistributionLocationKind, string> = {
-  office: "Editorial office",
   salon: "Official Distribution Partner",
   school: "Official Distribution Partner",
 };

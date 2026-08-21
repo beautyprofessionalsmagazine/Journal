@@ -53,9 +53,12 @@ Distribution Partner on the public map.
 school subscription — the distributors — with the address point each one holds
 on `/where-to-find`, and says whether that point is live (`Published`) or not
 (`Awaiting approval`, `Canceled`, `Address incomplete`). **View on map** opens
-`/where-to-find?location=<id>` with the point selected and highlighted. The
-editorial office address is edited from the **Office address** button on this
-page.
+`/where-to-find?location=<id>` with the point selected and highlighted.
+
+**Add distributor** on this page records a partner the desk agreed with
+off-site: it is stored as an already-approved salon or school subscription
+(derived from the organization type) and publishes its point immediately, so it
+skips both the approval queue and the confirmation emails.
 
 `getDistributionPointIssue` in `features/distribution/types/distribution.ts` is
 the single rule for publishing a point; the public map and this table both read
@@ -71,10 +74,9 @@ is logged and skipped — the admin page shows which mode is active.
 ## Where to Find map
 
 `/where-to-find` renders an interactive US map, searchable by state, city, or
-ZIP Code, and is linked from the landing page. Its pins come from two sources:
-the office address in the `site_settings` table (edited from the **Office
-address** button on `/admin/distributors`) and every approved salon / school
-subscription.
+ZIP Code, and is linked from the landing page. Every pin is an approved salon /
+school subscription — reaching the map either by approval on
+`/admin/subscriptions` or by being added by hand on `/admin/distributors`.
 
 State outlines are pre-generated into
 `features/distribution/data/us-state-shapes.ts` from public-domain U.S. Census

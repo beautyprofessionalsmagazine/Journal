@@ -369,11 +369,9 @@ export function DistributionMap({ locations, focusId }: DistributionMapProps) {
                                 location.stateName}
                             </p>
                             <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-black/45">
-                              {location.kind === "office"
-                                ? "Editorial office"
-                                : location.organizationType
-                                  ? `${organizationTypeLabels[location.organizationType]} · Official Distribution Partner`
-                                  : "Official Distribution Partner"}
+                              {location.organizationType
+                                ? `${organizationTypeLabels[location.organizationType]} · Official Distribution Partner`
+                                : "Official Distribution Partner"}
                             </p>
                           </div>
                         </div>

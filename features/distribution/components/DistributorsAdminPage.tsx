@@ -2,15 +2,10 @@ import { ExternalLink, MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { AdminLayout, AdminStatCard } from "@/features/admin";
-import {
-  distributionPointIssueLabels,
-  formatDistributionAddress,
-  type DistributionLocation,
-} from "@/features/distribution/types/distribution";
+import { AddDistributorButton } from "@/features/distribution/components/AddDistributorButton";
+import { distributionPointIssueLabels } from "@/features/distribution/types/distribution";
 import type { Distributor } from "@/features/distribution/server/distribution-queries";
 import { getDistributorDirectory } from "@/features/distribution/server/distribution-queries";
-import { SiteSettingsButton } from "@/features/site-settings/components/SiteSettingsButton";
-import { getSiteSettings } from "@/features/site-settings/server/site-settings-queries";
 import { SubscriptionStatusControls } from "@/features/subscriptions/components/SubscriptionStatusControls";
 import {
   formatSubscriptionAddress,
@@ -22,14 +17,11 @@ import {
 import { EmptyState } from "@/shared/components/ui";
 
 export async function DistributorsAdminPage() {
-  const [{ office, distributors, stats }, siteSettings] = await Promise.all([
-    getDistributorDirectory(),
-    getSiteSettings(),
-  ]);
+  const { distributors, stats } = await getDistributorDirectory();
 
   return (
     <AdminLayout
-      action={<SiteSettingsButton settings={siteSettings} />}
+      action={<AddDistributorButton />}
       description="Every salon and school subscription and the address point it holds on the public Where to Find map."
       title="Distributors"
     >
@@ -57,8 +49,6 @@ export async function DistributorsAdminPage() {
           />
         </section>
 
-        <OfficeCard office={office} />
-
         <section className="min-w-0" data-reveal>
           <div className="flex flex-col gap-4 border-b border-black pb-5 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
@@ -73,7 +63,9 @@ export async function DistributorsAdminPage() {
                 Each row is one address point. Setting a distributor to{" "}
                 <strong className="font-semibold">Active</strong> publishes its
                 point on <Link className="focus-ring underline decoration-black/25 underline-offset-4" href="/where-to-find">Where to Find</Link>;
-                canceling it takes the point down.
+                canceling it takes the point down. <strong className="font-semibold">Add distributor</strong>{" "}
+                publishes an address point straight away, without the approval
+                step.
               </p>
             </div>
             <p className="shrink-0 [font-family:var(--font-editorial-title)] text-[clamp(2.5rem,5vw,3.5rem)] font-bold leading-none">
@@ -86,7 +78,7 @@ export async function DistributorsAdminPage() {
               <EmptyState
                 align="left"
                 className="border-x-0 border-b-0"
-                description="Salon and school requests from /subscribe land here, each with the address point it will hold on the map."
+                description="Salon and school requests from /subscribe land here, each with the address point it will hold on the map. You can also add one by hand."
                 kicker="Distribution desk"
                 size="compact"
                 title="No distributors yet"
@@ -101,30 +93,6 @@ export async function DistributorsAdminPage() {
         </section>
       </div>
     </AdminLayout>
-  );
-}
-
-function OfficeCard({ office }: { office: DistributionLocation | null }) {
-  return (
-    <section
-      className="border border-black/15 p-[clamp(1.25rem,3vw,2rem)]"
-      data-reveal
-    >
-      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="editorial-kicker text-black/45">Editorial office</p>
-          <h2 className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(1.6rem,3vw,2.4rem)] font-bold leading-none">
-            {office?.name ?? "No office address yet"}
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-black/62">
-            {office
-              ? formatDistributionAddress(office)
-              : "Add the office address to anchor the distribution map."}
-          </p>
-        </div>
-        {office ? <MapPointLink id={office.id} /> : null}
-      </div>
-    </section>
   );
 }
 

@@ -1,23 +1,24 @@
 "use client";
 
-import { AlertCircle, Check, MapPin, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useActionState } from "react";
+import { AlertCircle, Check, Plus, X } from "lucide-react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
-import { updateSiteSettingsAction } from "@/features/site-settings/server/site-settings-actions";
+import { createDistributorAction } from "@/features/subscriptions/server/subscription-actions";
 import {
-  getSiteSettingsFormValues,
-  initialSiteSettingsFormState,
-  type SiteSettings,
-} from "@/features/site-settings/types/site-settings";
+  emptyDistributorFormValues,
+  initialDistributorFormState,
+  organizationTypeLabels,
+  organizationTypeValues,
+} from "@/features/subscriptions/types/subscription";
 import { usStateSelectOptions } from "@/shared/config/us-states";
 import { Button, FormField, Select } from "@/shared/components/ui";
 
-type SiteSettingsButtonProps = {
-  settings: SiteSettings | null;
-};
+const organizationTypeOptions = organizationTypeValues.map((value) => ({
+  label: organizationTypeLabels[value],
+  value,
+}));
 
-export function SiteSettingsButton({ settings }: SiteSettingsButtonProps) {
+export function AddDistributorButton() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -28,32 +29,20 @@ export function SiteSettingsButton({ settings }: SiteSettingsButtonProps) {
         size="lg"
         variant="secondary"
       >
-        <MapPin aria-hidden="true" size={15} />
-        Office address
+        <Plus aria-hidden="true" size={15} />
+        Add distributor
       </Button>
-      {isOpen ? (
-        <SiteSettingsDialog
-          onClose={() => setIsOpen(false)}
-          settings={settings}
-        />
-      ) : null}
+      {isOpen ? <AddDistributorDialog onClose={() => setIsOpen(false)} /> : null}
     </>
   );
 }
 
-type SiteSettingsDialogProps = {
-  settings: SiteSettings | null;
-  onClose: () => void;
-};
-
-function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
+function AddDistributorDialog({ onClose }: { onClose: () => void }) {
   const [state, formAction, isPending] = useActionState(
-    updateSiteSettingsAction,
-    initialSiteSettingsFormState,
+    createDistributorAction,
+    initialDistributorFormState,
   );
-  const [values, setValues] = useState(() =>
-    getSiteSettingsFormValues(settings),
-  );
+  const [values, setValues] = useState(emptyDistributorFormValues);
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
@@ -75,6 +64,17 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
     };
   }, [onClose]);
 
+  // A successful save clears the form so the desk can type the next address.
+  const [lastState, setLastState] = useState(state);
+
+  if (state !== lastState) {
+    setLastState(state);
+
+    if (state.status === "success") {
+      setValues(emptyDistributorFormValues);
+    }
+  }
+
   function updateField(field: keyof typeof values, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
   }
@@ -89,7 +89,7 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
       }}
     >
       <div
-        aria-labelledby="site-settings-heading"
+        aria-labelledby="add-distributor-heading"
         aria-modal="true"
         className="w-full max-w-xl border border-black bg-white"
         ref={panelRef}
@@ -97,15 +97,16 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
       >
         <div className="flex items-start justify-between gap-4 border-b border-black px-5 py-4">
           <div>
-            <p className="editorial-kicker text-black/45">Site settings</p>
+            <p className="editorial-kicker text-black/45">Distribution desk</p>
             <h2
               className="mt-1 [font-family:var(--font-editorial-title)] text-2xl font-bold leading-none"
-              id="site-settings-heading"
+              id="add-distributor-heading"
             >
-              Office address
+              Add distributor
             </h2>
             <p className="mt-1.5 text-xs leading-5 text-black/55">
-              This address is the anchor pin on the public distribution map.
+              Added by hand, skipping the approval queue — the address point
+              goes live on the map right away.
             </p>
           </div>
           <Button
@@ -142,40 +143,119 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
           ) : null}
 
           <fieldset className="grid gap-4 border-0 p-0" disabled={isPending}>
-            <legend className="sr-only">Office address</legend>
+            <legend className="sr-only">Distributor details</legend>
 
             <FormField
-              error={state.fieldErrors.officeName}
-              help="Shown as the location name on the map, e.g. IBPA Office."
-              id="site-settings-office-name"
-              label="Office name"
+              error={state.fieldErrors.organizationName}
+              help="Shown as the location name on the public map."
+              id="add-distributor-name"
+              label="Organization name"
               required
             >
               <input
-                aria-invalid={Boolean(state.fieldErrors.officeName)}
+                aria-invalid={Boolean(state.fieldErrors.organizationName)}
                 className="input-control"
-                id="site-settings-office-name"
-                name="officeName"
+                id="add-distributor-name"
+                name="organizationName"
                 onChange={(event) =>
-                  updateField("officeName", event.target.value)
+                  updateField("organizationName", event.target.value)
                 }
-                placeholder="IBPA Office"
+                placeholder="Maison Beauty Studio"
                 ref={firstFieldRef}
                 required
-                value={values.officeName}
+                value={values.organizationName}
               />
             </FormField>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                error={state.fieldErrors.organizationType}
+                help="A salon is filed as a salon subscription; everything else as a school / company one."
+                id="add-distributor-organization-type"
+                label="Organization type"
+                required
+              >
+                <Select
+                  id="add-distributor-organization-type"
+                  invalid={Boolean(state.fieldErrors.organizationType)}
+                  name="organizationType"
+                  onChange={(value) => updateField("organizationType", value)}
+                  options={organizationTypeOptions}
+                  placeholder="Select a type"
+                  required
+                  value={values.organizationType}
+                />
+              </FormField>
+
+              <FormField
+                error={state.fieldErrors.copies}
+                help="Leave empty if the print run is not agreed yet."
+                id="add-distributor-copies"
+                label="Copies per issue"
+              >
+                <input
+                  aria-invalid={Boolean(state.fieldErrors.copies)}
+                  className="input-control"
+                  id="add-distributor-copies"
+                  inputMode="numeric"
+                  name="copies"
+                  onChange={(event) =>
+                    updateField("copies", event.target.value)
+                  }
+                  placeholder="10"
+                  value={values.copies}
+                />
+              </FormField>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                error={state.fieldErrors.contactPerson}
+                id="add-distributor-contact"
+                label="Contact person"
+              >
+                <input
+                  className="input-control"
+                  id="add-distributor-contact"
+                  name="contactPerson"
+                  onChange={(event) =>
+                    updateField("contactPerson", event.target.value)
+                  }
+                  placeholder="Dana Reyes"
+                  value={values.contactPerson}
+                />
+              </FormField>
+
+              <FormField
+                error={state.fieldErrors.email}
+                id="add-distributor-email"
+                label="Email"
+                required
+              >
+                <input
+                  aria-invalid={Boolean(state.fieldErrors.email)}
+                  className="input-control"
+                  id="add-distributor-email"
+                  name="email"
+                  onChange={(event) => updateField("email", event.target.value)}
+                  placeholder="desk@example.com"
+                  required
+                  type="email"
+                  value={values.email}
+                />
+              </FormField>
+            </div>
+
             <FormField
               error={state.fieldErrors.addressLine1}
-              id="site-settings-address-line1"
+              id="add-distributor-address-line1"
               label="Street address"
               required
             >
               <input
                 aria-invalid={Boolean(state.fieldErrors.addressLine1)}
                 className="input-control"
-                id="site-settings-address-line1"
+                id="add-distributor-address-line1"
                 name="addressLine1"
                 onChange={(event) =>
                   updateField("addressLine1", event.target.value)
@@ -188,12 +268,12 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
 
             <FormField
               error={state.fieldErrors.addressLine2}
-              id="site-settings-address-line2"
+              id="add-distributor-address-line2"
               label="Address line 2"
             >
               <input
                 className="input-control"
-                id="site-settings-address-line2"
+                id="add-distributor-address-line2"
                 name="addressLine2"
                 onChange={(event) =>
                   updateField("addressLine2", event.target.value)
@@ -206,14 +286,14 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
             <div className="grid gap-4 sm:grid-cols-3">
               <FormField
                 error={state.fieldErrors.city}
-                id="site-settings-city"
+                id="add-distributor-city"
                 label="City"
                 required
               >
                 <input
                   aria-invalid={Boolean(state.fieldErrors.city)}
                   className="input-control"
-                  id="site-settings-city"
+                  id="add-distributor-city"
                   name="city"
                   onChange={(event) => updateField("city", event.target.value)}
                   placeholder="Los Angeles"
@@ -224,12 +304,12 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
 
               <FormField
                 error={state.fieldErrors.state}
-                id="site-settings-state"
+                id="add-distributor-state"
                 label="State"
                 required
               >
                 <Select
-                  id="site-settings-state"
+                  id="add-distributor-state"
                   invalid={Boolean(state.fieldErrors.state)}
                   name="state"
                   onChange={(value) => updateField("state", value)}
@@ -242,14 +322,14 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
 
               <FormField
                 error={state.fieldErrors.zipCode}
-                id="site-settings-zip"
+                id="add-distributor-zip"
                 label="ZIP Code"
                 required
               >
                 <input
                   aria-invalid={Boolean(state.fieldErrors.zipCode)}
                   className="input-control"
-                  id="site-settings-zip"
+                  id="add-distributor-zip"
                   inputMode="numeric"
                   name="zipCode"
                   onChange={(event) =>
@@ -269,11 +349,11 @@ function SiteSettingsDialog({ settings, onClose }: SiteSettingsDialogProps) {
             </Button>
             <Button
               isLoading={isPending}
-              loadingLabel="Saving…"
+              loadingLabel="Adding…"
               size="lg"
               type="submit"
             >
-              Save address
+              Add distributor
             </Button>
           </div>
         </form>

@@ -15,6 +15,13 @@
       "when": 1787172601515,
       "tag": "0001_nappy_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787334200169,
+      "tag": "0002_drop_site_settings",
+      "breakpoints": true
     }
   ]
 }

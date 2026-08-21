@@ -1,9 +1,12 @@
 import { type ZodError, z } from "zod";
 
 import {
+  organizationTypeValues,
   salonCopiesOptions,
   schoolCopiesOptions,
   schoolOrganizationTypeValues,
+  type DistributorFieldErrors,
+  type DistributorFormValues,
   type SubscriptionFieldErrors,
   type SubscriptionFormValues,
   type SubscriptionType,
@@ -80,6 +83,24 @@ const schoolSchema = z.object({
   emailConsent: z.boolean(),
 });
 
+/**
+ * Distributors entered by hand on `/admin/distributors`. The desk types an
+ * address it already holds, so copies are optional and free-form rather than
+ * picked from the packages offered on the public form.
+ */
+const distributorSchema = z.object({
+  organizationName: z.string().trim().min(1, "Organization name is required."),
+  contactPerson: optionalText,
+  email: emailField,
+  organizationType: z.enum(organizationTypeValues, {
+    message: "Select an organization type.",
+  }),
+  ...addressFields,
+  copies: manualCopiesField(),
+});
+
+export type DistributorInput = z.infer<typeof distributorSchema>;
+
 export type IndividualSubscriptionInput = z.infer<typeof individualSchema>;
 export type SalonSubscriptionInput = z.infer<typeof salonSchema>;
 export type SchoolSubscriptionInput = z.infer<typeof schoolSchema>;
@@ -102,6 +123,31 @@ export function validateSubscription(
   }
 
   return schoolSchema.safeParse(values);
+}
+
+export function validateDistributor(values: DistributorFormValues) {
+  return distributorSchema.safeParse(values);
+}
+
+export function getDistributorFromFormData(
+  formData: FormData,
+): DistributorFormValues {
+  return {
+    organizationName: readString(formData, "organizationName"),
+    contactPerson: readString(formData, "contactPerson"),
+    email: readString(formData, "email"),
+    organizationType: readString(formData, "organizationType"),
+    addressLine1: readString(formData, "addressLine1"),
+    addressLine2: readString(formData, "addressLine2"),
+    city: readString(formData, "city"),
+    state: readString(formData, "state"),
+    zipCode: readString(formData, "zipCode"),
+    copies: readString(formData, "copies"),
+  };
+}
+
+export function getDistributorFieldErrors(error: ZodError) {
+  return getSubscriptionFieldErrors(error) as DistributorFieldErrors;
 }
 
 export function getSubscriptionFromFormData(
@@ -142,6 +188,22 @@ export function getSubscriptionFieldErrors(error: ZodError) {
   }
 
   return fieldErrors;
+}
+
+/** Any whole number of copies, or none recorded yet. */
+function manualCopiesField() {
+  return z
+    .union([z.string(), z.number()])
+    .transform((value) =>
+      typeof value === "string" ? value.trim() : String(value),
+    )
+    .refine((value) => value === "" || /^\d+$/.test(value), {
+      message: "Enter a whole number of copies.",
+    })
+    .transform((value) => (value === "" ? null : Number(value)))
+    .refine((value) => value === null || (value > 0 && value <= 100000), {
+      message: "Enter between 1 and 100,000 copies.",
+    });
 }
 
 function copiesField(allowed: readonly number[]) {

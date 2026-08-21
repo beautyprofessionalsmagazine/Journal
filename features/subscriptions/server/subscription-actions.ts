@@ -13,8 +13,10 @@ import {
 } from "@/features/subscriptions/server/subscription-email";
 import { getSubscriptionById } from "@/features/subscriptions/server/subscription-queries";
 import {
+  getDistributorSubscriptionType,
   subscriptionDeliveryStatusValues,
   subscriptionStatusValues,
+  type DistributorFormState,
   type Subscription,
   type SubscriptionDeliveryStatus,
   type SubscriptionFormState,
@@ -22,8 +24,11 @@ import {
   type SubscriptionType,
 } from "@/features/subscriptions/types/subscription";
 import {
+  getDistributorFieldErrors,
+  getDistributorFromFormData,
   getSubscriptionFieldErrors,
   getSubscriptionFromFormData,
+  validateDistributor,
   validateSubscription,
   type IndividualSubscriptionInput,
   type SalonSubscriptionInput,
@@ -87,6 +92,70 @@ export async function createSubscriptionAction(
   return {
     status: "success",
     message: successMessages[type],
+    fieldErrors: {},
+  };
+}
+
+/**
+ * Adds a distributor the desk already agreed with off-site. It skips the
+ * approval queue — and the confirmation emails that go with it — and is
+ * published on the map straight away.
+ */
+export async function createDistributorAction(
+  _previousState: DistributorFormState,
+  formData: FormData,
+): Promise<DistributorFormState> {
+  if (!(await hasAdminSession())) {
+    redirect("/admin/login");
+  }
+
+  const parsed = validateDistributor(getDistributorFromFormData(formData));
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Please fix the highlighted fields and try again.",
+      fieldErrors: getDistributorFieldErrors(parsed.error),
+    };
+  }
+
+  const values = parsed.data;
+
+  try {
+    await db.insert(subscriptionsTable).values({
+      type: getDistributorSubscriptionType(values.organizationType),
+      status: "active",
+      deliveryStatus: "prepare",
+      email: values.email,
+      organizationName: values.organizationName,
+      contactPerson: values.contactPerson,
+      organizationType: values.organizationType,
+      addressLine1: values.addressLine1,
+      addressLine2: values.addressLine2,
+      city: values.city,
+      state: values.state,
+      zipCode: values.zipCode,
+      copies: values.copies,
+      emailConsent: false,
+    });
+  } catch (error) {
+    console.error("[subscriptions] Failed to add distributor.", error);
+
+    return {
+      status: "error",
+      message: "Unable to add this distributor right now. Please try again.",
+      fieldErrors: {},
+    };
+  }
+
+  revalidatePath("/admin/distributors");
+  revalidatePath("/admin/subscriptions");
+  revalidatePath("/where-to-find");
+  revalidatePath("/");
+
+  return {
+    status: "success",
+    message: `${values.organizationName} is on the map.`,
     fieldErrors: {},
   };
 }

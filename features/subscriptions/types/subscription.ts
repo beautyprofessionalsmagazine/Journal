@@ -160,6 +160,58 @@ export const emptySubscriptionFormValues: SubscriptionFormValues = {
   emailConsent: false,
 };
 
+/**
+ * Distributors added by hand on `/admin/distributors`. The subscription type is
+ * derived from the organization type, so the two can never disagree: a salon is
+ * a `salon` subscription, everything else is a `school` one.
+ */
+export type DistributorFormValues = {
+  organizationName: string;
+  contactPerson: string;
+  email: string;
+  organizationType: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  copies: string;
+};
+
+export type DistributorFieldErrors = Partial<
+  Record<keyof DistributorFormValues, string>
+>;
+
+export type DistributorFormState = {
+  status: "idle" | "error" | "success";
+  message?: string;
+  fieldErrors: DistributorFieldErrors;
+};
+
+export const initialDistributorFormState: DistributorFormState = {
+  status: "idle",
+  fieldErrors: {},
+};
+
+export const emptyDistributorFormValues: DistributorFormValues = {
+  organizationName: "",
+  contactPerson: "",
+  email: "",
+  organizationType: "",
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  zipCode: "",
+  copies: "",
+};
+
+export function getDistributorSubscriptionType(
+  organizationType: OrganizationType,
+): Exclude<SubscriptionType, "individual"> {
+  return organizationType === "salon" ? "salon" : "school";
+}
+
 export function getSubscriptionChannel(
   type: SubscriptionType,
 ): SubscriptionChannel {
