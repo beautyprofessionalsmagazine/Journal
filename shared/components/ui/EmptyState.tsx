@@ -37,6 +37,7 @@ export function EmptyState({
         className,
       )}
       data-reveal
+      suppressHydrationWarning
     >
       <p className="editorial-kicker text-black/45">{kicker}</p>
       <Heading

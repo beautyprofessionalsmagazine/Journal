@@ -40,7 +40,7 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
           </Link>
 
           <div className="mt-7 grid min-w-0 gap-[clamp(2.5rem,5vw,6rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.72fr)] lg:items-center">
-            <div className="reveal min-w-0">
+            <div className="reveal min-w-0" suppressHydrationWarning>
               <div className="flex flex-wrap gap-2">
                 <TagBadge label={article.category} />
                 {article.tags.slice(0, 3).map((tag) => (
@@ -60,7 +60,7 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
               </div>
             </div>
 
-            <div className="reveal reveal-delay-1 relative aspect-[4/5] min-w-0 overflow-hidden bg-[#eceae4]">
+            <div className="reveal reveal-delay-1 relative aspect-[4/5] min-w-0 overflow-hidden bg-[#eceae4]" suppressHydrationWarning>
               {article.coverImage ? (
                 <Image
                   alt={article.coverImageAlt ?? article.title}

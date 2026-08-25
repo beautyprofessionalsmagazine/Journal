@@ -17,7 +17,7 @@ export function AdminNavLink({ href, label }: AdminNavLinkProps) {
   return (
     <Link
       aria-current={isActive ? "page" : undefined}
-      className={`focus-ring flex min-h-12 items-center justify-center px-2 text-center [font-family:var(--font-editorial-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-black hover:text-white lg:justify-start lg:px-3 ${
+      className={`focus-ring flex h-full min-h-12 w-full items-center justify-center whitespace-nowrap px-3 text-center [font-family:var(--font-editorial-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-black hover:text-white lg:justify-start ${
         isActive ? "bg-black text-white" : ""
       }`}
       href={href}

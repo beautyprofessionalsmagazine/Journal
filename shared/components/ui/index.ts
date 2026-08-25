@@ -17,3 +17,7 @@ export {
   EmptyState,
   type EmptyStateProps,
 } from "@/shared/components/ui/EmptyState";
+export {
+  FormField,
+  type FormFieldProps,
+} from "@/shared/components/ui/FormField";

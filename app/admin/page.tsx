@@ -48,6 +48,7 @@ export default async function AdminOverviewPage() {
           <div
             className="surface-transition border border-black/15"
             data-reveal
+            suppressHydrationWarning
           >
             <div className="border-b border-black/15 p-5">
               <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
@@ -89,6 +90,7 @@ export default async function AdminOverviewPage() {
           <div
             className="surface-transition border border-black/15 p-5"
             data-reveal
+            suppressHydrationWarning
           >
             <h2 className="[font-family:var(--font-editorial-title)] text-3xl font-bold">
               Publishing Split

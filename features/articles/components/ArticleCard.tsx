@@ -34,6 +34,7 @@ export function ArticleCard({
         isPrimary && "md:col-span-2 xl:col-span-2",
       )}
       data-reveal
+      suppressHydrationWarning
     >
       <Link
         className={cn(

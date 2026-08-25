@@ -9,7 +9,7 @@ export function ArticlesPage({ filters }: ArticlesPageProps) {
   return (
     <main className="bg-white">
       <section className="site-container py-[var(--section-space)]">
-        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end" suppressHydrationWarning>
           <div>
             <p className="editorial-kicker mb-3 text-black/45">
               The complete journal

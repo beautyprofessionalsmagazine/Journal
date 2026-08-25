@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:map": "node scripts/generate-us-map.mjs features/distribution/data/us-state-shapes.ts"
   },
   "dependencies": {
     "@tiptap/extension-link": "^3.27.1",
@@ -31,10 +32,13 @@
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "d3-geo": "^3.1.1",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4.3.1",
-    "typescript": "^5.9.3"
+    "topojson-client": "^3.1.0",
+    "typescript": "^5.9.3",
+    "us-atlas": "^3.0.1"
   }
 }

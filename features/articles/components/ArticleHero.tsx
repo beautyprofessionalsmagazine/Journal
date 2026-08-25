@@ -16,7 +16,7 @@ export function ArticleHero({ article }: ArticleHeroProps) {
   return (
     <section className="border-b border-black bg-white">
       <div className="mx-auto grid max-w-[100rem] lg:min-h-[43rem] lg:grid-cols-[minmax(0,0.92fr)_minmax(28rem,0.8fr)]">
-        <div className="reveal flex min-w-0 flex-col justify-center px-[var(--page-padding)] py-[clamp(3rem,7vw,7rem)]">
+        <div className="reveal flex min-w-0 flex-col justify-center px-[var(--page-padding)] py-[clamp(3rem,7vw,7rem)]" suppressHydrationWarning>
           <p className="editorial-kicker text-black/48">Cover story</p>
           <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="editorial-kicker border-y border-black py-2">
@@ -57,6 +57,7 @@ export function ArticleHero({ article }: ArticleHeroProps) {
         <Link
           className="focus-ring reveal reveal-delay-1 relative min-h-[24rem] overflow-hidden bg-[#e8e5df] lg:min-h-full"
           href={href}
+          suppressHydrationWarning
         >
           {article.coverImage ? (
             <Image
