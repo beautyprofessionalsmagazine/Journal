@@ -97,7 +97,7 @@ export function SiteHeader() {
             )}
           </Button>
 
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden items-center gap-5 lg:flex">
             <Link
               aria-current={
                 isRouteActive(pathname, "/current-issue")
@@ -111,12 +111,12 @@ export function SiteHeader() {
             </Link>
             <Link
               aria-current={
-                isRouteActive(pathname, "/subscribe") ? "page" : undefined
+                isRouteActive(pathname, "/where-to-find") ? "page" : undefined
               }
               className="focus-ring link-transition inline-flex min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em]"
-              href="/subscribe"
+              href="/where-to-find"
             >
-              Subscribe
+              Where to Find
             </Link>
           </div>
 
@@ -129,18 +129,19 @@ export function SiteHeader() {
             Beauty Professionals Magazine
           </Link>
 
-          <div className="flex items-center justify-end gap-4">
-            <Link
-              aria-current={
-                isRouteActive(pathname, "/newsletter")
-                  ? "page"
-                  : undefined
-              }
-              className="focus-ring link-transition hidden min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] lg:inline-flex"
-              href="/newsletter"
-            >
-              Newsletter
-            </Link>
+          <div className="flex items-center justify-end gap-3">
+            <div className="hidden lg:block">
+              <ButtonLink
+                aria-current={
+                  isRouteActive(pathname, "/subscribe") ? "page" : undefined
+                }
+                href="/subscribe"
+                size="sm"
+                variant="outline"
+              >
+                Subscribe
+              </ButtonLink>
+            </div>
             <ButtonLink
               aria-current={
                 isRouteActive(pathname, "/articles")
@@ -269,23 +270,21 @@ export function SiteHeader() {
             </Link>
             <Link
               aria-current={
-                isRouteActive(pathname, "/subscribe") ? "page" : undefined
+                isRouteActive(pathname, "/where-to-find") ? "page" : undefined
               }
               className="focus-ring link-transition inline-flex min-h-12 items-center border-r border-black px-3 text-xs font-semibold uppercase tracking-[0.08em]"
-              href="/subscribe"
+              href="/where-to-find"
             >
-              Subscribe
+              Where to Find
             </Link>
             <Link
               aria-current={
-                isRouteActive(pathname, "/newsletter")
-                  ? "page"
-                  : undefined
+                isRouteActive(pathname, "/subscribe") ? "page" : undefined
               }
-              className="focus-ring link-transition inline-flex min-h-12 items-center px-3 text-xs font-semibold uppercase tracking-[0.08em]"
-              href="/newsletter"
+              className="focus-ring link-transition inline-flex min-h-12 items-center bg-black px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white"
+              href="/subscribe"
             >
-              Newsletter
+              Subscribe
             </Link>
           </div>
 
