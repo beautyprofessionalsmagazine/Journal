@@ -42,6 +42,18 @@ export const subscriptionChannelValues = ["digital", "physical"] as const;
 
 export type SubscriptionChannel = (typeof subscriptionChannelValues)[number];
 
+/**
+ * Digital (individual, email-delivered) subscriptions are paused. Flipping this
+ * to `true` reopens the individual form and its server action in one place — the
+ * plan selector, the public form, and `createSubscriptionAction` all read it, so
+ * the UI and the server can never disagree about whether email delivery is open.
+ */
+export const digitalSubscriptionsEnabled = false;
+
+/** Shown wherever a paused digital subscription is surfaced. */
+export const digitalSubscriptionsUnavailableMessage =
+  "Individual email subscriptions are paused right now. Printed copies for salons, schools, and clinics are still available.";
+
 export const salonCopiesOptions = [3, 5, 10, 20] as const;
 
 export const schoolCopiesOptions = [25, 50, 100, 250] as const;

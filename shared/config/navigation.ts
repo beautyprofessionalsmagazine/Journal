@@ -34,5 +34,4 @@ export const serviceNavigation = [
   { name: "Privacy Policy", slug: "privacy-policy" },
   { name: "Current Issue", slug: "current-issue" },
   { name: "Account", slug: "account" },
-  { name: "Newsletter", slug: "newsletter" },
 ];

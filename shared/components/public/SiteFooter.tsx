@@ -20,8 +20,8 @@ export function SiteFooter() {
               Independent reporting on the people, techniques, ideas, and
               culture shaping beauty work now.
             </p>
-            <ButtonLink className="mt-2" href="/newsletter">
-              Read the newsletter
+            <ButtonLink className="mt-2" href="/subscribe">
+              Subscribe to the magazine
             </ButtonLink>
           </div>
 

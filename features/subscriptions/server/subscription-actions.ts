@@ -13,6 +13,8 @@ import {
 } from "@/features/subscriptions/server/subscription-email";
 import { getSubscriptionById } from "@/features/subscriptions/server/subscription-queries";
 import {
+  digitalSubscriptionsEnabled,
+  digitalSubscriptionsUnavailableMessage,
   getDistributorSubscriptionType,
   subscriptionDeliveryStatusValues,
   subscriptionStatusValues,
@@ -50,6 +52,16 @@ export async function createSubscriptionAction(
   _previousState: SubscriptionFormState,
   formData: FormData,
 ): Promise<SubscriptionFormState> {
+  // Email delivery is paused, so reject individual requests even if the form is
+  // reached directly — the client hides it, this makes the pause real.
+  if (type === "individual" && !digitalSubscriptionsEnabled) {
+    return {
+      status: "error",
+      message: digitalSubscriptionsUnavailableMessage,
+      fieldErrors: {},
+    };
+  }
+
   const values = getSubscriptionFromFormData(formData);
   const parsed = validateSubscription(type, values);
 

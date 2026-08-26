@@ -1,5 +1,6 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import {
   AlertCircle,
   ImagePlus,
@@ -11,13 +12,24 @@ import {
 import Image from "next/image";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 
-import { validateCoverImageFile } from "@/features/articles/validation/article-validation";
+import {
+  buildCoverImagePathname,
+  MAX_COVER_IMAGE_SIZE_BYTES,
+  validateCoverImageFile,
+} from "@/features/articles/validation/article-validation";
 import { Button } from "@/shared/components/ui";
 
-const TARGET_IMAGE_SIZE = 5 * 1024 * 1024;
-const MAX_IMAGE_DIMENSION = 2560;
+// Files above this size are re-encoded to WebP before upload to keep stored
+// covers lean; smaller files upload untouched to preserve their quality.
+const OPTIMIZE_ABOVE_SIZE = 8 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 3840;
 const INITIAL_WEBP_QUALITY = 0.9;
 const MIN_WEBP_QUALITY = 0.5;
+// Uploads larger than this stream to Blob in parallel parts with retries.
+const MULTIPART_UPLOAD_THRESHOLD = 5 * 1024 * 1024;
+const MAX_COVER_IMAGE_MB = Math.round(
+  MAX_COVER_IMAGE_SIZE_BYTES / (1024 * 1024),
+);
 
 export type CoverImageUploadState = {
   error: string | null;
@@ -30,12 +42,6 @@ type CoverImageUploaderProps = {
   error?: string;
   onChange: (value: string) => void;
   onUploadStateChange: (state: CoverImageUploadState) => void;
-};
-
-type UploadResponse = {
-  fileName?: string;
-  message?: string;
-  url?: string;
 };
 
 export function CoverImageUploader({
@@ -82,20 +88,26 @@ export function CoverImageUploader({
       return;
     }
 
+    if (file.size > MAX_COVER_IMAGE_SIZE_BYTES) {
+      const message = `This image is too large. Choose a file under ${MAX_COVER_IMAGE_MB} MB.`;
+      setUploadError(message);
+      setIsUploading(false);
+      onUploadStateChange({ error: message, isUploading: false });
+      return;
+    }
+
     let fileToUpload = file;
 
-    if (file.size > TARGET_IMAGE_SIZE) {
+    if (file.size > OPTIMIZE_ABOVE_SIZE) {
       setIsUploading(true);
       onUploadStateChange({ error: null, isUploading: true });
 
       try {
         fileToUpload = await compressCoverImage(file);
       } catch {
-        const message = "This image could not be optimized. Please choose another image.";
-        setUploadError(message);
-        setIsUploading(false);
-        onUploadStateChange({ error: message, isUploading: false });
-        return;
+        // Optimizing is best effort: the direct-to-Blob upload can handle the
+        // original, so fall back to it rather than blocking the upload.
+        fileToUpload = file;
       }
     }
 
@@ -137,45 +149,30 @@ export function CoverImageUploader({
     });
     onChange("");
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    if (slug.trim()) {
-      formData.append("slug", slug);
-    }
-
     try {
-      const response = await fetch("/api/articles/cover-upload", {
-        method: "POST",
-        body: formData,
-        signal: controller.signal,
+      const blob = await upload(buildCoverImagePathname(slug, file), file, {
+        access: "public",
+        handleUploadUrl: "/api/articles/cover-upload",
+        contentType: file.type || undefined,
+        multipart: file.size > MULTIPART_UPLOAD_THRESHOLD,
+        abortSignal: controller.signal,
       });
-      const payload = (await response.json().catch(() => null)) as
-        | UploadResponse
-        | null;
 
-      if (!response.ok || !payload?.url) {
-        throw new Error(
-          payload?.message ?? "Cover image upload failed. Please try again.",
-        );
-      }
-
-      if (!isSafeUploadedImageUrl(payload.url)) {
+      if (!isSafeUploadedImageUrl(blob.url)) {
         throw new Error(
           "The upload returned an invalid image URL. Please try again.",
         );
       }
 
-      await preloadImage(payload.url, controller.signal);
+      await preloadImage(blob.url, controller.signal);
 
       if (uploadSequence !== uploadSequenceRef.current) {
         return;
       }
 
       revokeObjectUrl();
-      setPreviewUrl(payload.url);
-      setFileName(payload.fileName ?? file.name);
-      onChange(payload.url);
+      setPreviewUrl(blob.url);
+      onChange(blob.url);
       onUploadStateChange({
         error: null,
         isUploading: false,
@@ -185,10 +182,17 @@ export function CoverImageUploader({
         return;
       }
 
-      const message =
-        caughtError instanceof Error
+      let message =
+        caughtError instanceof Error && caughtError.message
           ? caughtError.message
           : "Cover image upload failed. Please try again.";
+
+      // The Blob SDK reports any non-OK token response (most often an expired
+      // admin session) as a generic client-token error, so make it actionable.
+      if (message.includes("client token")) {
+        message =
+          "We couldn't authorize this upload. Refresh the page, confirm you're still signed in, then try again.";
+      }
 
       setUploadError(message);
       setCanRetry(true);
@@ -334,7 +338,8 @@ export function CoverImageUploader({
               {isUploading ? "Uploading image" : "Add cover image"}
             </span>
             <span className="max-w-52 text-xs font-normal normal-case leading-5 text-black/55">
-              JPG, PNG, WebP, AVIF, or GIF · larger images are optimized automatically
+              JPG, PNG, WebP, AVIF, or GIF · up to {MAX_COVER_IMAGE_MB} MB, large
+              images are optimized automatically
             </span>
           </Button>
         )}
@@ -442,7 +447,7 @@ async function compressCoverImage(file: File) {
   let quality = INITIAL_WEBP_QUALITY;
   let compressed = await canvasToFile(canvas, quality, file.name);
 
-  while (compressed.size > TARGET_IMAGE_SIZE && quality > MIN_WEBP_QUALITY) {
+  while (compressed.size > OPTIMIZE_ABOVE_SIZE && quality > MIN_WEBP_QUALITY) {
     quality = Math.max(MIN_WEBP_QUALITY, quality - 0.1);
     compressed = await canvasToFile(canvas, quality, file.name);
   }

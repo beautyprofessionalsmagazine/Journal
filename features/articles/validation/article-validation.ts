@@ -17,6 +17,20 @@ export const ALLOWED_COVER_IMAGE_TYPES = [
   "image/gif",
 ] as const;
 
+// Cover images upload directly from the browser to Vercel Blob (see the
+// cover-upload route), so this cap is the real ceiling rather than Vercel's
+// 4.5 MB serverless request-body limit. Enforced on the client before upload
+// and re-enforced on the client upload token via `maximumSizeInBytes`.
+export const MAX_COVER_IMAGE_SIZE_BYTES = 25 * 1024 * 1024;
+
+const COVER_IMAGE_EXTENSIONS_BY_TYPE: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "image/gif": "gif",
+};
+
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const allowedTiptapNodeTypes = new Set([
   "paragraph",
@@ -182,6 +196,35 @@ export function normalizeSlug(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/-{2,}/g, "-");
+}
+
+// Builds the blob pathname for a client-side cover upload. The server adds a
+// random suffix to the returned token, so this only needs to be readable and
+// safe, not globally unique.
+export function buildCoverImagePathname(
+  slug: string | null | undefined,
+  file: Pick<File, "name" | "type">,
+) {
+  const baseFromFileName = file.name.replace(/\.[^.]+$/, "");
+  const baseName =
+    normalizeSlug(slug?.trim() || baseFromFileName) || "article-cover";
+  const extension = getCoverImageExtension(file);
+
+  return `articles/${baseName}-${Date.now()}.${extension}`;
+}
+
+function getCoverImageExtension(file: Pick<File, "name" | "type">) {
+  const extensionFromName = file.name
+    .split(".")
+    .pop()
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  if (extensionFromName) {
+    return extensionFromName;
+  }
+
+  return COVER_IMAGE_EXTENSIONS_BY_TYPE[file.type] ?? "jpg";
 }
 
 export function parseTagsInput(value: string | string[] | null | undefined) {
