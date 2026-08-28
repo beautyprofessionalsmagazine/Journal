@@ -10,6 +10,7 @@
     "generate:map": "node scripts/generate-us-map.mjs features/distribution/data/us-state-shapes.ts"
   },
   "dependencies": {
+    "@tiptap/extension-image": "^3.27.1",
     "@tiptap/extension-link": "^3.27.1",
     "@tiptap/extension-placeholder": "^3.27.1",
     "@tiptap/extension-text-align": "^3.27.1",

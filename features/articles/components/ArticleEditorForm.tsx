@@ -24,6 +24,7 @@ import {
   CoverImageUploader,
   type CoverImageUploadState,
 } from "@/features/articles/components/CoverImageUploader";
+import type { ArticleImageUploadState } from "@/features/articles/editor/use-article-image-upload";
 import {
   createArticleAction,
   updateArticleAction,
@@ -91,9 +92,18 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
       error: null,
       isUploading: false,
     });
+  const [bodyImageUploadState, setBodyImageUploadState] =
+    useState<ArticleImageUploadState>({
+      error: null,
+      isUploading: false,
+    });
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const submissionLockRef = useRef(false);
+  const bodyImageUploadStateRef = useRef<ArticleImageUploadState>({
+    error: null,
+    isUploading: false,
+  });
   const coverUploadStateRef = useRef<CoverImageUploadState>({
     error: null,
     isUploading: false,
@@ -242,6 +252,16 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
       return;
     }
 
+    // A failed body image simply never gets inserted, so only an upload still in
+    // flight needs to hold the save back.
+    if (bodyImageUploadStateRef.current.isUploading) {
+      event.preventDefault();
+      setClientMessage(
+        "Wait for the article image upload to finish before saving.",
+      );
+      return;
+    }
+
     const validationResult = validateArticleInput(values);
 
     if (!validationResult.success) {
@@ -266,12 +286,21 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
     isPending ||
     isSubmitLocked ||
     coverUploadState.isUploading ||
-    Boolean(coverUploadState.error);
+    Boolean(coverUploadState.error) ||
+    bodyImageUploadState.isUploading;
 
   const handleCoverUploadStateChange = useCallback(
     (nextState: CoverImageUploadState) => {
       coverUploadStateRef.current = nextState;
       setCoverUploadState(nextState);
+    },
+    [],
+  );
+
+  const handleBodyImageUploadStateChange = useCallback(
+    (nextState: ArticleImageUploadState) => {
+      bodyImageUploadStateRef.current = nextState;
+      setBodyImageUploadState(nextState);
     },
     [],
   );
@@ -521,6 +550,8 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
               onChange={(contentJson) =>
                 updateField("contentJson", contentJson)
               }
+              onImageUploadStateChange={handleBodyImageUploadStateChange}
+              slug={values.slug}
               value={values.contentJson}
             />
           </section>
@@ -705,12 +736,15 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                 isLoading={
                   isPending ||
                   isSubmitLocked ||
-                  coverUploadState.isUploading
+                  coverUploadState.isUploading ||
+                  bodyImageUploadState.isUploading
                 }
                 loadingLabel={
                   coverUploadState.isUploading
                     ? "Uploading cover…"
-                    : "Saving…"
+                    : bodyImageUploadState.isUploading
+                      ? "Uploading image…"
+                      : "Saving…"
                 }
                 size="lg"
                 type="submit"

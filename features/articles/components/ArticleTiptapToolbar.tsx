@@ -2,6 +2,7 @@
 
 import { useEditorState, type Editor } from "@tiptap/react";
 import {
+  AlertCircle,
   AlignCenter,
   AlignLeft,
   AlignRight,
@@ -9,10 +10,12 @@ import {
   Eraser,
   Heading2,
   Heading3,
+  ImagePlus,
   Italic,
   Link2,
   List,
   ListOrdered,
+  LoaderCircle,
   Minus,
   Pilcrow,
   Quote,
@@ -36,10 +39,18 @@ import { Button } from "@/shared/components/ui";
 
 type ArticleTiptapToolbarProps = {
   editor: Editor | null;
+  imageUploadError?: string | null;
+  isUploadingImage?: boolean;
+  onDismissImageUploadError?: () => void;
+  onInsertImage?: () => void;
 };
 
 export function ArticleTiptapToolbar({
   editor,
+  imageUploadError = null,
+  isUploadingImage = false,
+  onDismissImageUploadError,
+  onInsertImage,
 }: ArticleTiptapToolbarProps) {
   const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
   const [linkHref, setLinkHref] = useState("");
@@ -247,6 +258,13 @@ export function ArticleTiptapToolbar({
           label="Link"
           onClick={openLinkEditor}
         />
+        <ToolbarButton
+          disabled={isDisabled || !onInsertImage}
+          icon={isUploadingImage ? LoaderCircle : ImagePlus}
+          iconClassName={isUploadingImage ? "animate-spin" : undefined}
+          label={isUploadingImage ? "Uploading image" : "Insert image"}
+          onClick={() => onInsertImage?.()}
+        />
         <ToolbarDivider />
         <ToolbarButton
           active={toolbarState?.alignLeft}
@@ -293,6 +311,43 @@ export function ArticleTiptapToolbar({
           shortcut="Control+Shift+Z"
         />
       </div>
+
+      {isUploadingImage && !imageUploadError ? (
+        <p
+          aria-live="polite"
+          className="flex items-center gap-2 border-t border-black/10 px-3 py-2 text-xs text-black/60"
+        >
+          <LoaderCircle
+            aria-hidden="true"
+            className="animate-spin"
+            size={13}
+          />
+          Uploading image…
+        </p>
+      ) : null}
+
+      {imageUploadError ? (
+        <div
+          className="flex items-start gap-2 border-t border-red-700/25 bg-red-50 px-3 py-2 text-xs leading-5 text-red-800"
+          role="alert"
+        >
+          <AlertCircle
+            aria-hidden="true"
+            className="mt-0.5 shrink-0"
+            size={14}
+          />
+          <p className="min-w-0 flex-1">{imageUploadError}</p>
+          <Button
+            aria-label="Dismiss image upload error"
+            className="min-h-8 shrink-0"
+            onClick={() => onDismissImageUploadError?.()}
+            size="icon"
+            variant="icon"
+          >
+            <X aria-hidden="true" size={14} />
+          </Button>
+        </div>
+      ) : null}
 
       {isLinkEditorOpen ? (
         <div
@@ -370,6 +425,7 @@ type ToolbarButtonProps = {
   active?: boolean;
   disabled?: boolean;
   icon: LucideIcon;
+  iconClassName?: string;
   label: string;
   onClick: () => void;
   shortcut?: string;
@@ -379,6 +435,7 @@ function ToolbarButton({
   active,
   disabled = false,
   icon: Icon,
+  iconClassName,
   label,
   onClick,
   shortcut,
@@ -407,7 +464,12 @@ function ToolbarButton({
       title={shortcut ? `${label} (${shortcut})` : label}
       variant={active ? "primary" : "icon"}
     >
-      <Icon aria-hidden="true" size={18} strokeWidth={1.75} />
+      <Icon
+        aria-hidden="true"
+        className={iconClassName}
+        size={18}
+        strokeWidth={1.75}
+      />
       <span className="sr-only" id={tooltipId} role="tooltip">
         {shortcut ? `${label}, ${shortcut}` : label}
       </span>

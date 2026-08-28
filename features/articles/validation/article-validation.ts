@@ -1,7 +1,9 @@
 import { type ZodError, z } from "zod";
 
 import {
+  articleImageAlignValues,
   articleStatusValues,
+  type ArticleImageAlign,
   type ArticleInput,
   type ArticleFieldErrors,
   type TiptapDocument,
@@ -23,7 +25,18 @@ export const ALLOWED_COVER_IMAGE_TYPES = [
 // and re-enforced on the client upload token via `maximumSizeInBytes`.
 export const MAX_COVER_IMAGE_SIZE_BYTES = 25 * 1024 * 1024;
 
-const COVER_IMAGE_EXTENSIONS_BY_TYPE: Record<string, string> = {
+// Inline article-body images are a deliberately narrower set than covers: the
+// editorial column only ever needs photographic formats, and a tighter cap keeps
+// articles that embed several images from ballooning.
+export const ALLOWED_ARTICLE_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export const MAX_ARTICLE_IMAGE_SIZE_BYTES = 12 * 1024 * 1024;
+
+const IMAGE_EXTENSIONS_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
@@ -41,6 +54,7 @@ const allowedTiptapNodeTypes = new Set([
   "blockquote",
   "horizontalRule",
   "hardBreak",
+  "image",
   "text",
 ]);
 const allowedTiptapMarkTypes = new Set([
@@ -208,12 +222,27 @@ export function buildCoverImagePathname(
   const baseFromFileName = file.name.replace(/\.[^.]+$/, "");
   const baseName =
     normalizeSlug(slug?.trim() || baseFromFileName) || "article-cover";
-  const extension = getCoverImageExtension(file);
+  const extension = getImageFileExtension(file);
 
   return `articles/${baseName}-${Date.now()}.${extension}`;
 }
 
-function getCoverImageExtension(file: Pick<File, "name" | "type">) {
+// Body images live under their own prefix so they are easy to tell apart from
+// covers in blob storage. As with covers, the server adds a random suffix, so
+// this only has to be readable and safe rather than globally unique.
+export function buildArticleImagePathname(
+  slug: string | null | undefined,
+  file: Pick<File, "name" | "type">,
+) {
+  const baseFromFileName = file.name.replace(/.[^.]+$/, "");
+  const baseName = normalizeSlug(slug?.trim() || "") || "article";
+  const imageName = normalizeSlug(baseFromFileName) || "image";
+  const extension = getImageFileExtension(file);
+
+  return `articles/body/${baseName}-${imageName}-${Date.now()}.${extension}`;
+}
+
+function getImageFileExtension(file: Pick<File, "name" | "type">) {
   const extensionFromName = file.name
     .split(".")
     .pop()
@@ -224,7 +253,7 @@ function getCoverImageExtension(file: Pick<File, "name" | "type">) {
     return extensionFromName;
   }
 
-  return COVER_IMAGE_EXTENSIONS_BY_TYPE[file.type] ?? "jpg";
+  return IMAGE_EXTENSIONS_BY_TYPE[file.type] ?? "jpg";
 }
 
 export function parseTagsInput(value: string | string[] | null | undefined) {
@@ -338,6 +367,30 @@ export function validateCoverImageFile(file: Pick<File, "size" | "type">) {
   return null;
 }
 
+export function validateArticleImageFile(file: Pick<File, "size" | "type">) {
+  if (
+    !ALLOWED_ARTICLE_IMAGE_TYPES.includes(
+      file.type as (typeof ALLOWED_ARTICLE_IMAGE_TYPES)[number],
+    )
+  ) {
+    return "Article images must be a JPG, PNG, or WebP file.";
+  }
+
+  if (file.size > MAX_ARTICLE_IMAGE_SIZE_BYTES) {
+    return `This image is too large. Choose a file under ${Math.round(
+      MAX_ARTICLE_IMAGE_SIZE_BYTES / (1024 * 1024),
+    )} MB.`;
+  }
+
+  return null;
+}
+
+// Inline image sources must be real stored URLs. Rejecting everything else here
+// is what keeps base64 payloads and script-bearing URLs out of contentJson.
+export function isSafeArticleImageSrc(value: string) {
+  return isValidUrl(value.trim());
+}
+
 export function isSafeEditorLinkHref(value: string) {
   const normalizedValue = value.trim();
 
@@ -373,6 +426,10 @@ function hasMeaningfulTiptapNode(node: TiptapNode): boolean {
     return Boolean(node.text?.trim());
   }
 
+  if (node.type === "image") {
+    return Boolean(node.attrs?.src);
+  }
+
   if (!Array.isArray(node.content)) {
     return false;
   }
@@ -401,6 +458,10 @@ function isTiptapNode(value: unknown): value is TiptapNode {
     return false;
   }
 
+  if (value.type === "image" && !isTiptapImageAttrs(value.attrs)) {
+    return false;
+  }
+
   if (
     value.content !== undefined &&
     (!Array.isArray(value.content) || !value.content.every(isTiptapNode))
@@ -416,6 +477,41 @@ function isTiptapNode(value: unknown): value is TiptapNode {
   }
 
   return true;
+}
+
+function isTiptapImageAttrs(value: unknown) {
+  if (
+    !isRecord(value) ||
+    typeof value.src !== "string" ||
+    !isSafeArticleImageSrc(value.src)
+  ) {
+    return false;
+  }
+
+  if (
+    value.align != null &&
+    !articleImageAlignValues.includes(value.align as ArticleImageAlign)
+  ) {
+    return false;
+  }
+
+  return (
+    isNullableString(value.alt) &&
+    isNullableString(value.title) &&
+    isNullableDimension(value.width) &&
+    isNullableDimension(value.height)
+  );
+}
+
+function isNullableString(value: unknown) {
+  return value == null || typeof value === "string";
+}
+
+function isNullableDimension(value: unknown) {
+  return (
+    value == null ||
+    (typeof value === "number" && Number.isFinite(value) && value > 0)
+  );
 }
 
 function isTiptapMark(value: unknown): value is TiptapMark {

@@ -285,6 +285,61 @@ button:disabled {
   margin: 0;
 }
 
+/*
+ * Inline article images. Width is fluid and height is always derived, so the
+ * intrinsic width/height attributes reserve the right space without ever
+ * distorting the image or letting it escape the editor column.
+ */
+.article-editor .ProseMirror img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.article-editor .ProseMirror img[data-align="center"] {
+  margin-inline: auto;
+}
+
+.article-editor .ProseMirror img[data-align="left"] {
+  margin-inline: 0 auto;
+}
+
+.article-editor .ProseMirror img[data-align="right"] {
+  margin-inline: auto 0;
+}
+
+.article-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+/* Upload placeholder: holds the writer's spot while an image uploads. */
+.article-editor-image-placeholder {
+  display: block;
+  margin-block: 1.15em;
+  border: 1px dashed rgba(17, 17, 17, 0.3);
+  background: #f3f3f0;
+  padding: 1.25rem;
+  color: rgba(17, 17, 17, 0.55);
+  font-family: var(--font-sans, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  animation: article-image-placeholder-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes article-image-placeholder-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .page-transition {
   animation: editorial-page-in 260ms ease-out both;
 }

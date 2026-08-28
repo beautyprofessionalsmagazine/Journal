@@ -1,6 +1,23 @@
+import Image from "next/image";
 import { Fragment, type CSSProperties, type ReactNode } from "react";
 
-import type { TiptapDocument, TiptapMark, TiptapNode } from "@/features/articles/types/article";
+import {
+  normalizeArticleImageAlign,
+  type ArticleImageAlign,
+  type TiptapDocument,
+  type TiptapMark,
+  type TiptapNode,
+} from "@/features/articles/types/article";
+
+// The article column is capped at 54rem, so an inline image never needs to be
+// served wider than that (plus the device-pixel candidates Next picks from).
+const ARTICLE_IMAGE_SIZES = "(min-width: 56rem) 54rem, 100vw";
+
+const imageAlignClassNames: Record<ArticleImageAlign, string> = {
+  center: "mx-auto",
+  left: "mr-auto",
+  right: "ml-auto",
+};
 
 type ArticleBodyProps = {
   content?: TiptapDocument | null;
@@ -101,6 +118,8 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
       );
     case "horizontalRule":
       return <hr className="my-4 border-black/20" key={key} />;
+    case "image":
+      return renderTiptapImage(node, key);
     case "text":
       return <Fragment key={key}>{applyMarks(node.text ?? "", node.marks, key)}</Fragment>;
     default:
@@ -112,6 +131,58 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
         </Fragment>
       ) : null;
   }
+}
+
+/*
+ * Inline body images. Width is fluid up to the article column and height is
+ * always derived, so the image stays responsive and never overflows. The
+ * intrinsic dimensions recorded at upload time reserve the right amount of
+ * space up front, which keeps the page from shifting as images load; nodes
+ * saved without them fall back to a plain image element.
+ */
+function renderTiptapImage(node: TiptapNode, key: string) {
+  const src = node.attrs?.src;
+
+  if (!src) {
+    return null;
+  }
+
+  const alt = node.attrs?.alt ?? "";
+  const title = node.attrs?.title ?? undefined;
+  const width = node.attrs?.width;
+  const height = node.attrs?.height;
+  const className = `block h-auto w-full my-[clamp(0.5rem,1.5vw,1rem)] ${
+    imageAlignClassNames[normalizeArticleImageAlign(node.attrs?.align)]
+  }`;
+
+  if (!width || !height) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- no known dimensions
+      <img
+        alt={alt}
+        className={className}
+        key={key}
+        loading="lazy"
+        src={src}
+        title={title}
+      />
+    );
+  }
+
+  return (
+    <Image
+      alt={alt}
+      className={className}
+      height={height}
+      key={key}
+      sizes={ARTICLE_IMAGE_SIZES}
+      src={src}
+      // Never upscale past what was actually uploaded.
+      style={{ maxWidth: `${width}px` }}
+      title={title}
+      width={width}
+    />
+  );
 }
 
 function renderInlineContent(nodes: TiptapNode[] | undefined) {
