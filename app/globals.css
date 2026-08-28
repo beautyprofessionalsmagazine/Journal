@@ -99,6 +99,27 @@ button:disabled {
   padding-inline: var(--page-padding);
 }
 
+/*
+ * Full-bleed charcoal band behind the masthead. The metallic gold/silver
+ * wordmark is a transparent PNG with no contrast of its own, so the header
+ * supplies it: near-black at the top easing to a mid grey at the nav rule.
+ */
+.site-header-surface {
+  background: linear-gradient(
+    to bottom,
+    #090909 0%,
+    #171717 55%,
+    #343434 100%
+  );
+  color: #ffffff;
+}
+
+/* The default near-black focus outline disappears on the charcoal band. */
+.site-header-surface :where(a, button, summary):focus-visible,
+.site-header-surface .focus-ring:focus-visible {
+  outline-color: #ffffff;
+}
+
 .page-title {
   max-width: 15ch;
   overflow-wrap: anywhere;
