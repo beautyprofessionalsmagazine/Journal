@@ -1,10 +1,10 @@
 import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ArticleBody } from "@/features/articles/components/ArticleBody";
 import { ArticleGrid } from "@/features/articles/components/ArticleGrid";
+import { ArticleHeroMedia } from "@/features/articles/components/ArticleHeroMedia";
 import { ArticleMetadata } from "@/features/articles/components/ArticleMetadata";
 import { TagBadge } from "@/features/articles/components/TagBadge";
 import {
@@ -60,26 +60,15 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
               </div>
             </div>
 
-            <div className="reveal reveal-delay-1 relative aspect-[4/5] min-w-0 overflow-hidden bg-[#eceae4]" suppressHydrationWarning>
-              {article.coverImage ? (
-                <Image
-                  alt={article.coverImageAlt ?? article.title}
-                  className="object-cover"
-                  fill
-                  priority
-                  sizes="(min-width: 1440px) 520px, (min-width: 1024px) 38vw, 100vw"
-                  src={article.coverImage}
-                />
-              ) : (
-                <div className="flex h-full flex-col items-center justify-center border border-black/10 p-6 text-center">
-                  <span className="[font-family:var(--font-editorial-title)] text-[clamp(8rem,22vw,16rem)] font-bold leading-none text-black/10">
-                    {article.category.charAt(0)}
-                  </span>
-                  <span className="editorial-kicker mt-2 text-black/40">
-                    Image forthcoming
-                  </span>
-                </div>
-              )}
+            <div
+              className="reveal reveal-delay-1 min-w-0"
+              suppressHydrationWarning
+            >
+              <ArticleHeroMedia
+                article={article}
+                priority
+                sizes="(min-width: 1440px) 520px, (min-width: 1024px) 38vw, 100vw"
+              />
             </div>
           </div>
         </header>

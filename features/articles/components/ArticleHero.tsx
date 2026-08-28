@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
+import { ArticleHeroMedia } from "@/features/articles/components/ArticleHeroMedia";
 import { ArticleMetadata } from "@/features/articles/components/ArticleMetadata";
 import type { Article } from "@/features/articles/types/article";
 import { ButtonLink } from "@/shared/components/ui";
@@ -15,7 +15,7 @@ export function ArticleHero({ article }: ArticleHeroProps) {
 
   return (
     <section className="border-b border-black bg-white">
-      <div className="mx-auto grid max-w-[100rem] lg:min-h-[43rem] lg:grid-cols-[minmax(0,0.92fr)_minmax(28rem,0.8fr)]">
+      <div className="mx-auto grid max-w-[100rem] lg:grid-cols-[minmax(0,0.92fr)_minmax(28rem,0.8fr)]">
         <div className="reveal flex min-w-0 flex-col justify-center px-[var(--page-padding)] py-[clamp(3rem,7vw,7rem)]" suppressHydrationWarning>
           <p className="editorial-kicker text-black/48">Cover story</p>
           <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -54,30 +54,23 @@ export function ArticleHero({ article }: ArticleHeroProps) {
           </ButtonLink>
         </div>
 
+        {/*
+          The cell stretches to the row height so the artwork panel still bleeds
+          from the nav to the section rule, but the illustration inside keeps
+          its own ratio and is centred against the paper mat rather than being
+          cropped to whatever height the headline column takes.
+        */}
         <Link
-          className="focus-ring reveal reveal-delay-1 relative min-h-[24rem] overflow-hidden bg-[#e8e5df] lg:min-h-full"
+          className="focus-ring reveal reveal-delay-1 group flex min-w-0 items-center bg-[#eceae4]"
           href={href}
           suppressHydrationWarning
         >
-          {article.coverImage ? (
-            <Image
-              alt={article.coverImageAlt ?? article.title}
-              className="object-cover transition-transform duration-700 ease-out hover:scale-[1.02]"
-              fill
-              priority
-              sizes="(min-width: 1600px) 760px, (min-width: 1024px) 50vw, 100vw"
-              src={article.coverImage}
-            />
-          ) : (
-            <span className="flex h-full min-h-[24rem] flex-col items-center justify-center border-l border-black/10 px-6 text-center">
-              <span className="[font-family:var(--font-editorial-title)] text-[clamp(7rem,20vw,16rem)] font-bold leading-none text-black/10">
-                {article.category.charAt(0)}
-              </span>
-              <span className="editorial-kicker mt-2 text-black/40">
-                Cover image forthcoming
-              </span>
-            </span>
-          )}
+          <ArticleHeroMedia
+            article={article}
+            imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+            priority
+            sizes="(min-width: 1600px) 745px, (min-width: 1024px) 47vw, 100vw"
+          />
         </Link>
       </div>
     </section>
