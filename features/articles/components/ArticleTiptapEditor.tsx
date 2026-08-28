@@ -7,6 +7,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useId, useRef } from "react";
 
 import { ArticleTiptapToolbar } from "@/features/articles/components/ArticleTiptapToolbar";
+import { ArticleImage } from "@/features/articles/editor/article-image-extension";
 import type { TiptapDocument } from "@/features/articles/types/article";
 import { isSafeEditorLinkHref } from "@/features/articles/validation/article-validation";
 
@@ -59,6 +60,7 @@ export function ArticleTiptapEditor({
         alignments: ["left", "center", "right"],
         types: ["heading", "paragraph"],
       }),
+      ArticleImage,
     ],
     content: value,
     editorProps: {

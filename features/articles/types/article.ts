@@ -4,6 +4,17 @@ export type ArticleStatus = (typeof articleStatusValues)[number];
 
 export type TiptapTextAlign = "left" | "center" | "right";
 
+export const articleImageAlignValues = ["left", "center", "right"] as const;
+
+/** Horizontal placement of an inline article-body image. Cover images are unaffected. */
+export type ArticleImageAlign = (typeof articleImageAlignValues)[number];
+
+export function normalizeArticleImageAlign(value: unknown): ArticleImageAlign {
+  return articleImageAlignValues.includes(value as ArticleImageAlign)
+    ? (value as ArticleImageAlign)
+    : "center";
+}
+
 export type TiptapMark =
   | {
       type: "bold";
@@ -37,6 +48,14 @@ export type TiptapNode = {
     rel?: string | null;
     class?: string | null;
     start?: number;
+    /** Inline image source. Always a stored blob URL, never base64. */
+    src?: string;
+    alt?: string | null;
+    title?: string | null;
+    align?: ArticleImageAlign | null;
+    /** Natural pixel dimensions, recorded so rendering can reserve space. */
+    width?: number | null;
+    height?: number | null;
   };
   content?: TiptapNode[];
   marks?: TiptapMark[];
