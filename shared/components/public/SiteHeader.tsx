@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, Menu, Search, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,6 +13,10 @@ import {
 
 import { Button, ButtonLink } from "@/shared/components/ui";
 import { mainNavigation } from "@/shared/config/navigation";
+
+/* Intrinsic size of the trimmed wordmark, kept so the aspect ratio is locked. */
+const LOGO_WIDTH = 1200;
+const LOGO_HEIGHT = 361;
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -80,7 +85,7 @@ export function SiteHeader() {
       ref={headerRef}
     >
       <div className="site-container">
-        <div className="grid min-h-[4.75rem] grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 lg:min-h-[7rem] lg:grid-cols-[15rem_minmax(0,1fr)_15rem]">
+        <div className="grid min-h-[5.25rem] grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 lg:min-h-[8.25rem] lg:grid-cols-[15rem_minmax(0,1fr)_15rem]">
           <Button
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
@@ -123,10 +128,18 @@ export function SiteHeader() {
           <Link
             aria-current={pathname === "/" ? "page" : undefined}
             aria-label="Beauty Professionals Magazine home"
-            className="focus-ring link-transition mx-auto flex min-h-11 max-w-[13rem] items-center text-center [font-family:var(--font-editorial-title)] text-[clamp(1.45rem,5.8vw,2rem)] font-bold leading-[0.88] tracking-[-0.025em] lg:max-w-none lg:text-[clamp(2.4rem,3.3vw,3.4rem)]"
+            className="focus-ring link-transition mx-auto flex w-full max-w-[clamp(10rem,21vw,19rem)] items-center justify-center"
             href="/"
           >
-            Beauty Professionals Magazine
+            <Image
+              alt=""
+              className="h-auto w-full object-contain"
+              height={LOGO_HEIGHT}
+              priority
+              sizes="(min-width: 1024px) 304px, 176px"
+              src="/images/beauty-professionals-magazine-logo.png"
+              width={LOGO_WIDTH}
+            />
           </Link>
 
           <div className="flex items-center justify-end gap-3">
@@ -245,7 +258,7 @@ export function SiteHeader() {
       </div>
 
       <div
-        className={`absolute inset-x-0 top-full h-[calc(100dvh-4.75rem)] overflow-y-auto border-t border-black bg-white transition-[opacity,transform] duration-200 lg:hidden ${
+        className={`absolute inset-x-0 top-full h-[calc(100dvh-5.25rem)] overflow-y-auto border-t border-black bg-white transition-[opacity,transform] duration-200 lg:hidden ${
           isMenuOpen
             ? "visible translate-y-0 opacity-100"
             : "pointer-events-none invisible -translate-y-2 opacity-0"

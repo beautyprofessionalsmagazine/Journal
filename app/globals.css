@@ -25,12 +25,12 @@ html {
   color: var(--foreground);
   scroll-behavior: smooth;
   /* Keeps the sticky site header from covering anything scrolled into view. */
-  scroll-padding-top: 5.75rem;
+  scroll-padding-top: 6.25rem;
 }
 
 @media (min-width: 1024px) {
   html {
-    scroll-padding-top: 11rem;
+    scroll-padding-top: 12.25rem;
   }
 }
 
