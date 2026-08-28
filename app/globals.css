@@ -285,6 +285,32 @@ button:disabled {
   margin: 0;
 }
 
+/* Upload placeholder: holds the writer's spot while an image uploads. */
+.article-editor-image-placeholder {
+  display: block;
+  margin-block: 1.15em;
+  border: 1px dashed rgba(17, 17, 17, 0.3);
+  background: #f3f3f0;
+  padding: 1.25rem;
+  color: rgba(17, 17, 17, 0.55);
+  font-family: var(--font-sans, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  animation: article-image-placeholder-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes article-image-placeholder-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .page-transition {
   animation: editorial-page-in 260ms ease-out both;
 }

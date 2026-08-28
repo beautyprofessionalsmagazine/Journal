@@ -13,6 +13,12 @@ import Image from "next/image";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 
 import {
+  compressImageToWebp,
+  isSafeUploadedImageUrl,
+  loadUploadedImage,
+  toUploadErrorMessage,
+} from "@/features/articles/lib/article-image-files";
+import {
   buildCoverImagePathname,
   MAX_COVER_IMAGE_SIZE_BYTES,
   validateCoverImageFile,
@@ -23,8 +29,6 @@ import { Button } from "@/shared/components/ui";
 // covers lean; smaller files upload untouched to preserve their quality.
 const OPTIMIZE_ABOVE_SIZE = 8 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 3840;
-const INITIAL_WEBP_QUALITY = 0.9;
-const MIN_WEBP_QUALITY = 0.5;
 // Uploads larger than this stream to Blob in parallel parts with retries.
 const MULTIPART_UPLOAD_THRESHOLD = 5 * 1024 * 1024;
 const MAX_COVER_IMAGE_MB = Math.round(
@@ -103,7 +107,10 @@ export function CoverImageUploader({
       onUploadStateChange({ error: null, isUploading: true });
 
       try {
-        fileToUpload = await compressCoverImage(file);
+        fileToUpload = await compressImageToWebp(file, {
+          maxDimension: MAX_IMAGE_DIMENSION,
+          targetSizeBytes: OPTIMIZE_ABOVE_SIZE,
+        });
       } catch {
         // Optimizing is best effort: the direct-to-Blob upload can handle the
         // original, so fall back to it rather than blocking the upload.
@@ -164,7 +171,7 @@ export function CoverImageUploader({
         );
       }
 
-      await preloadImage(blob.url, controller.signal);
+      await loadUploadedImage(blob.url, controller.signal);
 
       if (uploadSequence !== uploadSequenceRef.current) {
         return;
@@ -182,17 +189,10 @@ export function CoverImageUploader({
         return;
       }
 
-      let message =
-        caughtError instanceof Error && caughtError.message
-          ? caughtError.message
-          : "Cover image upload failed. Please try again.";
-
-      // The Blob SDK reports any non-OK token response (most often an expired
-      // admin session) as a generic client-token error, so make it actionable.
-      if (message.includes("client token")) {
-        message =
-          "We couldn't authorize this upload. Refresh the page, confirm you're still signed in, then try again.";
-      }
+      const message = toUploadErrorMessage(
+        caughtError,
+        "Cover image upload failed. Please try again.",
+      );
 
       setUploadError(message);
       setCanRetry(true);
@@ -421,112 +421,3 @@ export function CoverImageUploader({
   );
 }
 
-async function compressCoverImage(file: File) {
-  const image = await loadLocalImage(file);
-  let width = image.naturalWidth;
-  let height = image.naturalHeight;
-  const largestDimension = Math.max(width, height);
-
-  if (largestDimension > MAX_IMAGE_DIMENSION) {
-    const scale = MAX_IMAGE_DIMENSION / largestDimension;
-    width = Math.round(width * scale);
-    height = Math.round(height * scale);
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    throw new Error("Canvas is unavailable.");
-  }
-
-  context.drawImage(image, 0, 0, width, height);
-
-  let quality = INITIAL_WEBP_QUALITY;
-  let compressed = await canvasToFile(canvas, quality, file.name);
-
-  while (compressed.size > OPTIMIZE_ABOVE_SIZE && quality > MIN_WEBP_QUALITY) {
-    quality = Math.max(MIN_WEBP_QUALITY, quality - 0.1);
-    compressed = await canvasToFile(canvas, quality, file.name);
-  }
-
-  return compressed;
-}
-
-function loadLocalImage(file: File) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new window.Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve(image);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("Image could not be loaded."));
-    };
-    image.src = objectUrl;
-  });
-}
-
-function canvasToFile(
-  canvas: HTMLCanvasElement,
-  quality: number,
-  fileName: string,
-) {
-  return new Promise<File>((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error("Image compression failed."));
-        return;
-      }
-
-      const name = `${fileName.replace(/\.[^.]+$/, "")}.webp`;
-      resolve(new File([blob], name, { type: "image/webp" }));
-    }, "image/webp", quality);
-  });
-}
-
-function isSafeUploadedImageUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function preloadImage(url: string, signal: AbortSignal) {
-  return new Promise<void>((resolve, reject) => {
-    const image = new window.Image();
-
-    function cleanUp() {
-      signal.removeEventListener("abort", handleAbort);
-      image.onload = null;
-      image.onerror = null;
-    }
-
-    function handleAbort() {
-      cleanUp();
-      reject(new Error("Upload cancelled."));
-    }
-
-    image.onload = () => {
-      cleanUp();
-      resolve();
-    };
-    image.onerror = () => {
-      cleanUp();
-      reject(
-        new Error(
-          "The uploaded image could not be verified. Please try again.",
-        ),
-      );
-    };
-    signal.addEventListener("abort", handleAbort, { once: true });
-    image.src = url;
-  });
-}
