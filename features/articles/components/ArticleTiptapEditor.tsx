@@ -6,6 +6,7 @@ import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { type ChangeEvent, useCallback, useEffect, useId, useRef } from "react";
 
+import { ArticleImageBubbleMenu } from "@/features/articles/components/ArticleImageBubbleMenu";
 import { ArticleTiptapToolbar } from "@/features/articles/components/ArticleTiptapToolbar";
 import { ArticleImage } from "@/features/articles/editor/article-image-extension";
 import { ArticleImagePlaceholder } from "@/features/articles/editor/article-image-placeholder";
@@ -247,6 +248,7 @@ export function ArticleTiptapEditor({
           onInsertImage={openImagePicker}
         />
         <EditorContent editor={editor} />
+        <ArticleImageBubbleMenu editor={editor} />
         <div className="flex items-center justify-between gap-4 border-t border-black/10 bg-[#f8f8f6] px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-black/50">
           <span id={descriptionId}>Rich text editor</span>
           <span aria-live="polite">
