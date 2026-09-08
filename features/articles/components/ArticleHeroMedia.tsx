@@ -4,14 +4,12 @@ import type { Article } from "@/features/articles/types/article";
 import { cn } from "@/shared/lib/cn";
 
 /*
- * Article illustrations come from one standardized landscape template, so the
- * hero frame is locked to its ratio instead of stretching to whatever height
- * the headline column happens to take. That keeps the artwork identical from
- * article to article: the template fills the frame edge to edge with nothing
- * trimmed, and a cover that deviates from the template is cropped evenly from
- * the centre rather than drifting sideways with its own dimensions.
+ * Below lg the media sits in its own row with no shared height to fill, so it
+ * keeps a fixed ratio there. At lg+ it lives beside the headline column in a
+ * stretched grid row and instead fills that row's full height edge to edge,
+ * so the frame never shows matting above or below the photo.
  */
-const HERO_ASPECT_RATIO = "aspect-[3/2]";
+const HERO_ASPECT_RATIO = "aspect-[3/2] lg:aspect-auto lg:h-full";
 
 type ArticleHeroMediaProps = {
   article: Article;
