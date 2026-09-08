@@ -54,14 +54,8 @@ export function ArticleHero({ article }: ArticleHeroProps) {
           </ButtonLink>
         </div>
 
-        {/*
-          The cell stretches to the row height so the artwork panel still bleeds
-          from the nav to the section rule, but the illustration inside keeps
-          its own ratio and is centred against the paper mat rather than being
-          cropped to whatever height the headline column takes.
-        */}
         <Link
-          className="focus-ring reveal reveal-delay-1 group flex min-w-0 items-center bg-[#eceae4]"
+          className="focus-ring reveal reveal-delay-1 group flex min-w-0 bg-[#eceae4]"
           href={href}
           suppressHydrationWarning
         >
