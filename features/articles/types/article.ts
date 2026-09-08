@@ -83,8 +83,6 @@ export type Article = {
   contentJson: unknown | null;
   createdAt: Date;
   updatedAt: Date;
-  /** Development-fixture hint. Production feature selection falls back to popularity. */
-  featured?: boolean;
 };
 
 export type ArticleInput = {

@@ -25,11 +25,8 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-Public article pages can use development fixtures from
-`features/articles/data/article-fixtures.ts` during `next dev`, but the fixture
-list is empty by default. Set `USE_DATABASE_ARTICLES=true` when you want the
-public site to read local database records instead. Admin pages always use
-database records.
+Public and admin article pages always read from the database configured by
+`DATABASE_URL`, in both `next dev` and production.
 
 ## Subscriptions
 
