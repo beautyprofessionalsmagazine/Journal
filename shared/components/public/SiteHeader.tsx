@@ -92,7 +92,7 @@ export function SiteHeader() {
 
   return (
     <header
-      className="site-header-surface sticky top-0 z-40 border-b border-black"
+      className="site-header-surface sticky top-0 z-[var(--z-header)] border-b border-black"
       data-motion-header
       data-motion-managed
       onClick={handleHeaderClick}
@@ -226,7 +226,7 @@ export function SiteHeader() {
                       />
                     </Button>
                     <div
-                      className={`absolute left-1/2 top-full z-50 w-64 -translate-x-1/2 border border-white/20 bg-[#141414] p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.45)] transition-[opacity,transform] duration-200 ${
+                      className={`absolute left-1/2 top-full z-[var(--z-dropdown)] w-64 -translate-x-1/2 border border-white/20 bg-[#141414] p-2 text-white shadow-[0_18px_45px_rgba(0,0,0,0.45)] transition-[opacity,transform] duration-200 ${
                         openDropdown === item.name
                           ? "visible translate-y-0 opacity-100"
                           : "pointer-events-none invisible -translate-y-2 opacity-0"

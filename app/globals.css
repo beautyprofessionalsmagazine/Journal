@@ -171,9 +171,17 @@ button:disabled {
   transition: filter 260ms ease, opacity 260ms ease;
 }
 
-.sponsor-item:nth-child(1) img,
+.sponsor-item:nth-child(1) img {
+  filter: grayscale(1) invert(1);
+  transform: scale(4.2);
+}
+
+.sponsor-item:nth-child(2) img {
+  transform: scale(1.65);
+}
+
 .sponsor-item:nth-child(3) img {
-  transform: scale(1.55);
+  transform: scale(1.25);
 }
 
 .story-image {
@@ -188,6 +196,10 @@ button:disabled {
 
   .sponsor-item:hover img {
     filter: grayscale(0);
+  }
+
+  .sponsor-item:first-child:hover img {
+    filter: grayscale(0) invert(1);
   }
 }
 

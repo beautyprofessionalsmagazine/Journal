@@ -4,6 +4,7 @@ import { AdminLayout } from "@/features/admin";
 import { LookbookAdminPage, getActiveLookbook } from "@/features/lookbook";
 
 export const metadata: Metadata = { title: "Manage Lookbook" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminLookbookRoute() {
   const lookbook = await getActiveLookbook();

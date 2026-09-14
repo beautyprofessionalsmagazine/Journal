@@ -25,7 +25,7 @@ export function SponsorsStrip() {
                 data-motion-sponsor-item
                 key={sponsor.id}
               >
-                <div className="relative h-14 w-full sm:h-16">
+                <div className="relative h-14 w-full overflow-hidden sm:h-16">
                   <Image
                     alt={sponsor.name}
                     className="object-contain"

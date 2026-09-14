@@ -4,7 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useRef, useSyncExternalStore } from "react";
 
 type MotionProviderProps = {
   children: ReactNode;
@@ -12,15 +12,22 @@ type MotionProviderProps = {
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+const subscribeToHydration = () => () => undefined;
+
 /** Owns scoped editorial entrances, hover motion, and scroll reveals. */
 export function MotionProvider({ children }: MotionProviderProps) {
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
 
   useGSAP(
     (_context, contextSafe) => {
       const root = rootRef.current;
-      if (!root) return;
+      if (!root || !isHydrated) return;
 
       const media = gsap.matchMedia();
       const makeContextSafe =
@@ -214,7 +221,11 @@ export function MotionProvider({ children }: MotionProviderProps) {
 
       return () => media.revert();
     },
-    { dependencies: [pathname], scope: rootRef, revertOnUpdate: true },
+    {
+      dependencies: [isHydrated, pathname],
+      scope: rootRef,
+      revertOnUpdate: true,
+    },
   );
 
   return (
