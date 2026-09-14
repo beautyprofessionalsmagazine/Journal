@@ -83,7 +83,7 @@ function FeaturedStory({ article }: { article: Article }) {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 hidden w-[64%] bg-gradient-to-r from-[#f7f4ee] from-12% via-[#f7f4ee]/92 via-58% to-transparent lg:block"
+        className="pointer-events-none absolute inset-y-0 left-0 hidden w-[54%] bg-gradient-to-r from-[#f7f4ee] from-12% via-[#f7f4ee]/92 via-58% to-transparent lg:block"
       />
 
       <div

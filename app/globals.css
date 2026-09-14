@@ -168,7 +168,7 @@ button:disabled {
 
 .sponsor-item[data-sponsor="ibpa"] img {
   filter: grayscale(1) invert(1);
-  transform: translateY(46%) scale(4.2);
+  transform: scale(1.12);
 }
 
 .sponsor-item[data-sponsor="andreeva-consulting"] img {
@@ -181,7 +181,7 @@ button:disabled {
 
 @media (min-width: 640px) {
   .sponsor-item[data-sponsor="ibpa"] img {
-    transform: translateY(59%) scale(5.3);
+    transform: scale(1.16);
   }
 }
 
@@ -191,7 +191,9 @@ button:disabled {
 
 @media (min-width: 1024px) {
   .home-feature-media .story-image {
-    object-position: 59% center;
+    object-position: 50% center;
+    transform: translateX(12%) scale(1.16);
+    transform-origin: center center;
   }
 }
 
