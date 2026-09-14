@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/shared/components/public/SiteFooter";
 import { SiteHeader } from "@/shared/components/public/SiteHeader";
+import { SponsorsStrip } from "@/features/sponsors";
 
 type PublicSiteLayoutProps = {
   children: ReactNode;
@@ -17,6 +18,7 @@ export function PublicSiteLayout({ children }: PublicSiteLayoutProps) {
         Skip to content
       </a>
       <SiteHeader />
+      <SponsorsStrip />
       <div id="main-content" tabIndex={-1}>
         {children}
       </div>
