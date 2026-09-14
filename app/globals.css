@@ -16,6 +16,11 @@
   --page-padding: clamp(1rem, 3.2vw, 3rem);
   --section-space: clamp(3.5rem, 7vw, 7.5rem);
   --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-header: 400;
+  --z-backdrop: 500;
+  --z-dialog: 600;
 }
 
 * {
@@ -44,6 +49,45 @@ body {
   color: var(--foreground);
   font-family: var(--font-editorial-sans);
   text-rendering: optimizeLegibility;
+  scrollbar-color: rgba(16, 16, 16, 0.42) var(--paper);
+  scrollbar-width: thin;
+}
+
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  border: 2px solid var(--paper);
+  background: rgba(16, 16, 16, 0.42);
+}
+
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 16, 16, 0.62);
+}
+
+.confirm-dialog {
+  z-index: var(--z-dialog);
+}
+
+.confirm-dialog::backdrop {
+  z-index: var(--z-backdrop);
+}
+
+@media (forced-colors: active) {
+  body,
+  * {
+    scrollbar-color: auto;
+  }
 }
 
 button:not(:disabled),

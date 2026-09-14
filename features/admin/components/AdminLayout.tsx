@@ -15,6 +15,7 @@ type AdminLayoutProps = {
 const adminNavigation = [
   { label: "Overview", href: "/admin" },
   { label: "Articles", href: "/admin/articles" },
+  { label: "Lookbook", href: "/admin/lookbook" },
   { label: "Subscriptions", href: "/admin/subscriptions" },
   { label: "Distributors", href: "/admin/distributors" },
   { label: "Analytics", href: "/admin/analytics" },
