@@ -363,7 +363,7 @@ function StoryImage({
 }
 
 function getFeatureHeadlineClass(title: string) {
-  if (title.length > 88) {
+  if (title.length > 72) {
     return "max-w-[17ch] text-[clamp(2.1rem,3.2vw,3.2rem)] leading-[0.92]";
   }
 
