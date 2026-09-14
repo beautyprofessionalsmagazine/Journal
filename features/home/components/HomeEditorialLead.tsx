@@ -54,14 +54,19 @@ function FeaturedStory({ article }: { article: Article }) {
   const href = `/articles/${article.slug}`;
 
   return (
-    <article className="home-feature min-w-0">
+    <article className="home-feature min-w-0" data-motion-managed>
       <Link
         className="home-feature-media focus-ring group relative block aspect-[16/10] overflow-hidden bg-[#eceae4]"
+        data-motion-feature-media
+        data-motion-story-hover
         href={href}
       >
         <StoryImage article={article} priority sizes="(min-width: 1440px) 960px, (min-width: 1024px) 67vw, 100vw" />
       </Link>
-      <div className="home-feature-copy border-b border-black pb-7 pt-5 sm:pt-7">
+      <div
+        className="home-feature-copy border-b border-black pb-7 pt-5 sm:pt-7"
+        data-motion-feature-copy
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="editorial-kicker text-[var(--champagne-dark)]">{article.category}</p>
           <ArticleMetadata article={article} />
@@ -102,7 +107,13 @@ function RecentStories({ articles }: { articles: Article[] }) {
       </div>
       <div className="home-recent-list divide-y divide-black/20">
         {articles.map((article) => (
-          <article className="home-recent-card group py-6" key={article.id}>
+          <article
+            className="home-recent-card group py-6"
+            data-motion-managed
+            data-motion-recent-card
+            data-motion-story-hover
+            key={article.id}
+          >
             <Link
               className="focus-ring relative mb-4 block aspect-[16/10] overflow-hidden bg-[#eceae4]"
               href={`/articles/${article.slug}`}

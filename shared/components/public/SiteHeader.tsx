@@ -93,6 +93,8 @@ export function SiteHeader() {
   return (
     <header
       className="site-header-surface sticky top-0 z-40 border-b border-black"
+      data-motion-header
+      data-motion-managed
       onClick={handleHeaderClick}
       ref={headerRef}
     >
@@ -122,6 +124,7 @@ export function SiteHeader() {
                   : undefined
               }
               className="focus-ring link-transition inline-flex min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-white/85 hover:text-white"
+              data-motion-nav-item
               href="/current-issue"
             >
               Current Issue
@@ -131,6 +134,7 @@ export function SiteHeader() {
                 isRouteActive(pathname, "/where-to-find") ? "page" : undefined
               }
               className="focus-ring link-transition inline-flex min-h-11 items-center [font-family:var(--font-editorial-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-white/85 hover:text-white"
+              data-motion-nav-item
               href="/where-to-find"
             >
               Where to Find
@@ -141,6 +145,7 @@ export function SiteHeader() {
             aria-current={pathname === "/" ? "page" : undefined}
             aria-label="Beauty Professionals Magazine home"
             className="focus-ring link-transition mx-auto flex w-full max-w-[clamp(10rem,21vw,19rem)] items-center justify-center"
+            data-motion-nav-item
             href="/"
           >
             <Image
@@ -161,6 +166,7 @@ export function SiteHeader() {
                   isRouteActive(pathname, "/subscribe") ? "page" : undefined
                 }
                 className={HEADER_OUTLINE_BUTTON}
+                data-motion-nav-item
                 href="/subscribe"
                 size="sm"
                 variant="outline"
@@ -176,6 +182,7 @@ export function SiteHeader() {
               }
               aria-label="Search articles"
               className={HEADER_ICON_BUTTON}
+              data-motion-nav-item
               href="/articles"
               variant="icon"
             >
@@ -190,7 +197,7 @@ export function SiteHeader() {
         >
           <ul className="flex min-h-14 items-center justify-center gap-x-[clamp(1rem,2vw,2rem)] [font-family:var(--font-editorial-sans)] text-[0.72rem] font-semibold uppercase tracking-[0.07em]">
             {mainNavigation.map((item) => (
-              <li className="relative" key={item.href}>
+              <li className="relative" data-motion-nav-item key={item.href}>
                 {item.subcategories.length > 0 ? (
                   <>
                     <Button
