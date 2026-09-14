@@ -27,6 +27,7 @@ export function SponsorsStrip() {
                   alt={sponsor.name}
                   className="object-contain"
                   fill
+                  unoptimized
                   sizes={
                     sponsor.id === "ibpa"
                       ? "(min-width: 640px) 1024px, 512px"
