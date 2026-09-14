@@ -10,47 +10,45 @@ const subscriptionFacts = [
 export function SubscribePage() {
   return (
     <main className="bg-white">
-      <section className="site-container py-[var(--section-space)]">
-        <header
-          className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.1fr_0.9fr] lg:items-end"
-          suppressHydrationWarning
-        >
-          <div>
-            <p className="editorial-kicker mb-3 text-black/45">Subscriptions</p>
-            <h1 className="page-title">Subscribe</h1>
+      <section className="border-b border-black bg-[#f2efe9]">
+        <div className="site-container grid gap-[clamp(2rem,5vw,5rem)] py-[clamp(3.5rem,7vw,7rem)] lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <header className="reveal" suppressHydrationWarning>
+            <p className="editorial-kicker mb-4 text-[var(--champagne-dark)]">
+              Beauty Professionals Magazine
+            </p>
+            <h1 className="max-w-[10ch] [font-family:var(--font-editorial-title)] text-[clamp(3.5rem,8vw,6.75rem)] font-bold leading-[0.84] tracking-[-0.05em]">
+              Made for the people behind beauty.
+            </h1>
+          </header>
+
+          <div className="reveal reveal-delay-1 lg:border-l lg:border-black/20 lg:pl-[clamp(2rem,5vw,5rem)]" suppressHydrationWarning>
+            <p className="max-w-xl text-[clamp(1.05rem,1.7vw,1.3rem)] leading-8 text-black/68">
+              Receive the magazine free of charge — as a working professional,
+              a salon distribution partner, or an organization serving the
+              beauty industry.
+            </p>
+            <dl className="mt-8 grid divide-y divide-black/15 border-y border-black/20 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              {subscriptionFacts.map((fact) => (
+                <div
+                  className="flex flex-col gap-2 py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0"
+                  key={fact.label}
+                >
+                  <dt className="editorial-kicker text-black/40">{fact.label}</dt>
+                  <dd className="text-xs leading-5 text-black/68">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <p className="max-w-xl text-[clamp(1rem,1.8vw,1.25rem)] leading-8 text-black/64 lg:justify-self-end">
-            Beauty Professionals Magazine is free for every working
-            professional. Choose how you’d like to receive it — an individual
-            subscription, printed copies for your salon, or bulk delivery for
-            your school, brand, or clinic.
-          </p>
-        </header>
+        </div>
+      </section>
 
-        <dl
-          className="reveal reveal-delay-1 mt-0 grid divide-y divide-black/12 border-b border-black/12 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
-          suppressHydrationWarning
-        >
-          {subscriptionFacts.map((fact) => (
-            <div
-              className="flex flex-col gap-1.5 py-5 sm:px-6 sm:first:pl-0 sm:last:pr-0"
-              key={fact.label}
-            >
-              <dt className="editorial-kicker text-black/40">{fact.label}</dt>
-              <dd className="text-sm leading-6 text-black/72">{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div
-          className="reveal reveal-delay-1 mt-[clamp(2.5rem,5vw,4.5rem)]"
-          suppressHydrationWarning
-        >
+      <section className="site-container py-[clamp(3.5rem,7vw,7rem)]">
+        <div className="reveal" suppressHydrationWarning>
           <SubscriptionPlans />
         </div>
 
         <div
-          className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start"
+          className="reveal reveal-delay-2 mt-[clamp(4rem,8vw,8rem)] grid gap-6 border-t border-black pt-9 md:grid-cols-[0.72fr_1.28fr] md:items-start"
           suppressHydrationWarning
         >
           <p className="editorial-kicker text-black/45">Already a partner</p>

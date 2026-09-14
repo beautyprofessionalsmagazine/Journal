@@ -13,6 +13,7 @@ export {
   type SelectProps,
 } from "@/shared/components/ui/Select";
 export { MotionProvider } from "@/shared/components/ui/MotionProvider";
+export { ConfirmDialog } from "@/shared/components/ui/ConfirmDialog";
 export {
   EmptyState,
   type EmptyStateProps,

@@ -1,20 +1,11 @@
 import { HomeDistribution } from "@/features/home/components/HomeDistribution";
-import { HomeFeaturedCategories } from "@/features/home/components/HomeFeaturedCategories";
-import { HomeHero } from "@/features/home/components/HomeHero";
-import { HomeLatestArticles } from "@/features/home/components/HomeLatestArticles";
-import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
+import { HomeEditorialLead } from "@/features/home/components/HomeEditorialLead";
 
-type HomePageProps = {
-  filters?: PublishedArticleFilters;
-};
-
-export function HomePage({ filters }: HomePageProps) {
+export function HomePage() {
   return (
     <main>
-      <HomeHero />
-      <HomeLatestArticles filters={filters} />
+      <HomeEditorialLead />
       <HomeDistribution />
-      <HomeFeaturedCategories />
     </main>
   );
 }

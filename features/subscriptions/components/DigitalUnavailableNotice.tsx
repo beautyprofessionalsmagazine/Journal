@@ -18,7 +18,7 @@ export function DigitalUnavailableNotice({
 }: DigitalUnavailableNoticeProps) {
   return (
     <div
-      className="border border-black/15 bg-[#f6f4ef] p-[clamp(1.5rem,4vw,2.75rem)]"
+      className="bg-transparent p-[clamp(0.25rem,1vw,1rem)]"
       role="status"
     >
       <span className="inline-flex size-11 items-center justify-center border border-black/25 text-black">

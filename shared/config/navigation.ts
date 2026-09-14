@@ -12,6 +12,11 @@ export const mainNavigation = [
     subcategories: [],
   },
   {
+    name: "Lookbook",
+    href: "/lookbook",
+    subcategories: [],
+  },
+  {
     name: "PhotoVogue",
     href: "/photovogue",
     subcategories: [],

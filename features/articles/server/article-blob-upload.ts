@@ -1,6 +1,4 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-
-import { hasAdminSession } from "@/features/admin/server/admin-auth";
+import { createAdminBlobUploadResponse } from "@/shared/lib/admin-blob-upload";
 
 type ArticleBlobUploadOptions = {
   request: Request;
@@ -26,41 +24,10 @@ export async function createArticleBlobUploadResponse({
   maximumSizeInBytes,
   failureMessage,
 }: ArticleBlobUploadOptions) {
-  let body: HandleUploadBody;
-
-  try {
-    body = (await request.json()) as HandleUploadBody;
-  } catch {
-    return Response.json(
-      { message: "Invalid upload request." },
-      { status: 400 },
-    );
-  }
-
-  try {
-    const result = await handleUpload({
-      request,
-      body,
-      onBeforeGenerateToken: async () => {
-        // Only signed-in admins may mint an upload token. The upload-completed
-        // callback skips this hook and is verified by Vercel's signature.
-        if (!(await hasAdminSession())) {
-          throw new Error("Authentication required.");
-        }
-
-        return {
-          addRandomSuffix: true,
-          allowedContentTypes: [...allowedContentTypes],
-          maximumSizeInBytes,
-        };
-      },
-    });
-
-    return Response.json(result);
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : failureMessage;
-
-    return Response.json({ message }, { status: 400 });
-  }
+  return createAdminBlobUploadResponse({
+    request,
+    allowedContentTypes,
+    maximumSizeInBytes,
+    failureMessage,
+  });
 }
