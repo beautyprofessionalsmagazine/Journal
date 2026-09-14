@@ -74,13 +74,21 @@ export function SubscriptionPlans() {
 
   return (
     <div className="min-w-0">
-      <p className="editorial-kicker mb-4 text-black/45">
-        Choose your subscription
-      </p>
+      <div className="mb-6 flex flex-col justify-between gap-3 border-b border-black pb-4 sm:flex-row sm:items-end">
+        <div>
+          <p className="editorial-kicker text-black/45">Step one</p>
+          <h2 className="mt-1 [font-family:var(--font-editorial-title)] text-[clamp(2.25rem,4vw,3.6rem)] font-bold leading-none tracking-[-0.035em]">
+            Choose your edition
+          </h2>
+        </div>
+        <p className="max-w-sm text-xs leading-5 text-black/50 sm:text-right">
+          Select the route that matches how the magazine will be received.
+        </p>
+      </div>
 
       <div
         aria-label="Subscription types"
-        className="grid border-y border-black md:grid-cols-3 md:divide-x md:divide-black"
+        className="grid border border-black md:grid-cols-3 md:divide-x md:divide-black"
         role="tablist"
       >
         {plans.map((plan) => {
@@ -92,7 +100,7 @@ export function SubscriptionPlans() {
             <button
               aria-controls="subscription-panel"
               aria-selected={isActive}
-              className={`focus-ring flex min-h-11 flex-col items-start gap-3 border-b border-black/15 p-[clamp(1.25rem,2.5vw,1.85rem)] text-left transition-colors duration-150 last:border-b-0 md:border-b-0 ${
+              className={`focus-ring flex min-h-[10.5rem] flex-col items-start justify-between gap-3 border-b border-black/15 p-[clamp(1.25rem,2.5vw,2rem)] text-left transition-colors duration-150 last:border-b-0 md:border-b-0 ${
                 isActive
                   ? "bg-black text-white"
                   : "bg-transparent text-black hover:bg-black/[0.04]"
@@ -137,13 +145,14 @@ export function SubscriptionPlans() {
 
       <div
         aria-labelledby={`subscription-tab-${activePlan.type}`}
-        className="grid gap-[clamp(2rem,5vw,4rem)] pt-[clamp(2.5rem,5vw,4.5rem)] lg:grid-cols-[0.62fr_1.38fr] lg:items-start"
+        className="grid gap-[clamp(2.5rem,6vw,5rem)] pt-[clamp(3rem,6vw,5rem)] lg:grid-cols-[0.62fr_1.38fr] lg:items-start"
         id="subscription-panel"
         role="tabpanel"
         tabIndex={-1}
       >
-        <div className="lg:sticky lg:top-32">
-          <h2 className="[font-family:var(--font-editorial-title)] text-[clamp(1.9rem,3.4vw,2.9rem)] font-bold leading-[0.95] tracking-[-0.03em]">
+        <div className="border-t border-black pt-5 lg:sticky lg:top-32">
+          <p className="editorial-kicker text-black/42">Your selection</p>
+          <h2 className="mt-3 [font-family:var(--font-editorial-title)] text-[clamp(2.15rem,3.4vw,3.25rem)] font-bold leading-[0.93] tracking-[-0.035em]">
             {activePlan.name}
           </h2>
           <p className="mt-5 max-w-md text-sm leading-7 text-black/64">
@@ -166,7 +175,7 @@ export function SubscriptionPlans() {
           )}
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 border border-black/18 bg-[#faf9f6] p-[clamp(1.25rem,3vw,3rem)]">
           {isDigitalPaused ? (
             <DigitalUnavailableNotice onChoosePrint={() => setActiveType("salon")} />
           ) : (

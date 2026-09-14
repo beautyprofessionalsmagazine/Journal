@@ -63,7 +63,7 @@ export function SubscriptionForm({ type, onReset }: SubscriptionFormProps) {
   if (state.status === "success") {
     return (
       <div
-        className="border border-black bg-white p-[clamp(1.5rem,4vw,3rem)]"
+        className="bg-white p-[clamp(1.5rem,4vw,3rem)]"
         role="status"
       >
         <span className="inline-flex size-11 items-center justify-center border border-black bg-black text-white">
@@ -84,6 +84,15 @@ export function SubscriptionForm({ type, onReset }: SubscriptionFormProps) {
 
   return (
     <form action={formAction} className="min-w-0" noValidate>
+      <div className="mb-8 flex items-end justify-between gap-4 border-b border-black pb-4">
+        <div>
+          <p className="editorial-kicker text-black/42">Step two</p>
+          <h3 className="mt-1 [font-family:var(--font-editorial-title)] text-[clamp(1.9rem,3vw,2.6rem)] font-bold leading-none tracking-[-0.03em]">
+            Tell us where to send it
+          </h3>
+        </div>
+        <p className="hidden text-xs text-black/44 sm:block">* Required</p>
+      </div>
       {state.status === "error" && state.message ? (
         <div
           className="mb-7 flex items-start gap-3 border border-red-700 bg-red-50 px-4 py-3 text-sm leading-6 text-red-900"
