@@ -10,34 +10,29 @@ export function SponsorsStrip() {
       data-motion-managed
       data-motion-sponsors
     >
-      <div className="site-container flex min-h-20 items-stretch sm:min-h-24">
-        <div className="flex shrink-0 items-center border-r border-black/15 pr-5 sm:pr-8">
-          <p className="editorial-kicker leading-4 text-black/48">
-            Sponsors
-            <span className="block text-[0.58rem] text-black/35">&amp; partners</span>
-          </p>
-        </div>
-        <div className="sponsors-scroll min-w-0 flex-1 overflow-x-auto">
-          <ul className="flex h-full min-w-max items-stretch">
-            {sponsors.map((sponsor) => (
-              <li
-                className="sponsor-item flex w-[12rem] shrink-0 items-center justify-center border-r border-black/10 px-5 sm:w-[15rem] sm:px-8"
-                data-motion-sponsor-item
-                key={sponsor.id}
-              >
-                <div className="relative h-14 w-full overflow-hidden sm:h-16">
-                  <Image
-                    alt={sponsor.name}
-                    className="object-contain"
-                    fill
-                    sizes="240px"
-                    src={sponsor.logo}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="site-container py-4 sm:py-5">
+        <p className="editorial-kicker text-center text-black/42">
+          Our sponsors &amp; partners
+        </p>
+        <ul className="mx-auto mt-3 grid w-full max-w-4xl grid-cols-3 items-center divide-x divide-black/12">
+          {sponsors.map((sponsor) => (
+            <li
+              className="sponsor-item flex min-w-0 items-center justify-center px-3 sm:px-8"
+              data-motion-sponsor-item
+              key={sponsor.id}
+            >
+              <div className="relative h-12 w-full overflow-hidden sm:h-16">
+                <Image
+                  alt={sponsor.name}
+                  className="object-contain"
+                  fill
+                  sizes="(min-width: 640px) 240px, 30vw"
+                  src={sponsor.logo}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </aside>
   );

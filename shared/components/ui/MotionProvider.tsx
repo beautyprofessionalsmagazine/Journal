@@ -54,12 +54,6 @@ export function MotionProvider({ children }: MotionProviderProps) {
             return;
           }
 
-          const header = root.querySelector<HTMLElement>("[data-motion-header]");
-          const navItems = gsap.utils
-            .toArray<HTMLElement>("[data-motion-nav-item]", root)
-            .filter((item) => item.offsetParent !== null);
-          const sponsorsStrip = root.querySelector<HTMLElement>("[data-motion-sponsors]");
-          const sponsorItems = gsap.utils.toArray<HTMLElement>("[data-motion-sponsor-item]", root);
           const featureMedia = root.querySelector<HTMLElement>("[data-motion-feature-media]");
           const featureCopy = root.querySelector<HTMLElement>("[data-motion-feature-copy]");
           const recentCards = gsap.utils.toArray<HTMLElement>("[data-motion-recent-card]", root);
@@ -67,51 +61,6 @@ export function MotionProvider({ children }: MotionProviderProps) {
             defaults: { duration: 0.7, ease: "power3.out" },
           });
 
-          if (header) {
-            opening.from(header, {
-              autoAlpha: 0,
-              y: -18,
-              clearProps: "transform,opacity,visibility",
-            });
-          }
-          if (navItems.length) {
-            opening.from(
-              navItems,
-              {
-                autoAlpha: 0,
-                y: -8,
-                duration: 0.45,
-                stagger: 0.035,
-                clearProps: "transform,opacity,visibility",
-              },
-              "<0.1",
-            );
-          }
-          if (sponsorsStrip) {
-            opening.from(
-              sponsorsStrip,
-              {
-                autoAlpha: 0,
-                y: -10,
-                duration: 0.55,
-                clearProps: "transform,opacity,visibility",
-              },
-              "<0.12",
-            );
-          }
-          if (sponsorItems.length) {
-            opening.from(
-              sponsorItems,
-              {
-                autoAlpha: 0,
-                x: -10,
-                duration: 0.45,
-                stagger: 0.065,
-                clearProps: "transform,opacity,visibility",
-              },
-              "<0.08",
-            );
-          }
           if (featureMedia) {
             opening.fromTo(
               featureMedia,
@@ -122,7 +71,7 @@ export function MotionProvider({ children }: MotionProviderProps) {
                 ease: "power3.inOut",
                 clearProps: "clipPath",
               },
-              "<0.08",
+              0,
             );
           }
           if (featureCopy) {
@@ -135,7 +84,7 @@ export function MotionProvider({ children }: MotionProviderProps) {
                 stagger: 0.07,
                 clearProps: "transform,opacity,visibility",
               },
-              "<0.35",
+              0.35,
             );
           }
           if (recentCards.length) {
@@ -148,7 +97,7 @@ export function MotionProvider({ children }: MotionProviderProps) {
                 stagger: 0.09,
                 clearProps: "transform,opacity,visibility",
               },
-              "<0.12",
+              0.42,
             );
           }
 

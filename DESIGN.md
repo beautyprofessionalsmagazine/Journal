@@ -62,7 +62,7 @@ The display stack carries article headlines and mastheads with tight leading and
 
 ## Layout
 
-Public content uses a fluid page gutter and a maximum reading frame of 90rem. The homepage lead becomes an approximately 70/30 spread at desktop sizes, a dominant feature plus compact rail at tablet sizes, and one clear reading sequence on mobile. Images always reserve an aspect ratio. Horizontal sponsor overflow stays visible and operable on narrow screens. Admin routes preserve the existing sidebar/content grid and natural document scrolling.
+Public content uses a fluid page gutter and a maximum reading frame of 90rem. The homepage lead becomes an approximately 70/30 spread at desktop sizes, a dominant feature plus compact rail at tablet sizes, and one clear reading sequence on mobile. Long feature headlines step down through length-aware display sizes so editorial titles remain intact without breaking the spread. Images always reserve an aspect ratio. The three-part sponsor row stays centered and reflows within the viewport; it never creates a nested horizontal scroll region. Below the lead, ruled story grids, a two-part spotlight, distribution coverage, and archive stories create a complete issue-like reading sequence. Admin routes preserve the existing sidebar/content grid and natural document scrolling.
 
 ## Elevation & Depth
 
