@@ -166,21 +166,33 @@ button:disabled {
   transition: filter 260ms ease, opacity 260ms ease;
 }
 
-.sponsor-item:nth-child(1) img {
+.sponsor-item[data-sponsor="ibpa"] img {
   filter: grayscale(1) invert(1);
-  transform: scale(4.2);
+  transform: translateY(46%) scale(4.2);
 }
 
-.sponsor-item:nth-child(2) img {
+.sponsor-item[data-sponsor="andreeva-consulting"] img {
   transform: scale(1.65);
 }
 
-.sponsor-item:nth-child(3) img {
+.sponsor-item[data-sponsor="nepop-radio"] img {
   transform: scale(1.25);
+}
+
+@media (min-width: 640px) {
+  .sponsor-item[data-sponsor="ibpa"] img {
+    transform: translateY(59%) scale(5.3);
+  }
 }
 
 .story-image {
   transition: filter 700ms ease;
+}
+
+@media (min-width: 1024px) {
+  .home-feature-media .story-image {
+    object-position: 59% center;
+  }
 }
 
 @media (hover: hover) {
@@ -193,7 +205,7 @@ button:disabled {
     filter: grayscale(0);
   }
 
-  .sponsor-item:first-child:hover img {
+  .sponsor-item[data-sponsor="ibpa"]:hover img {
     filter: grayscale(0) invert(1);
   }
 }

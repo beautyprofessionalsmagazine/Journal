@@ -19,6 +19,7 @@ export function SponsorsStrip() {
             <li
               className="sponsor-item flex min-w-0 items-center justify-center px-3 sm:px-8"
               data-motion-sponsor-item
+              data-sponsor={sponsor.id}
               key={sponsor.id}
             >
               <div className="relative h-12 w-full overflow-hidden sm:h-16">
@@ -26,7 +27,11 @@ export function SponsorsStrip() {
                   alt={sponsor.name}
                   className="object-contain"
                   fill
-                  sizes="(min-width: 640px) 240px, 30vw"
+                  sizes={
+                    sponsor.id === "ibpa"
+                      ? "(min-width: 640px) 1024px, 512px"
+                      : "(min-width: 640px) 512px, 256px"
+                  }
                   src={sponsor.logo}
                 />
               </div>
