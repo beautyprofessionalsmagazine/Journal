@@ -29,6 +29,13 @@
       "when": 1789414904229,
       "tag": "0003_solid_kabuki",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789515037023,
+      "tag": "0004_hesitant_ben_urich",
+      "breakpoints": true
     }
   ]
 }
