@@ -94,6 +94,7 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
       error: null,
       isUploading: false,
     });
+  const [isCoverComposerOpen, setIsCoverComposerOpen] = useState(false);
   const [bodyImageUploadState, setBodyImageUploadState] =
     useState<ArticleImageUploadState>({
       error: null,
@@ -595,6 +596,7 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                 updateField("coverImage", coverImage);
                 updateField("coverImageSettings", defaultCoverImageSettings);
               }}
+              onCompositionRequested={() => setIsCoverComposerOpen(true)}
               onUploadStateChange={handleCoverUploadStateChange}
               slug={values.slug}
               value={values.coverImage}
@@ -602,9 +604,12 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
             {values.coverImage ? (
               <CoverImageComposer
                 imageUrl={values.coverImage}
-                onChange={(coverImageSettings) =>
+                key={`${values.coverImage}-${isCoverComposerOpen ? "open" : "closed"}`}
+                onApply={(coverImageSettings) =>
                   updateField("coverImageSettings", coverImageSettings)
                 }
+                onOpenChange={setIsCoverComposerOpen}
+                open={isCoverComposerOpen}
                 value={values.coverImageSettings}
               />
             ) : null}
