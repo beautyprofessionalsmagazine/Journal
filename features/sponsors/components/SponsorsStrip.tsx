@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
 import { sponsors } from "@/features/sponsors/data/sponsors";
@@ -10,55 +10,47 @@ export function SponsorsStrip() {
   const [activeSponsor, setActiveSponsor] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const panel = panelRef.current;
     if (!panel) return;
 
-    const media = gsap.matchMedia();
-    media.add(
-      { reduceMotion: "(prefers-reduced-motion: reduce)" },
-      ({ conditions }) => {
-        const reduceMotion = Boolean(conditions?.reduceMotion);
-        const paragraphs = panel.querySelectorAll<HTMLElement>("[data-sponsor-copy]");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const paragraphs = panel.querySelectorAll<HTMLElement>("[data-sponsor-copy]");
 
-        gsap.killTweensOf([panel, paragraphs]);
-        if (reduceMotion) {
-          gsap.set([panel, paragraphs], {
-            autoAlpha: 1,
-            clearProps: "clipPath,transform,opacity,visibility",
-          });
-          return;
-        }
+    gsap.killTweensOf([panel, paragraphs]);
+    if (reduceMotion) {
+      gsap.set([panel, paragraphs], {
+        autoAlpha: 1,
+        clearProps: "clipPath,transform,opacity,visibility",
+      });
+      return;
+    }
 
-        gsap.fromTo(
-          panel,
-          { clipPath: "inset(0 0 100% 0)", autoAlpha: 0, y: -10 },
-          {
-            clipPath: "inset(0 0 0% 0)",
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.62,
-            ease: "power3.out",
-            clearProps: "clipPath,transform,opacity,visibility",
-          },
-        );
-        gsap.fromTo(
-          paragraphs,
-          { autoAlpha: 0, y: 12 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.48,
-            ease: "power2.out",
-            stagger: 0.055,
-            delay: 0.12,
-            clearProps: "transform,opacity,visibility",
-          },
-        );
-      },
-    );
+    gsap.set(panel, { clipPath: "inset(0 0 100% 0)", autoAlpha: 0, y: -10 });
+    gsap.set(paragraphs, { autoAlpha: 0, y: 12 });
 
-    return () => media.revert();
+    requestAnimationFrame(() => {
+      const opening = gsap.timeline({ defaults: { ease: "power3.out" } });
+      opening.to(panel, {
+        clipPath: "inset(0 0 0% 0)",
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.62,
+        clearProps: "clipPath,transform,opacity,visibility",
+      });
+      opening.to(
+        paragraphs,
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.48,
+          ease: "power2.out",
+          stagger: 0.055,
+          clearProps: "transform,opacity,visibility",
+        },
+        "-=0.5",
+      );
+    });
   }, [activeSponsor]);
 
   const toggleSponsor = (sponsorId: string) => {
