@@ -189,14 +189,6 @@ button:disabled {
   transition: filter 700ms ease;
 }
 
-@media (min-width: 1024px) {
-  .home-feature-media .story-image {
-    object-position: 50% center;
-    transform: translateX(12%) scale(1.16);
-    transform-origin: center center;
-  }
-}
-
 @media (hover: hover) {
   .home-feature-media:hover .story-image,
   .home-recent-card:hover .story-image {

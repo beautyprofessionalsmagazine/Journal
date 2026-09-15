@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { AdminLayout } from "@/features/admin";
 import { listArticles } from "@/features/articles/server/article-queries";
+import { getCoverImageStyle } from "@/features/articles/lib/cover-image-settings";
 import { ButtonLink, EmptyState } from "@/shared/components/ui";
 
 export async function ArticleAdminListPage() {
@@ -48,6 +49,7 @@ export async function ArticleAdminListPage() {
                         fill
                         sizes="88px"
                         src={article.coverImage}
+                        style={getCoverImageStyle(article.coverImageSettings)}
                       />
                     ) : (
                       <span className="flex h-full items-center justify-center [font-family:var(--font-editorial-title)] text-5xl font-bold text-black/15">
@@ -134,6 +136,7 @@ export async function ArticleAdminListPage() {
                             fill
                             sizes="72px"
                             src={article.coverImage}
+                            style={getCoverImageStyle(article.coverImageSettings)}
                           />
                         ) : null}
                       </div>

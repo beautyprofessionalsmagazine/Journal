@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import type { Article } from "@/features/articles/types/article";
+import { getCoverImageStyle } from "@/features/articles/lib/cover-image-settings";
 import { cn } from "@/shared/lib/cn";
 
 /*
@@ -45,6 +46,7 @@ export function ArticleHeroMedia({
           priority={priority}
           sizes={sizes}
           src={article.coverImage}
+          style={getCoverImageStyle(article.coverImageSettings)}
         />
       ) : (
         <div className="flex h-full flex-col items-center justify-center px-6 text-center">

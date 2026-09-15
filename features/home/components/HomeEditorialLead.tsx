@@ -358,6 +358,7 @@ function StoryImage({
       priority={priority}
       sizes={sizes}
       src={article.coverImage}
+      settings={article.coverImageSettings}
     />
   );
 }

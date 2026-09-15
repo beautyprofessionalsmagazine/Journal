@@ -100,7 +100,7 @@ export type ArticleInput = {
   description?: string | null;
   coverImage?: string | null;
   coverImageAlt?: string | null;
-  coverImageSettings?: CoverImageSettings | null;
+  coverImageSettings?: CoverImageSettings | string | null;
   tags?: string[] | string | null;
   status: ArticleStatus;
   publishedAt?: Date | string | null;
