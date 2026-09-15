@@ -144,7 +144,7 @@ export function CoverImageComposer({
     <dialog
       aria-describedby="cover-composition-description"
       aria-labelledby="cover-composition-title"
-      className="m-auto flex max-h-[calc(100dvh-1.5rem)] w-[min(calc(100%_-_1.5rem),76rem)] flex-col overflow-hidden border border-black bg-white p-0 text-black shadow-[0_28px_90px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
+      className="cover-composition-dialog m-auto flex max-h-[calc(100dvh-1.5rem)] w-[min(calc(100%_-_1.5rem),76rem)] flex-col overflow-hidden border border-black bg-white p-0 text-black shadow-[0_28px_90px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
       onCancel={(event) => {
         event.preventDefault();
         close();
@@ -185,7 +185,8 @@ export function CoverImageComposer({
           <div
             aria-describedby="cover-composition-help"
             aria-label="Cover image crop preview. Drag to move the image."
-            className="relative mx-auto aspect-video w-full max-w-[58rem] touch-none cursor-grab overflow-hidden border border-white/25 bg-black shadow-[0_18px_42px_rgba(0,0,0,0.36)] active:cursor-grabbing"
+            className="relative mx-auto aspect-video w-full max-w-[58rem] touch-none select-none cursor-grab overflow-hidden border border-white/25 bg-black shadow-[0_18px_42px_rgba(0,0,0,0.36)] active:cursor-grabbing"
+            onDragStart={(event) => event.preventDefault()}
             onPointerCancel={finishDrag}
             onPointerDown={beginDrag}
             onPointerMove={dragImage}
@@ -196,6 +197,7 @@ export function CoverImageComposer({
             <Image
               alt=""
               className="object-cover"
+              draggable={false}
               fill
               priority
               sizes="(min-width: 1280px) 70vw, 100vw"
