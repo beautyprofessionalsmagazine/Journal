@@ -189,16 +189,6 @@ button:disabled {
   transition: filter 700ms ease;
 }
 
-/* Tailwind's display utility would otherwise override the browser's closed
- * dialog rule and leave the cover composer in the admin sidebar's flow. */
-.cover-composition-dialog:not([open]) {
-  display: none;
-}
-
-.cover-composition-dialog[open] {
-  display: flex;
-}
-
 @media (hover: hover) {
   .home-feature-media:hover .story-image,
   .home-recent-card:hover .story-image {

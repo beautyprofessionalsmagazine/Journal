@@ -13,7 +13,7 @@ import {
 import {
   type PointerEvent,
   type ReactNode,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -29,7 +29,6 @@ type CoverImageComposerProps = {
   imageUrl: string;
   onApply: (settings: CoverImageSettings) => void;
   onOpenChange: (open: boolean) => void;
-  open: boolean;
   value: CoverImageSettings;
 };
 
@@ -47,7 +46,6 @@ export function CoverImageComposer({
   imageUrl,
   onApply,
   onOpenChange,
-  open,
   value,
 }: CoverImageComposerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -62,17 +60,20 @@ export function CoverImageComposer({
     normalizeCoverImageSettings(value),
   );
 
-  useEffect(() => {
+  // This component only mounts while the editor has explicitly opened it.
+  // Opening in a layout effect puts the native dialog in the top layer before
+  // the browser can paint it as a child of the sticky admin sidebar.
+  useLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    if (open && !dialog.open) {
-      dialog.showModal();
-      closeButtonRef.current?.focus();
-    } else if (!open && dialog.open) {
-      dialog.close();
-    }
-  }, [open]);
+    if (!dialog.open) dialog.showModal();
+    closeButtonRef.current?.focus();
+
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
 
   function close() {
     const dialog = dialogRef.current;
@@ -144,7 +145,7 @@ export function CoverImageComposer({
     <dialog
       aria-describedby="cover-composition-description"
       aria-labelledby="cover-composition-title"
-      className="cover-composition-dialog m-auto flex max-h-[calc(100dvh-1.5rem)] w-[min(calc(100%_-_1.5rem),76rem)] flex-col overflow-hidden border border-black bg-white p-0 text-black shadow-[0_28px_90px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
+      className="m-auto flex max-h-[calc(100dvh-1.5rem)] w-[min(calc(100%_-_1.5rem),76rem)] flex-col overflow-hidden border border-black bg-white p-0 text-black shadow-[0_28px_90px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
       onCancel={(event) => {
         event.preventDefault();
         close();

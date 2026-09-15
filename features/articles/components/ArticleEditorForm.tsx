@@ -601,15 +601,13 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
               slug={values.slug}
               value={values.coverImage}
             />
-            {values.coverImage ? (
+            {values.coverImage && isCoverComposerOpen ? (
               <CoverImageComposer
                 imageUrl={values.coverImage}
-                key={`${values.coverImage}-${isCoverComposerOpen ? "open" : "closed"}`}
                 onApply={(coverImageSettings) =>
                   updateField("coverImageSettings", coverImageSettings)
                 }
                 onOpenChange={setIsCoverComposerOpen}
-                open={isCoverComposerOpen}
                 value={values.coverImageSettings}
               />
             ) : null}
