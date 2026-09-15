@@ -20,6 +20,6 @@ export const sponsors: Sponsor[] = [
   {
     id: "nepop-radio",
     name: "NePop Radio",
-    logo: "/images/sponsors/nepop-radio.png",
+    logo: "/images/sponsors/nepop-media.png",
   },
 ];
