@@ -36,6 +36,13 @@
       "when": 1789515037023,
       "tag": "0004_hesitant_ben_urich",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789599870312,
+      "tag": "0005_romantic_stellaris",
+      "breakpoints": true
     }
   ]
 }

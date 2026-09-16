@@ -44,15 +44,11 @@ export async function ArticleAdminListPage() {
                   <div className="relative aspect-[4/5] overflow-hidden bg-[#eceae4]">
                     {article.coverImage ? (
                       <Image
-                        alt={article.coverImageAlt ?? article.title}
+                        alt={article.coverImage?.alt || article.title}
                         className="object-cover"
                         fill
                         sizes="88px"
-                        src={getCoverImageSource(
-                          article.coverImage,
-                          article.coverImageSettings,
-                          "portraitRail",
-                        )!}
+                        src={getCoverImageSource(article.coverImage, "portraitRail")!}
                       />
                     ) : (
                       <span className="flex h-full items-center justify-center [font-family:var(--font-editorial-title)] text-5xl font-bold text-black/15">
@@ -134,15 +130,11 @@ export async function ArticleAdminListPage() {
                       <div className="relative h-[72px] w-[72px] overflow-hidden border border-black/10 bg-black/[0.03]">
                         {article.coverImage ? (
                           <Image
-                            alt={article.coverImageAlt ?? article.title}
+                            alt={article.coverImage?.alt || article.title}
                             className="object-cover"
                             fill
                             sizes="72px"
-                            src={getCoverImageSource(
-                              article.coverImage,
-                              article.coverImageSettings,
-                              "storyCard",
-                            )!}
+                            src={getCoverImageSource(article.coverImage, "storyCard")!}
                           />
                         ) : null}
                       </div>

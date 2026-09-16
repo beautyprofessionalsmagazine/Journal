@@ -27,11 +27,7 @@ export function ArticleHeroMedia({
   priority = false,
   sizes,
 }: ArticleHeroMediaProps) {
-  const coverImageSource = getCoverImageSource(
-    article.coverImage,
-    article.coverImageSettings,
-    "articleHero",
-  );
+  const coverImageSource = getCoverImageSource(article.coverImage, "articleHero");
 
   return (
     <div
@@ -43,7 +39,7 @@ export function ArticleHeroMedia({
     >
       {coverImageSource ? (
         <Image
-          alt={article.coverImageAlt ?? article.title}
+          alt={article.coverImage?.alt || article.title}
           className={cn(
             "object-cover object-center",
             imageClassName,

@@ -1,5 +1,7 @@
 import {
   defaultCoverImageSettings,
+  normalizeCoverImageData,
+  type CoverImageData,
   type CoverImageSettings,
   normalizeCoverImageSettings,
 } from "@/features/articles/lib/cover-image-settings";
@@ -80,9 +82,7 @@ export type Article = {
   category: string;
   author: string;
   description: string | null;
-  coverImage: string | null;
-  coverImageAlt: string | null;
-  coverImageSettings: CoverImageSettings | null;
+  coverImage: CoverImageData | null;
   tags: string[];
   status: ArticleStatus;
   publishedAt: Date | null;
@@ -162,15 +162,17 @@ export const initialArticleFormState: ArticleFormState = {
 };
 
 export function getArticleFormValues(article: Article): ArticleFormValues {
+  const coverImage = normalizeCoverImageData(article.coverImage);
+
   return {
     title: article.title,
     slug: article.slug,
     category: article.category,
     author: article.author,
     description: article.description ?? "",
-    coverImage: article.coverImage ?? "",
-    coverImageAlt: article.coverImageAlt ?? "",
-    coverImageSettings: normalizeCoverImageSettings(article.coverImageSettings),
+    coverImage: coverImage?.src ?? "",
+    coverImageAlt: coverImage?.alt ?? "",
+    coverImageSettings: normalizeCoverImageSettings(coverImage?.settings),
     tags: article.tags.join(", "),
     status: article.status,
     publishedAt: article.publishedAt
