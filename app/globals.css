@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-easy-crop/react-easy-crop.css";
 
 :root {
   /* TODO: Replace fallbacks when licensed local font files are available. */
