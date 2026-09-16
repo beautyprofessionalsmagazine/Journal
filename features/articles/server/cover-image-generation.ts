@@ -5,7 +5,7 @@ import sharp from "sharp";
 
 import {
   COVER_IMAGE_PLACEMENTS,
-  getEffectiveCoverCrop,
+  getCoverCrop,
   normalizeCoverImageSettings,
   type CoverCropMetadata,
   type CoverImageSettings,
@@ -56,7 +56,7 @@ export async function generateCoverImageVariants({
 
   const generatedImages = await Promise.all(
     COVER_IMAGE_PLACEMENTS.map(async (placement) => {
-      const crop = getEffectiveCoverCrop(settings, placement.id);
+      const crop = getCoverCrop(settings, placement.id);
       const rotation = normalizeRotation(crop.rotation);
       let rotated = rotatedImages.get(rotation);
 
@@ -147,14 +147,13 @@ async function downloadSourceImage(sourceUrl: string) {
 
 function createGenerationKey(sourceUrl: string, settings: CoverImageSettings) {
   const crops = COVER_IMAGE_PLACEMENTS.map((placement) => {
-    const crop = getEffectiveCoverCrop(settings, placement.id);
+    const crop = getCoverCrop(settings, placement.id);
     return {
       placement: placement.id,
       croppedAreaPixels: crop.croppedAreaPixels,
       rotation: crop.rotation,
       zoom: crop.zoom,
       aspect: crop.aspect,
-      customized: Boolean(settings.customCrops[placement.id]),
     };
   });
 

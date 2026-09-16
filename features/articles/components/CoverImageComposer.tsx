@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import Cropper, {
   type Area,
-  type Point,
-  type Size,
 } from "react-easy-crop";
 import {
   useLayoutEffect,
@@ -22,10 +20,11 @@ import {
 import {
   COVER_IMAGE_PLACEMENTS,
   createDefaultCoverImageSettings,
-  getEffectiveCoverCrop,
+  getCoverCrop,
   normalizeCoverImageSettings,
   type CoverCropMetadata,
   type CoverImagePlacement,
+  type CoverImagePlacementDefinition,
   type CoverImageSettings,
 } from "@/features/articles/lib/cover-image-settings";
 import { Button } from "@/shared/components/ui";
@@ -55,10 +54,6 @@ export function CoverImageComposer({
 }: CoverImageComposerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const mainCropSizeRef = useRef<Size | null>(null);
-  const previewCropSizesRef = useRef<
-    Partial<Record<CoverImagePlacement, Size>>
-  >({});
   const [settings, setSettings] = useState(() =>
     normalizeCoverImageSettings(value),
   );
@@ -66,17 +61,12 @@ export function CoverImageComposer({
     useState<CoverImagePlacement>("homepageFeature");
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [cropperRevision, setCropperRevision] = useState(0);
-  const [mainCropSize, setMainCropSize] = useState<Size | null>(null);
-  const [previewCropSizes, setPreviewCropSizes] = useState<
-    Partial<Record<CoverImagePlacement, Size>>
-  >({});
 
   const selectedDefinition =
     COVER_IMAGE_PLACEMENTS.find(
       (placement) => placement.id === selectedPlacement,
     ) ?? COVER_IMAGE_PLACEMENTS[0];
-  const selectedCrop = getEffectiveCoverCrop(settings, selectedPlacement);
-  const isCustomized = Boolean(settings.customCrops[selectedPlacement]);
+  const selectedCrop = getCoverCrop(settings, selectedPlacement);
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
@@ -103,16 +93,6 @@ export function CoverImageComposer({
   }
 
   function updateSelectedTransform(patch: Partial<CoverCropMetadata>) {
-    const safePatch = {
-      ...patch,
-      ...(patch.x !== undefined && Number.isFinite(patch.x) ? { x: patch.x } : {}),
-      ...(patch.y !== undefined && Number.isFinite(patch.y) ? { y: patch.y } : {}),
-      ...(patch.zoom !== undefined && Number.isFinite(patch.zoom) ? { zoom: patch.zoom } : {}),
-      ...(patch.rotation !== undefined && Number.isFinite(patch.rotation)
-        ? { rotation: patch.rotation }
-        : {}),
-    };
-
     if (
       (patch.x !== undefined && !Number.isFinite(patch.x)) ||
       (patch.y !== undefined && !Number.isFinite(patch.y)) ||
@@ -126,47 +106,11 @@ export function CoverImageComposer({
       const next = cloneSettings(current);
       next.generatedImages = {};
       next.generationKey = undefined;
-
-      if (current.customCrops[selectedPlacement]) {
-        next.customCrops[selectedPlacement] = {
-          ...current.customCrops[selectedPlacement]!,
-          ...safePatch,
-          aspect: selectedDefinition.aspect,
-        };
-        return next;
-      }
-
-      const currentSelected = current.sharedCrops[selectedPlacement];
-      const nextX = safePatch.x ?? currentSelected.x;
-      const nextY = safePatch.y ?? currentSelected.y;
-      const deltaX = nextX - currentSelected.x;
-      const deltaY = nextY - currentSelected.y;
-      const mainSize = mainCropSizeRef.current;
-
-      for (const placement of COVER_IMAGE_PLACEMENTS) {
-        const crop = current.sharedCrops[placement.id];
-        const previewSize = previewCropSizesRef.current[placement.id];
-        const scaleX =
-          mainSize && previewSize ? previewSize.width / mainSize.width : 1;
-        const scaleY =
-          mainSize && previewSize ? previewSize.height / mainSize.height : 1;
-
-        next.sharedCrops[placement.id] = {
-          ...crop,
-          x:
-            placement.id === selectedPlacement
-              ? nextX
-              : crop.x + deltaX * scaleX,
-          y:
-            placement.id === selectedPlacement
-              ? nextY
-              : crop.y + deltaY * scaleY,
-          zoom: safePatch.zoom ?? crop.zoom,
-          rotation: safePatch.rotation ?? crop.rotation,
-          aspect: placement.aspect,
-        };
-      }
-
+      next.crops[selectedPlacement] = {
+        ...current.crops[selectedPlacement],
+        ...patch,
+        aspect: selectedDefinition.aspect,
+      };
       return next;
     });
   }
@@ -175,13 +119,9 @@ export function CoverImageComposer({
     placement: CoverImagePlacement,
     croppedArea: Area,
     croppedAreaPixels: Area,
-    customized: boolean,
   ) {
     setSettings((current) => {
-      const currentCrop = customized
-        ? current.customCrops[placement]
-        : current.sharedCrops[placement];
-      if (!currentCrop) return current;
+      const currentCrop = current.crops[placement];
 
       if (
         areasEqual(currentCrop.croppedArea, croppedArea) &&
@@ -199,26 +139,7 @@ export function CoverImageComposer({
         croppedAreaPixels: roundArea(croppedAreaPixels, 0),
       };
 
-      if (customized) next.customCrops[placement] = nextCrop;
-      else next.sharedCrops[placement] = nextCrop;
-      return next;
-    });
-  }
-
-  function updatePreviewPosition(
-    placement: CoverImagePlacement,
-    point: Point,
-  ) {
-    if (placement === selectedPlacement) return;
-
-    setSettings((current) => {
-      const next = cloneSettings(current);
-      const customized = Boolean(current.customCrops[placement]);
-      const currentCrop = getEffectiveCoverCrop(current, placement);
-      const nextCrop = { ...currentCrop, ...point };
-
-      if (customized) next.customCrops[placement] = nextCrop;
-      else next.sharedCrops[placement] = nextCrop;
+      next.crops[placement] = nextCrop;
       return next;
     });
   }
@@ -229,32 +150,6 @@ export function CoverImageComposer({
     setCropperRevision((revision) => revision + 1);
   }
 
-  function customizeCrop() {
-    if (isCustomized) return;
-    setSettings((current) => ({
-      ...cloneSettings(current),
-      customCrops: {
-        ...current.customCrops,
-        [selectedPlacement]: { ...current.sharedCrops[selectedPlacement] },
-      },
-      generatedImages: {},
-      generationKey: undefined,
-    }));
-    setCropperRevision((revision) => revision + 1);
-  }
-
-  function useSharedCrop() {
-    if (!isCustomized) return;
-    setSettings((current) => {
-      const next = cloneSettings(current);
-      delete next.customCrops[selectedPlacement];
-      next.generatedImages = {};
-      next.generationKey = undefined;
-      return next;
-    });
-    setCropperRevision((revision) => revision + 1);
-  }
-
   function resetSelectedCrop() {
     const defaults = createDefaultCoverImageSettings();
     setSettings((current) => {
@@ -262,17 +157,7 @@ export function CoverImageComposer({
       next.generatedImages = {};
       next.generationKey = undefined;
 
-      if (current.customCrops[selectedPlacement]) {
-        next.customCrops[selectedPlacement] = {
-          ...defaults.sharedCrops[selectedPlacement],
-        };
-      } else {
-        for (const placement of COVER_IMAGE_PLACEMENTS) {
-          next.sharedCrops[placement.id] = {
-            ...defaults.sharedCrops[placement.id],
-          };
-        }
-      }
+      next.crops[selectedPlacement] = { ...defaults.crops[selectedPlacement] };
 
       return next;
     });
@@ -363,7 +248,7 @@ export function CoverImageComposer({
                 }}
                 image={imageUrl}
                 initialCroppedAreaPercentages={selectedCrop.croppedArea}
-                key={`${selectedPlacement}-${isCustomized ? "custom" : "shared"}-${cropperRevision}`}
+                key={`${selectedPlacement}-${cropperRevision}`}
                 maxZoom={MAX_ZOOM}
                 mediaProps={{
                   draggable: false,
@@ -380,17 +265,8 @@ export function CoverImageComposer({
                     selectedPlacement,
                     croppedArea,
                     croppedAreaPixels,
-                    isCustomized,
                   )
                 }
-                onCropSizeChange={(size) => {
-                  mainCropSizeRef.current = size;
-                  setMainCropSize((current) =>
-                    current?.width === size.width && current.height === size.height
-                      ? current
-                      : size,
-                  );
-                }}
                 onInteractionEnd={handleInteractionEnd}
                 onInteractionStart={handleInteractionStart}
                 onRotationChange={(rotation) => {
@@ -421,7 +297,7 @@ export function CoverImageComposer({
                 className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-3 pb-7 pt-3 text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white"
               >
                 <span>{selectedDefinition.label}</span>
-                <span>{isCustomized ? "Custom crop" : "Shared crop"}</span>
+                <span>Independent crop</span>
               </div>
             </div>
             <p className="sr-only" id="cover-crop-help">
@@ -438,27 +314,16 @@ export function CoverImageComposer({
                 >
                   Placement
                 </h3>
-                <span className="text-xs text-black/52">
-                  {isCustomized ? "Customized" : "Shared"}
-                </span>
+                <span className="text-xs text-black/52">Crop each placement</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 {COVER_IMAGE_PLACEMENTS.map((placement) => {
-                  const crop = getEffectiveCoverCrop(settings, placement.id);
-                  const customized = Boolean(settings.customCrops[placement.id]);
+                  const crop = getCoverCrop(settings, placement.id);
                   const selected = placement.id === selectedPlacement;
-                  const previewSize = previewCropSizes[placement.id];
-                  const previewPoint =
-                    selected && mainCropSize && previewSize
-                      ? {
-                          x: crop.x * (previewSize.width / mainCropSize.width),
-                          y: crop.y * (previewSize.height / mainCropSize.height),
-                        }
-                      : { x: crop.x, y: crop.y };
 
                   return (
                     <button
-                      aria-label={`${placement.label}${customized ? ", customized" : ", using shared crop"}`}
+                      aria-label={`Edit ${placement.label} crop`}
                       aria-pressed={selected}
                       className={cn(
                         "group min-w-0 border bg-white p-1.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black",
@@ -476,102 +341,20 @@ export function CoverImageComposer({
                           placement.previewClassName,
                         )}
                       >
-                        <Cropper
-                          aspect={placement.aspect}
-                          classes={{
-                            containerClassName: "cover-cropper-preview",
-                            mediaClassName: "cover-cropper-media",
-                            cropAreaClassName: "cover-cropper-preview-frame",
-                          }}
-                          crop={previewPoint}
-                          disableAutomaticStylesInjection
-                          cropperProps={{
-                            "aria-hidden": true,
-                            tabIndex: -1,
-                          }}
-                          image={imageUrl}
-                          maxZoom={MAX_ZOOM}
-                          mediaProps={{ draggable: false }}
-                          minZoom={MIN_ZOOM}
-                          onCropChange={(point) =>
-                            updatePreviewPosition(placement.id, point)
-                          }
-                          onCropComplete={(croppedArea, croppedAreaPixels) => {
-                            if (!selected) {
-                              saveCropResult(
-                                placement.id,
-                                croppedArea,
-                                croppedAreaPixels,
-                                customized,
-                              );
-                            }
-                          }}
-                          onCropSizeChange={(size) => {
-                            previewCropSizesRef.current[placement.id] = size;
-                            setPreviewCropSizes((current) => {
-                              const previous = current[placement.id];
-                              if (
-                                previous?.width === size.width &&
-                                previous.height === size.height
-                              ) {
-                                return current;
-                              }
-                              return { ...current, [placement.id]: size };
-                            });
-                          }}
-                          rotation={crop.rotation}
-                          roundCropAreaPixels
-                          showGrid={false}
-                          style={{
-                            containerStyle: { pointerEvents: "none" },
-                            cropAreaStyle: {
-                              border: 0,
-                              boxShadow: "none",
-                            },
-                          }}
-                          zoom={crop.zoom}
-                          zoomWithScroll={false}
+                        <CoverPlacementPreview
+                          crop={crop}
+                          imageUrl={imageUrl}
+                          placement={placement}
+                          revision={cropperRevision}
                         />
                       </div>
                       <span className="mt-2 flex min-w-0 items-center justify-between gap-2 px-0.5 pb-0.5 text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.07em]">
                         <span className="truncate">{placement.label}</span>
-                        {customized ? (
-                          <span className="shrink-0 text-[var(--champagne-dark)]">
-                            Custom
-                          </span>
-                        ) : null}
+                        <span className="shrink-0 text-[var(--champagne-dark)]">Edit</span>
                       </span>
                     </button>
                   );
                 })}
-              </div>
-            </section>
-
-            <section className="mt-5 border-t border-black/12 pt-5">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.11em]">
-                Crop behavior
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button
-                  aria-pressed={!isCustomized}
-                  className="whitespace-normal px-2 leading-4"
-                  disabled={!isCustomized}
-                  onClick={useSharedCrop}
-                  size="sm"
-                  variant={!isCustomized ? "primary" : "secondary"}
-                >
-                  Use shared crop
-                </Button>
-                <Button
-                  aria-pressed={isCustomized}
-                  className="whitespace-normal px-2 leading-4"
-                  disabled={isCustomized}
-                  onClick={customizeCrop}
-                  size="sm"
-                  variant={isCustomized ? "primary" : "secondary"}
-                >
-                  Customize crop
-                </Button>
               </div>
             </section>
 
@@ -671,9 +454,7 @@ export function CoverImageComposer({
 
         <footer className="flex shrink-0 flex-col-reverse gap-3 border-t border-black bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
           <p className="text-xs leading-5 text-black/55">
-            {isCustomized
-              ? `${selectedDefinition.label} has its own crop.`
-              : "Shared adjustments update every placement that is not customized."}
+            {selectedDefinition.label} has its own crop. Select another placement to edit it.
           </p>
           <div className="flex flex-col-reverse gap-3 sm:flex-row">
             <Button onClick={close} variant="secondary">
@@ -694,21 +475,77 @@ export function CoverImageComposer({
   );
 }
 
+type CoverPlacementPreviewProps = {
+  crop: CoverCropMetadata;
+  imageUrl: string;
+  placement: CoverImagePlacementDefinition;
+  revision: number;
+};
+
+function CoverPlacementPreview({
+  crop,
+  imageUrl,
+  placement,
+  revision,
+}: CoverPlacementPreviewProps) {
+  const [previewCrop, setPreviewCrop] = useState({ x: crop.x, y: crop.y });
+  const [previewZoom, setPreviewZoom] = useState(crop.zoom);
+
+  return (
+    <Cropper
+      aspect={placement.aspect}
+      classes={{
+        containerClassName: "cover-cropper-preview",
+        mediaClassName: "cover-cropper-media",
+        cropAreaClassName: "cover-cropper-preview-frame",
+      }}
+      crop={previewCrop}
+      cropShape="rect"
+      disableAutomaticStylesInjection
+      cropperProps={{
+        "aria-hidden": true,
+        tabIndex: -1,
+      }}
+      image={imageUrl}
+      initialCroppedAreaPercentages={crop.croppedArea}
+      key={`${placement.id}-${revision}-${crop.croppedArea.x}-${crop.croppedArea.y}-${crop.croppedArea.width}-${crop.croppedArea.height}-${crop.zoom}-${crop.rotation}`}
+      maxZoom={MAX_ZOOM}
+      mediaProps={{ draggable: false }}
+      minZoom={MIN_ZOOM}
+      onCropChange={(point) =>
+        setPreviewCrop((current) =>
+          current.x === point.x && current.y === point.y ? current : point,
+        )
+      }
+      onZoomChange={(nextZoom) =>
+        setPreviewZoom((current) => (current === nextZoom ? current : nextZoom))
+      }
+      objectFit="cover"
+      rotation={crop.rotation}
+      roundCropAreaPixels
+      showGrid={false}
+      style={{
+        containerStyle: { pointerEvents: "none", touchAction: "none" },
+        cropAreaStyle: {
+          border: 0,
+          boxShadow: "none",
+        },
+      }}
+      zoom={previewZoom}
+      zoomWithScroll={false}
+    />
+  );
+}
+
 function cloneSettings(settings: CoverImageSettings): CoverImageSettings {
   return {
     ...settings,
-    sharedCrops: Object.fromEntries(
+    crops: Object.fromEntries(
       COVER_IMAGE_PLACEMENTS.map((placement) => [
         placement.id,
-        { ...settings.sharedCrops[placement.id] },
+        { ...settings.crops[placement.id] },
       ]),
-    ) as CoverImageSettings["sharedCrops"],
-    customCrops: Object.fromEntries(
-      Object.entries(settings.customCrops).map(([placement, crop]) => [
-        placement,
-        crop ? { ...crop } : crop,
-      ]),
-    ),
+    ) as CoverImageSettings["crops"],
     generatedImages: { ...settings.generatedImages },
   };
 }

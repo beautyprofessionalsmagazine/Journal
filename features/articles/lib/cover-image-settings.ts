@@ -34,11 +34,9 @@ export type GeneratedCoverImage = {
 };
 
 export type CoverImageSettings = {
-  version: 2;
-  /** Aspect-specific results that share one editor adjustment. */
-  sharedCrops: Record<CoverImagePlacement, CoverCropMetadata>;
-  /** An entry exists only after an editor chooses Customize crop. */
-  customCrops: Partial<Record<CoverImagePlacement, CoverCropMetadata>>;
+  version: 3;
+  /** Every placement always owns its crop. There is no shared crop state. */
+  crops: Record<CoverImagePlacement, CoverCropMetadata>;
   /** Server-rendered derivatives. The original coverImage remains untouched. */
   generatedImages: Partial<Record<CoverImagePlacement, GeneratedCoverImage>>;
   /** Hash of source + effective crops used to avoid needless regeneration. */
@@ -112,14 +110,13 @@ function createDefaultCrop(aspect: number): CoverCropMetadata {
 
 export function createDefaultCoverImageSettings(): CoverImageSettings {
   return {
-    version: 2,
-    sharedCrops: Object.fromEntries(
+    version: 3,
+    crops: Object.fromEntries(
       COVER_IMAGE_PLACEMENTS.map((placement) => [
         placement.id,
         createDefaultCrop(placement.aspect),
       ]),
     ) as Record<CoverImagePlacement, CoverCropMetadata>,
-    customCrops: {},
     generatedImages: {},
   };
 }
@@ -129,30 +126,27 @@ export const defaultCoverImageSettings = createDefaultCoverImageSettings();
 /** Keeps historical null, v1, or malformed settings safe with a centered crop. */
 export function normalizeCoverImageSettings(value: unknown): CoverImageSettings {
   const defaults = createDefaultCoverImageSettings();
-  if (!isRecord(value) || value.version !== 2) return defaults;
+  if (!isRecord(value)) return defaults;
 
+  const crops = isRecord(value.crops) ? value.crops : {};
+  // Migrate v2 shared/custom records without carrying the shared concept
+  // forward. A customized crop wins; otherwise the former shared crop does.
   const sharedCrops = isRecord(value.sharedCrops) ? value.sharedCrops : {};
   const customCrops = isRecord(value.customCrops) ? value.customCrops : {};
-  const generatedImages = isRecord(value.generatedImages)
-    ? value.generatedImages
-    : {};
+  const generatedImages = isRecord(value.generatedImages) ? value.generatedImages : {};
 
   if (typeof value.generationKey === "string" && value.generationKey.length > 0) {
     defaults.generationKey = value.generationKey;
   }
 
   for (const placement of COVER_IMAGE_PLACEMENTS) {
-    defaults.sharedCrops[placement.id] = normalizeCropMetadata(
-      sharedCrops[placement.id],
+    const legacyCrop = isRecord(customCrops[placement.id])
+      ? customCrops[placement.id]
+      : sharedCrops[placement.id];
+    defaults.crops[placement.id] = normalizeCropMetadata(
+      crops[placement.id] ?? legacyCrop,
       placement.aspect,
     );
-
-    if (isRecord(customCrops[placement.id])) {
-      defaults.customCrops[placement.id] = normalizeCropMetadata(
-        customCrops[placement.id],
-        placement.aspect,
-      );
-    }
 
     const generated = generatedImages[placement.id];
     if (
@@ -171,11 +165,11 @@ export function normalizeCoverImageSettings(value: unknown): CoverImageSettings 
   return defaults;
 }
 
-export function getEffectiveCoverCrop(
+export function getCoverCrop(
   settings: CoverImageSettings,
   placement: CoverImagePlacement,
 ) {
-  return settings.customCrops[placement] ?? settings.sharedCrops[placement];
+  return settings.crops[placement];
 }
 
 export function getCoverImageSource(
