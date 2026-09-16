@@ -3,12 +3,15 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { getCoverImageStyle, type CoverImageSettings } from "@/features/articles/lib/cover-image-settings";
+
 type HomeStoryImageProps = {
   alt: string;
   category: string;
   priority?: boolean;
   sizes: string;
   src: string | null;
+  settings?: CoverImageSettings | null;
 };
 
 /** Keeps a failed or missing editorial image from exposing browser error chrome. */
@@ -18,6 +21,7 @@ export function HomeStoryImage({
   priority = false,
   sizes,
   src,
+  settings,
 }: HomeStoryImageProps) {
   const [failed, setFailed] = useState(false);
 
@@ -38,6 +42,7 @@ export function HomeStoryImage({
       priority={priority}
       sizes={sizes}
       src={src}
+      style={getCoverImageStyle(settings)}
     />
   );
 }

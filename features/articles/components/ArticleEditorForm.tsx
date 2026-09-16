@@ -20,6 +20,7 @@ import {
 } from "react";
 
 import { ArticleTiptapEditor } from "@/features/articles/components/ArticleTiptapEditor";
+import { CoverImageComposer } from "@/features/articles/components/CoverImageComposer";
 import {
   CoverImageUploader,
   type CoverImageUploadState,
@@ -37,6 +38,7 @@ import {
   type ArticleFormValues,
   initialArticleFormState,
 } from "@/features/articles/types/article";
+import { defaultCoverImageSettings } from "@/features/articles/lib/cover-image-settings";
 import {
   getArticleFieldErrors,
   hasMeaningfulTiptapContent,
@@ -92,6 +94,7 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
       error: null,
       isUploading: false,
     });
+  const [isCoverComposerOpen, setIsCoverComposerOpen] = useState(false);
   const [bodyImageUploadState, setBodyImageUploadState] =
     useState<ArticleImageUploadState>({
       error: null,
@@ -141,7 +144,7 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
     [values],
   );
 
-  useUnsavedChangesWarning(
+  const unsavedChanges = useUnsavedChangesWarning(
     isDirty && !isPending && !isSubmitLocked,
   );
 
@@ -314,7 +317,18 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
       ref={formRef}
     >
       <input name="coverImage" type="hidden" value={values.coverImage} />
+      <input
+        name="coverImageSettings"
+        type="hidden"
+        value={JSON.stringify(values.coverImageSettings)}
+      />
       <input name="contentJson" type="hidden" value={serializedContentJson} />
+
+      <UnsavedChangesDialog
+        onLeave={unsavedChanges.leave}
+        onStay={unsavedChanges.stay}
+        open={Boolean(unsavedChanges.destination)}
+      />
 
       {clientMessage || serverState.message ? (
         <div
@@ -578,13 +592,25 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
             </div>
             <CoverImageUploader
               error={getFieldError("coverImage")}
-              onChange={(coverImage) =>
-                updateField("coverImage", coverImage)
-              }
+              onChange={(coverImage) => {
+                updateField("coverImage", coverImage);
+                updateField("coverImageSettings", defaultCoverImageSettings);
+              }}
+              onCompositionRequested={() => setIsCoverComposerOpen(true)}
               onUploadStateChange={handleCoverUploadStateChange}
               slug={values.slug}
               value={values.coverImage}
             />
+            {values.coverImage && isCoverComposerOpen ? (
+              <CoverImageComposer
+                imageUrl={values.coverImage}
+                onApply={(coverImageSettings) =>
+                  updateField("coverImageSettings", coverImageSettings)
+                }
+                onOpenChange={setIsCoverComposerOpen}
+                value={values.coverImageSettings}
+              />
+            ) : null}
             <div className="mt-4">
               <FormField
                 error={getFieldError("coverImageAlt")}
@@ -859,14 +885,80 @@ function focusFirstInvalidField(form: HTMLFormElement | null) {
   invalidField?.focus();
 }
 
-function useUnsavedChangesWarning(enabled: boolean) {
+type UnsavedChangesDialogProps = {
+  onLeave: () => void;
+  onStay: () => void;
+  open: boolean;
+};
+
+function UnsavedChangesDialog({ onLeave, onStay, open }: UnsavedChangesDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const stayRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (open && !dialog.open) {
+      dialog.showModal();
+      stayRef.current?.focus();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
+  return (
+    <dialog
+      aria-describedby="unsaved-changes-description"
+      aria-labelledby="unsaved-changes-title"
+      className="confirm-dialog m-auto w-[min(calc(100%_-_2rem),32rem)] border border-black bg-white p-0 text-black shadow-[0_28px_90px_rgba(0,0,0,0.35)] backdrop:bg-black/60"
+      onCancel={(event) => {
+        event.preventDefault();
+        onStay();
+      }}
+      ref={dialogRef}
+    >
+      <div className="border-b border-black px-5 py-5 sm:px-7">
+        <p className="editorial-kicker text-[var(--champagne-dark)]">Article in progress</p>
+        <h2
+          className="mt-2 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-none"
+          id="unsaved-changes-title"
+        >
+          Leave this edit?
+        </h2>
+      </div>
+      <div className="px-5 py-6 sm:px-7">
+        <p className="text-sm leading-6 text-black/68" id="unsaved-changes-description">
+          Your article and cover composition changes have not been saved yet.
+        </p>
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button onClick={onStay} ref={stayRef} variant="secondary">
+            Keep editing
+          </Button>
+          <Button onClick={onLeave} variant="primary">
+            Leave without saving
+          </Button>
+        </div>
+      </div>
+    </dialog>
+  );
+}
+
+function useUnsavedChangesWarning(enabled: boolean) {
+  const [destination, setDestination] = useState<string | null>(null);
+  const shouldWarnRef = useRef(enabled);
+
+  useEffect(() => {
+    shouldWarnRef.current = enabled;
+
     if (!enabled) {
       return;
     }
 
     function handleBeforeUnload(event: BeforeUnloadEvent) {
+      if (!shouldWarnRef.current) return;
       event.preventDefault();
+      event.returnValue = "";
     }
 
     function handleLinkClick(event: MouseEvent) {
@@ -895,14 +987,9 @@ function useUnsavedChangesWarning(enabled: boolean) {
         return;
       }
 
-      const shouldLeave = window.confirm(
-        "You have unsaved article changes. Leave this page?",
-      );
-
-      if (!shouldLeave) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
+      event.preventDefault();
+      event.stopPropagation();
+      setDestination(destination.toString());
     }
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -913,4 +1000,15 @@ function useUnsavedChangesWarning(enabled: boolean) {
       document.removeEventListener("click", handleLinkClick, true);
     };
   }, [enabled]);
+
+  return {
+    destination,
+    stay: () => setDestination(null),
+    leave: () => {
+      const nextDestination = destination;
+      shouldWarnRef.current = false;
+      setDestination(null);
+      if (nextDestination) window.location.assign(nextDestination);
+    },
+  };
 }

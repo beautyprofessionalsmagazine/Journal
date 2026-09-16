@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ArticleMetadata } from "@/features/articles/components/ArticleMetadata";
 import type { Article } from "@/features/articles/types/article";
+import { getCoverImageStyle } from "@/features/articles/lib/cover-image-settings";
 import { cn } from "@/shared/lib/cn";
 
 export type ArticleCardVariant = "primary" | "standard" | "compact";
@@ -57,6 +58,7 @@ export function ArticleCard({
                   : "(min-width: 1280px) 29vw, (min-width: 768px) 47vw, 100vw"
             }
             src={article.coverImage}
+            style={getCoverImageStyle(article.coverImageSettings)}
           />
         ) : (
           <span className="flex h-full flex-col items-center justify-center gap-2 border border-black/10 px-3 text-center">

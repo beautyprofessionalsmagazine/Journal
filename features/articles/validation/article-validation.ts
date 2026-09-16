@@ -10,6 +10,10 @@ import {
   type TiptapMark,
   type TiptapNode,
 } from "@/features/articles/types/article";
+import {
+  normalizeCoverImageSettings,
+  type CoverImageSettings,
+} from "@/features/articles/lib/cover-image-settings";
 
 export const ALLOWED_COVER_IMAGE_TYPES = [
   "image/jpeg",
@@ -93,6 +97,24 @@ const createArticleInputSchema = z
       .trim()
       .nullish()
       .transform((value) => toNullableString(value)),
+    coverImageSettings: z
+      .union([
+        z.string(),
+        z.record(z.string(), z.unknown()),
+        z.null(),
+        z.undefined(),
+      ])
+      .transform((value, context) => {
+        try {
+          return parseCoverImageSettings(value);
+        } catch {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Cover image framing could not be processed. Please try again.",
+          });
+          return z.NEVER;
+        }
+      }),
     tags: z
       .union([z.string(), z.array(z.string()), z.null(), z.undefined()])
       .transform((value) => parseTagsInput(value)),
@@ -301,6 +323,16 @@ export function parseContentJson(value: unknown) {
   return JSON.parse(normalizedValue);
 }
 
+function parseCoverImageSettings(value: unknown): CoverImageSettings {
+  if (value == null || value === "") {
+    return normalizeCoverImageSettings(null);
+  }
+
+  return normalizeCoverImageSettings(
+    typeof value === "string" ? JSON.parse(value) : value,
+  );
+}
+
 export function isTiptapDocument(value: unknown): value is TiptapDocument {
   if (!isRecord(value)) {
     return false;
@@ -326,6 +358,7 @@ export function getArticleInputFromFormData(formData: FormData): ArticleInput {
     description: readString(formData, "description"),
     coverImage: readString(formData, "coverImage"),
     coverImageAlt: readString(formData, "coverImageAlt"),
+    coverImageSettings: readString(formData, "coverImageSettings"),
     tags: readString(formData, "tags"),
     status: readString(formData, "status") as ArticleInput["status"],
     publishedAt: readString(formData, "publishedAt"),

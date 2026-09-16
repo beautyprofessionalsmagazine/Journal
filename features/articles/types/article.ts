@@ -1,3 +1,9 @@
+import {
+  defaultCoverImageSettings,
+  type CoverImageSettings,
+  normalizeCoverImageSettings,
+} from "@/features/articles/lib/cover-image-settings";
+
 export const articleStatusValues = ["draft", "published"] as const;
 
 export type ArticleStatus = (typeof articleStatusValues)[number];
@@ -76,6 +82,7 @@ export type Article = {
   description: string | null;
   coverImage: string | null;
   coverImageAlt: string | null;
+  coverImageSettings: CoverImageSettings | null;
   tags: string[];
   status: ArticleStatus;
   publishedAt: Date | null;
@@ -93,6 +100,7 @@ export type ArticleInput = {
   description?: string | null;
   coverImage?: string | null;
   coverImageAlt?: string | null;
+  coverImageSettings?: CoverImageSettings | string | null;
   tags?: string[] | string | null;
   status: ArticleStatus;
   publishedAt?: Date | string | null;
@@ -107,6 +115,7 @@ export type ArticleFormValues = {
   description: string;
   coverImage: string;
   coverImageAlt: string;
+  coverImageSettings: CoverImageSettings;
   tags: string;
   status: ArticleStatus;
   publishedAt: string;
@@ -140,6 +149,7 @@ export const emptyArticleFormValues: ArticleFormValues = {
   description: "",
   coverImage: "",
   coverImageAlt: "",
+  coverImageSettings: defaultCoverImageSettings,
   tags: "",
   status: "draft",
   publishedAt: "",
@@ -160,6 +170,7 @@ export function getArticleFormValues(article: Article): ArticleFormValues {
     description: article.description ?? "",
     coverImage: article.coverImage ?? "",
     coverImageAlt: article.coverImageAlt ?? "",
+    coverImageSettings: normalizeCoverImageSettings(article.coverImageSettings),
     tags: article.tags.join(", "),
     status: article.status,
     publishedAt: article.publishedAt

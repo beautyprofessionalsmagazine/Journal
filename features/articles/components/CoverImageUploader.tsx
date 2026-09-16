@@ -45,6 +45,7 @@ type CoverImageUploaderProps = {
   value: string;
   error?: string;
   onChange: (value: string) => void;
+  onCompositionRequested?: () => void;
   onUploadStateChange: (state: CoverImageUploadState) => void;
 };
 
@@ -53,6 +54,7 @@ export function CoverImageUploader({
   value,
   error,
   onChange,
+  onCompositionRequested,
   onUploadStateChange,
 }: CoverImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
@@ -184,6 +186,7 @@ export function CoverImageUploader({
         error: null,
         isUploading: false,
       });
+      onCompositionRequested?.();
     } catch (caughtError) {
       if (controller.signal.aborted) {
         return;
@@ -383,6 +386,16 @@ export function CoverImageUploader({
           ) : null}
         </div>
       </div>
+
+      {hasImage && !isUploading ? (
+        <Button
+          className="mt-4 w-full"
+          onClick={onCompositionRequested}
+          variant="outline"
+        >
+          Adjust cover framing
+        </Button>
+      ) : null}
 
       {helperMessage ? (
         <div

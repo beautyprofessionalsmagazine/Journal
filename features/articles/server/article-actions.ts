@@ -71,6 +71,9 @@ export async function createArticle(input: ArticleInput): Promise<Article> {
         description: articleInput.description ?? null,
         coverImage: articleInput.coverImage ?? null,
         coverImageAlt: articleInput.coverImage ? articleInput.coverImageAlt ?? null : null,
+        coverImageSettings: articleInput.coverImage
+          ? articleInput.coverImageSettings
+          : null,
         tags: articleInput.tags,
         status: articleInput.status,
         publishedAt,
@@ -186,6 +189,9 @@ export async function updateArticle(
         coverImage: articleInput.coverImage ?? null,
         coverImageAlt: articleInput.coverImage
           ? articleInput.coverImageAlt ?? null
+          : null,
+        coverImageSettings: articleInput.coverImage
+          ? articleInput.coverImageSettings
           : null,
         tags: articleInput.tags,
         status: articleInput.status,
