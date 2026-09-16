@@ -12,6 +12,7 @@ import {
   getArticleBySlug,
 } from "@/features/articles/server/article-queries";
 import { generateCoverImageVariants } from "@/features/articles/server/cover-image-generation";
+import { createCoverImageData } from "@/features/articles/lib/cover-image-settings";
 import type {
   Article,
   ArticleFieldErrors,
@@ -60,7 +61,7 @@ export async function createArticle(input: ArticleInput): Promise<Article> {
     articleInput.status === "published"
       ? articleInput.publishedAt ?? new Date()
       : null;
-  const coverImageSettings = articleInput.coverImage
+  const coverImageData = articleInput.coverImage
     ? await generateCoverVariantsOrThrow(
         articleInput.coverImage,
         normalizedSlug,
@@ -77,9 +78,13 @@ export async function createArticle(input: ArticleInput): Promise<Article> {
         category: articleInput.category,
         author: articleInput.author,
         description: articleInput.description ?? null,
-        coverImage: articleInput.coverImage ?? null,
-        coverImageAlt: articleInput.coverImage ? articleInput.coverImageAlt ?? null : null,
-        coverImageSettings,
+        coverImage: articleInput.coverImage
+          ? createCoverImageData(
+              articleInput.coverImage,
+              articleInput.coverImageAlt ?? "",
+              coverImageData!,
+            )
+          : null,
         tags: articleInput.tags,
         status: articleInput.status,
         publishedAt,
@@ -182,7 +187,7 @@ export async function updateArticle(
     articleInput.status === "published"
       ? articleInput.publishedAt ?? currentArticle.publishedAt ?? new Date()
       : null;
-  const coverImageSettings = articleInput.coverImage
+  const coverImageData = articleInput.coverImage
     ? await generateCoverVariantsOrThrow(
         articleInput.coverImage,
         normalizedSlug,
@@ -199,11 +204,13 @@ export async function updateArticle(
         category: articleInput.category,
         author: articleInput.author,
         description: articleInput.description ?? null,
-        coverImage: articleInput.coverImage ?? null,
-        coverImageAlt: articleInput.coverImage
-          ? articleInput.coverImageAlt ?? null
+        coverImage: articleInput.coverImage
+          ? createCoverImageData(
+              articleInput.coverImage,
+              articleInput.coverImageAlt ?? "",
+              coverImageData!,
+            )
           : null,
-        coverImageSettings,
         tags: articleInput.tags,
         status: articleInput.status,
         publishedAt,

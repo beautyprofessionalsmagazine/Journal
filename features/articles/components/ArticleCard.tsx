@@ -29,11 +29,7 @@ export function ArticleCard({
     : isPrimary
       ? "homepageFeature"
       : "storyCard";
-  const coverImageSource = getCoverImageSource(
-    article.coverImage,
-    article.coverImageSettings,
-    imagePlacement,
-  );
+  const coverImageSource = getCoverImageSource(article.coverImage, imagePlacement);
 
   return (
     <article
@@ -56,7 +52,7 @@ export function ArticleCard({
       >
         {coverImageSource ? (
           <Image
-            alt={article.coverImageAlt ?? article.title}
+            alt={article.coverImage?.alt || article.title}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
             fill
             priority={priority}

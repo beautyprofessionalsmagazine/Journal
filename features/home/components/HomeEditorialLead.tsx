@@ -367,13 +367,12 @@ function StoryImage({
 }) {
   return (
     <HomeStoryImage
-      alt={article.coverImageAlt ?? article.title}
+      alt={article.coverImage?.alt || article.title}
       category={article.category}
       placement={placement}
       priority={priority}
       sizes={sizes}
-      src={article.coverImage}
-      settings={article.coverImageSettings}
+      coverImage={article.coverImage}
     />
   );
 }
