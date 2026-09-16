@@ -66,6 +66,10 @@ export function CoverImageComposer({
     useState<CoverImagePlacement>("homepageFeature");
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [cropperRevision, setCropperRevision] = useState(0);
+  const [mainCropSize, setMainCropSize] = useState<Size | null>(null);
+  const [previewCropSizes, setPreviewCropSizes] = useState<
+    Partial<Record<CoverImagePlacement, Size>>
+  >({});
 
   const selectedDefinition =
     COVER_IMAGE_PLACEMENTS.find(
@@ -77,12 +81,18 @@ export function CoverImageComposer({
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverscroll = document.documentElement.style.overscrollBehavior;
 
     if (!dialog.open) dialog.showModal();
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overscrollBehavior = "none";
     closeButtonRef.current?.focus();
 
     return () => {
       if (dialog.open) dialog.close();
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overscrollBehavior = previousRootOverscroll;
     };
   }, []);
 
@@ -93,6 +103,25 @@ export function CoverImageComposer({
   }
 
   function updateSelectedTransform(patch: Partial<CoverCropMetadata>) {
+    const safePatch = {
+      ...patch,
+      ...(patch.x !== undefined && Number.isFinite(patch.x) ? { x: patch.x } : {}),
+      ...(patch.y !== undefined && Number.isFinite(patch.y) ? { y: patch.y } : {}),
+      ...(patch.zoom !== undefined && Number.isFinite(patch.zoom) ? { zoom: patch.zoom } : {}),
+      ...(patch.rotation !== undefined && Number.isFinite(patch.rotation)
+        ? { rotation: patch.rotation }
+        : {}),
+    };
+
+    if (
+      (patch.x !== undefined && !Number.isFinite(patch.x)) ||
+      (patch.y !== undefined && !Number.isFinite(patch.y)) ||
+      (patch.zoom !== undefined && !Number.isFinite(patch.zoom)) ||
+      (patch.rotation !== undefined && !Number.isFinite(patch.rotation))
+    ) {
+      return;
+    }
+
     setSettings((current) => {
       const next = cloneSettings(current);
       next.generatedImages = {};
@@ -101,15 +130,15 @@ export function CoverImageComposer({
       if (current.customCrops[selectedPlacement]) {
         next.customCrops[selectedPlacement] = {
           ...current.customCrops[selectedPlacement]!,
-          ...patch,
+          ...safePatch,
           aspect: selectedDefinition.aspect,
         };
         return next;
       }
 
       const currentSelected = current.sharedCrops[selectedPlacement];
-      const nextX = patch.x ?? currentSelected.x;
-      const nextY = patch.y ?? currentSelected.y;
+      const nextX = safePatch.x ?? currentSelected.x;
+      const nextY = safePatch.y ?? currentSelected.y;
       const deltaX = nextX - currentSelected.x;
       const deltaY = nextY - currentSelected.y;
       const mainSize = mainCropSizeRef.current;
@@ -132,8 +161,8 @@ export function CoverImageComposer({
             placement.id === selectedPlacement
               ? nextY
               : crop.y + deltaY * scaleY,
-          zoom: patch.zoom ?? crop.zoom,
-          rotation: patch.rotation ?? crop.rotation,
+          zoom: safePatch.zoom ?? crop.zoom,
+          rotation: safePatch.rotation ?? crop.rotation,
           aspect: placement.aspect,
         };
       }
@@ -251,6 +280,7 @@ export function CoverImageComposer({
   }
 
   function changeZoom(nextZoom: number) {
+    if (!Number.isFinite(nextZoom)) return;
     updateSelectedTransform({
       zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom)),
     });
@@ -325,6 +355,7 @@ export function CoverImageComposer({
                 }}
                 crop={{ x: selectedCrop.x, y: selectedCrop.y }}
                 cropShape="rect"
+                disableAutomaticStylesInjection
                 cropperProps={{
                   "aria-describedby": "cover-crop-help",
                   "aria-label": `Crop ${selectedDefinition.label}. Drag the image, use arrow keys to reposition, or use the zoom controls.`,
@@ -339,7 +370,11 @@ export function CoverImageComposer({
                   onDragStart: (event) => event.preventDefault(),
                 }}
                 minZoom={MIN_ZOOM}
-                onCropChange={(point) => updateSelectedTransform(point)}
+                onCropChange={(point) => {
+                  if (Number.isFinite(point.x) && Number.isFinite(point.y)) {
+                    updateSelectedTransform(point);
+                  }
+                }}
                 onCropComplete={(croppedArea, croppedAreaPixels) =>
                   saveCropResult(
                     selectedPlacement,
@@ -350,12 +385,21 @@ export function CoverImageComposer({
                 }
                 onCropSizeChange={(size) => {
                   mainCropSizeRef.current = size;
+                  setMainCropSize((current) =>
+                    current?.width === size.width && current.height === size.height
+                      ? current
+                      : size,
+                  );
                 }}
                 onInteractionEnd={handleInteractionEnd}
                 onInteractionStart={handleInteractionStart}
-                onRotationChange={(rotation) =>
-                  updateSelectedTransform({ rotation })
-                }
+                onRotationChange={(rotation) => {
+                  if (Number.isFinite(rotation)) {
+                    updateSelectedTransform({ rotation });
+                  }
+                }}
+                onTouchRequest={() => true}
+                onWheelRequest={() => true}
                 onZoomChange={changeZoom}
                 restrictPosition
                 rotation={selectedCrop.rotation}
@@ -403,6 +447,14 @@ export function CoverImageComposer({
                   const crop = getEffectiveCoverCrop(settings, placement.id);
                   const customized = Boolean(settings.customCrops[placement.id]);
                   const selected = placement.id === selectedPlacement;
+                  const previewSize = previewCropSizes[placement.id];
+                  const previewPoint =
+                    selected && mainCropSize && previewSize
+                      ? {
+                          x: crop.x * (previewSize.width / mainCropSize.width),
+                          y: crop.y * (previewSize.height / mainCropSize.height),
+                        }
+                      : { x: crop.x, y: crop.y };
 
                   return (
                     <button
@@ -431,7 +483,8 @@ export function CoverImageComposer({
                             mediaClassName: "cover-cropper-media",
                             cropAreaClassName: "cover-cropper-preview-frame",
                           }}
-                          crop={{ x: crop.x, y: crop.y }}
+                          crop={previewPoint}
+                          disableAutomaticStylesInjection
                           cropperProps={{
                             "aria-hidden": true,
                             tabIndex: -1,
@@ -455,6 +508,16 @@ export function CoverImageComposer({
                           }}
                           onCropSizeChange={(size) => {
                             previewCropSizesRef.current[placement.id] = size;
+                            setPreviewCropSizes((current) => {
+                              const previous = current[placement.id];
+                              if (
+                                previous?.width === size.width &&
+                                previous.height === size.height
+                              ) {
+                                return current;
+                              }
+                              return { ...current, [placement.id]: size };
+                            });
                           }}
                           rotation={crop.rotation}
                           roundCropAreaPixels
