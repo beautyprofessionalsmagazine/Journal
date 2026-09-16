@@ -1,80 +1,55 @@
 "use client";
 
 import Image from "next/image";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
 import { sponsors } from "@/features/sponsors/data/sponsors";
 
+gsap.registerPlugin(useGSAP);
+
 export function SponsorsStrip() {
   const [activeSponsor, setActiveSponsor] = useState<string | null>(null);
-  const [displayedSponsor, setDisplayedSponsor] = useState<string | null>(null);
+  const rootRef = useRef<HTMLElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const previousDisplayedRef = useRef<string | null>(null);
-  const switchDirectionRef = useRef(1);
+  const contextSafeRef = useRef<((callback: () => void) => () => void) | undefined>(undefined);
+  const activeDetails = sponsors.find((sponsor) => sponsor.id === activeSponsor);
 
-  useLayoutEffect(() => {
-    if (!displayedSponsor) return;
+  useGSAP(
+    (_context, contextSafe) => {
+      contextSafeRef.current = contextSafe as (callback: () => void) => () => void;
+      const shell = shellRef.current;
+      const panel = panelRef.current;
+      if (!activeDetails || !shell || !panel) return;
 
-    const shell = shellRef.current;
-    const panel = panelRef.current;
-    if (!shell || !panel) return;
+      const paragraphs = panel.querySelectorAll<HTMLElement>("[data-sponsor-copy]");
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const currentHeight = shell.offsetHeight;
+      const nextHeight = shell.scrollHeight;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const paragraphs = panel.querySelectorAll<HTMLElement>("[data-sponsor-copy]");
-    const previousDisplayed = previousDisplayedRef.current;
-
-    gsap.killTweensOf([shell, panel, paragraphs]);
-    if (reduceMotion) {
-      gsap.set([shell, panel, paragraphs], {
-        autoAlpha: 1,
-        height: "auto",
-        clearProps: "clipPath,transform,opacity,visibility",
-      });
-      previousDisplayedRef.current = displayedSponsor;
-      return;
-    }
-
-    const nextHeight = shell.scrollHeight;
-    const isSwitch = previousDisplayed !== null && previousDisplayed !== displayedSponsor;
-    const direction = switchDirectionRef.current;
-
-    if (isSwitch) {
-      gsap.set(panel, { x: direction * -28, autoAlpha: 0 });
-      gsap.fromTo(
-        shell,
-        { height: shell.offsetHeight },
-        { height: nextHeight, duration: 0.48, ease: "power2.inOut", clearProps: "height" },
-      );
-      gsap.to(panel, {
-        x: 0,
-        autoAlpha: 1,
-        duration: 0.5,
-        ease: "power3.out",
-        clearProps: "transform,opacity,visibility",
-      });
-      gsap.fromTo(
-        paragraphs,
-        { autoAlpha: 0, y: 10 },
-        {
+      gsap.killTweensOf([shell, panel, paragraphs]);
+      if (reduceMotion) {
+        gsap.set([shell, panel, paragraphs], {
           autoAlpha: 1,
-          y: 0,
-          duration: 0.38,
-          ease: "power2.out",
-          stagger: 0.045,
-          delay: 0.08,
-          clearProps: "transform,opacity,visibility",
-        },
-      );
-    } else {
-      gsap.set(shell, { height: 0 });
+          height: nextHeight,
+          clearProps: "clipPath,transform,opacity,visibility",
+        });
+        return;
+      }
+
       gsap.set(panel, { clipPath: "inset(0 0 100% 0)", autoAlpha: 0, y: -10 });
       gsap.set(paragraphs, { autoAlpha: 0, y: 12 });
 
-      const opening = gsap.timeline({ defaults: { ease: "power3.out" } });
-      opening.to(shell, { height: nextHeight, duration: 0.62, clearProps: "height" });
-      opening.to(
+      const rollout = gsap.timeline({ defaults: { ease: "power3.out" } });
+      rollout.fromTo(
+        shell,
+        { height: currentHeight },
+        { height: nextHeight, duration: 0.62, ease: "power3.out" },
+        0,
+      );
+      rollout.to(
         panel,
         {
           clipPath: "inset(0 0 0% 0)",
@@ -85,7 +60,7 @@ export function SponsorsStrip() {
         },
         0,
       );
-      opening.to(
+      rollout.to(
         paragraphs,
         {
           autoAlpha: 1,
@@ -93,74 +68,54 @@ export function SponsorsStrip() {
           duration: 0.48,
           ease: "power2.out",
           stagger: 0.055,
-          delay: 0.12,
           clearProps: "transform,opacity,visibility",
         },
         0.12,
       );
-    }
-
-    previousDisplayedRef.current = displayedSponsor;
-  }, [displayedSponsor]);
+    },
+    { dependencies: [activeSponsor], scope: rootRef, revertOnUpdate: false },
+  );
 
   const toggleSponsor = (sponsorId: string) => {
-    if (!activeSponsor) {
-      setDisplayedSponsor(sponsorId);
-      setActiveSponsor(sponsorId);
-      return;
-    }
-
-    if (activeSponsor !== sponsorId) {
-      const currentIndex = sponsors.findIndex((sponsor) => sponsor.id === activeSponsor);
-      const nextIndex = sponsors.findIndex((sponsor) => sponsor.id === sponsorId);
-      switchDirectionRef.current = nextIndex > currentIndex ? 1 : -1;
-      setActiveSponsor(sponsorId);
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setDisplayedSponsor(sponsorId);
+    const run = () => {
+      if (!activeSponsor) {
+        setActiveSponsor(sponsorId);
         return;
       }
-      gsap.killTweensOf([shellRef.current, panelRef.current]);
-      gsap.to(panelRef.current, {
-        x: switchDirectionRef.current * 28,
-        autoAlpha: 0,
-        duration: 0.22,
-        ease: "power2.in",
-        onComplete: () => setDisplayedSponsor(sponsorId),
-      });
-      return;
-    }
 
-    const shell = shellRef.current;
-    const panel = panelRef.current;
-    if (!panel || !shell || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setActiveSponsor(null);
-      setDisplayedSponsor(null);
-      return;
-    }
+      if (activeSponsor !== sponsorId) {
+        setActiveSponsor(sponsorId);
+        return;
+      }
 
-    gsap.killTweensOf([shell, panel]);
-    const closing = gsap.timeline({
-      defaults: { ease: "power2.in" },
-      onComplete: () => {
+      const shell = shellRef.current;
+      const panel = panelRef.current;
+      if (!panel || !shell || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         setActiveSponsor(null);
-        setDisplayedSponsor(null);
-      },
-    });
-    closing.to(panel, {
-      clipPath: "inset(0 0 100% 0)",
-      autoAlpha: 0,
-      y: -8,
-      ease: "power2.in",
-      duration: 0.34,
-    });
-    closing.to(shell, {
-      height: 0,
-      duration: 0.42,
-      clearProps: "height",
-    }, "-=0.2");
-  };
+        return;
+      }
 
-  const activeDetails = sponsors.find((sponsor) => sponsor.id === displayedSponsor);
+      gsap.killTweensOf([shell, panel]);
+      const closing = gsap.timeline({
+        defaults: { ease: "power2.in" },
+        onComplete: () => setActiveSponsor(null),
+      });
+      closing.to(panel, {
+        clipPath: "inset(0 0 100% 0)",
+        autoAlpha: 0,
+        y: -8,
+        duration: 0.34,
+      });
+      closing.to(shell, { height: 0, duration: 0.42 }, "-=0.2");
+    };
+
+    const contextSafe = contextSafeRef.current;
+    if (contextSafe) {
+      contextSafe(run)();
+    } else {
+      run();
+    }
+  };
 
   return (
     <aside
@@ -168,6 +123,7 @@ export function SponsorsStrip() {
       className="sponsors-strip border-b border-black/15 bg-transparent"
       data-motion-managed
       data-motion-sponsors
+      ref={rootRef}
     >
       <div className="site-container bg-[#ecebe7] py-2.5 sm:py-3">
         <p className="editorial-kicker text-center text-black/42">
@@ -209,12 +165,12 @@ export function SponsorsStrip() {
             </li>
           ))}
         </ul>
-        {activeDetails ? (
-          <div
-            aria-live="polite"
-            className="sponsor-details-shell mx-[calc(var(--page-padding)*-1)] overflow-hidden bg-[#ecebe7] px-[var(--page-padding)]"
-            ref={shellRef}
-          >
+        <div
+          aria-live="polite"
+          className="sponsor-details-shell mx-[calc(var(--page-padding)*-1)] h-0 overflow-hidden bg-[#ecebe7] px-[var(--page-padding)]"
+          ref={shellRef}
+        >
+          {activeDetails ? (
             <div
               className="sponsor-details mx-auto max-w-4xl border-t border-black/15 pt-3 sm:pt-4"
               id={`sponsor-details-${activeDetails.id}`}
@@ -236,8 +192,8 @@ export function SponsorsStrip() {
                 </div>
               </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </aside>
   );
