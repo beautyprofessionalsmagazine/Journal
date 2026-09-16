@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-easy-crop/react-easy-crop.css";
 
 :root {
   /* TODO: Replace fallbacks when licensed local font files are available. */
@@ -81,6 +82,60 @@ body::-webkit-scrollbar-thumb:hover,
 
 .confirm-dialog::backdrop {
   z-index: var(--z-backdrop);
+}
+
+/*
+ * The cropper owns gestures inside its fixed-height stage. These rules are
+ * deliberately global because WebKit otherwise permits image dragging and
+ * scroll chaining through a modal during touch/trackpad crop gestures.
+ */
+.cover-crop-dialog {
+  z-index: var(--z-dialog);
+  max-height: calc(100vh - 1rem);
+  overscroll-behavior: contain;
+}
+
+.cover-crop-dialog::backdrop {
+  z-index: var(--z-backdrop);
+}
+
+.cover-crop-stage,
+.cover-cropper {
+  isolation: isolate;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.cover-cropper {
+  cursor: grab;
+}
+
+.cover-cropper:active {
+  cursor: grabbing;
+}
+
+.cover-cropper-media,
+.cover-cropper img,
+.cover-cropper-preview img {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.cover-cropper-frame {
+  border-color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(0, 0, 0, 0.58) !important;
+}
+
+.cover-cropper-preview,
+.cover-cropper-preview-frame {
+  pointer-events: none;
+}
+
+@supports (height: 100dvh) {
+  .cover-crop-dialog {
+    max-height: calc(100dvh - 1rem);
+  }
 }
 
 @media (forced-colors: active) {

@@ -6,6 +6,7 @@ import {
   listPublishedArticles,
 } from "@/features/articles/server/article-queries";
 import type { Article } from "@/features/articles/types/article";
+import type { CoverImagePlacement } from "@/features/articles/lib/cover-image-settings";
 import { HomeStoryImage } from "@/features/home/components/HomeStoryImage";
 
 export async function HomeEditorialLead() {
@@ -76,6 +77,7 @@ function FeaturedStory({ article }: { article: Article }) {
       >
         <StoryImage
           article={article}
+          placement="homepageFeature"
           priority
           sizes="(min-width: 1280px) 65vw, (min-width: 1024px) 67vw, 100vw"
         />
@@ -143,6 +145,7 @@ function RecentStories({ articles }: { articles: Article[] }) {
           >
             <StoryImage
               article={article}
+              placement="storyCard"
               sizes="(min-width: 1024px) 14vw, 160px"
             />
           </Link>
@@ -207,6 +210,7 @@ function StoryCard({ article, compact }: { article: Article; compact: boolean })
       >
         <StoryImage
           article={article}
+          placement="storyCard"
           sizes="(min-width: 1280px) 22vw, (min-width: 640px) 46vw, 100vw"
         />
       </Link>
@@ -253,7 +257,11 @@ function SpotlightStory({ article, dark }: { article: Article; dark: boolean }) 
         data-reveal
         data-motion-story-hover
       >
-        <StoryImage article={article} sizes="(min-width: 1024px) 50vw, 100vw" />
+        <StoryImage
+          article={article}
+          placement="homepageFeature"
+          sizes="(min-width: 1024px) 50vw, 100vw"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/54 to-black/10" />
         <SpotlightCopy article={article} href={href} inverted />
       </article>
@@ -270,7 +278,11 @@ function SpotlightStory({ article, dark }: { article: Article; dark: boolean }) 
         <SpotlightCopy article={article} href={href} />
       </div>
       <Link className="focus-ring relative min-h-80 overflow-hidden" href={href}>
-        <StoryImage article={article} sizes="(min-width: 1280px) 28vw, 50vw" />
+        <StoryImage
+          article={article}
+          placement="storyCard"
+          sizes="(min-width: 1280px) 28vw, 50vw"
+        />
       </Link>
     </article>
   );
@@ -345,16 +357,19 @@ function EmptyEditorialDesk() {
 function StoryImage({
   article,
   priority = false,
+  placement,
   sizes,
 }: {
   article: Article;
   priority?: boolean;
+  placement: CoverImagePlacement;
   sizes: string;
 }) {
   return (
     <HomeStoryImage
       alt={article.coverImageAlt ?? article.title}
       category={article.category}
+      placement={placement}
       priority={priority}
       sizes={sizes}
       src={article.coverImage}
