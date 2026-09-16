@@ -96,6 +96,7 @@ export function CoverImageComposer({
     setSettings((current) => {
       const next = cloneSettings(current);
       next.generatedImages = {};
+      next.generationKey = undefined;
 
       if (current.customCrops[selectedPlacement]) {
         next.customCrops[selectedPlacement] = {
@@ -161,6 +162,8 @@ export function CoverImageComposer({
       }
 
       const next = cloneSettings(current);
+      next.generatedImages = {};
+      next.generationKey = undefined;
       const nextCrop = {
         ...currentCrop,
         croppedArea: roundArea(croppedArea, 4),
@@ -206,6 +209,7 @@ export function CoverImageComposer({
         [selectedPlacement]: { ...current.sharedCrops[selectedPlacement] },
       },
       generatedImages: {},
+      generationKey: undefined,
     }));
     setCropperRevision((revision) => revision + 1);
   }
@@ -216,6 +220,7 @@ export function CoverImageComposer({
       const next = cloneSettings(current);
       delete next.customCrops[selectedPlacement];
       next.generatedImages = {};
+      next.generationKey = undefined;
       return next;
     });
     setCropperRevision((revision) => revision + 1);
@@ -226,6 +231,7 @@ export function CoverImageComposer({
     setSettings((current) => {
       const next = cloneSettings(current);
       next.generatedImages = {};
+      next.generationKey = undefined;
 
       if (current.customCrops[selectedPlacement]) {
         next.customCrops[selectedPlacement] = {

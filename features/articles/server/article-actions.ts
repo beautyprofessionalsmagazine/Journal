@@ -11,6 +11,7 @@ import {
   getArticleById,
   getArticleBySlug,
 } from "@/features/articles/server/article-queries";
+import { generateCoverImageVariants } from "@/features/articles/server/cover-image-generation";
 import type {
   Article,
   ArticleFieldErrors,
@@ -59,6 +60,13 @@ export async function createArticle(input: ArticleInput): Promise<Article> {
     articleInput.status === "published"
       ? articleInput.publishedAt ?? new Date()
       : null;
+  const coverImageSettings = articleInput.coverImage
+    ? await generateCoverVariantsOrThrow(
+        articleInput.coverImage,
+        normalizedSlug,
+        articleInput.coverImageSettings,
+      )
+    : null;
 
   try {
     const [article] = await db
@@ -71,9 +79,7 @@ export async function createArticle(input: ArticleInput): Promise<Article> {
         description: articleInput.description ?? null,
         coverImage: articleInput.coverImage ?? null,
         coverImageAlt: articleInput.coverImage ? articleInput.coverImageAlt ?? null : null,
-        coverImageSettings: articleInput.coverImage
-          ? articleInput.coverImageSettings
-          : null,
+        coverImageSettings,
         tags: articleInput.tags,
         status: articleInput.status,
         publishedAt,
@@ -176,6 +182,13 @@ export async function updateArticle(
     articleInput.status === "published"
       ? articleInput.publishedAt ?? currentArticle.publishedAt ?? new Date()
       : null;
+  const coverImageSettings = articleInput.coverImage
+    ? await generateCoverVariantsOrThrow(
+        articleInput.coverImage,
+        normalizedSlug,
+        articleInput.coverImageSettings,
+      )
+    : null;
 
   try {
     const [article] = await db
@@ -190,9 +203,7 @@ export async function updateArticle(
         coverImageAlt: articleInput.coverImage
           ? articleInput.coverImageAlt ?? null
           : null,
-        coverImageSettings: articleInput.coverImage
-          ? articleInput.coverImageSettings
-          : null,
+        coverImageSettings,
         tags: articleInput.tags,
         status: articleInput.status,
         publishedAt,
@@ -273,4 +284,29 @@ export async function updateArticleAction(
   revalidatePath(`/articles/${article.slug}`);
   revalidatePath(`/admin/articles/${article.id}/edit`);
   redirect(`/admin/articles/${article.id}/edit?saved=1`);
+}
+
+async function generateCoverVariantsOrThrow(
+  sourceUrl: string,
+  slug: string,
+  settings: NonNullable<ArticleInput["coverImageSettings"]>,
+) {
+  try {
+    return await generateCoverImageVariants({
+      settings:
+        typeof settings === "string"
+          ? JSON.parse(settings)
+          : settings,
+      slug,
+      sourceUrl,
+    });
+  } catch {
+    throw new ArticleActionError(
+      "The cover crops could not be generated. Your original upload is safe; try applying the crop again.",
+      {
+        coverImageSettings:
+          "Crop generation failed. Reopen the crop editor and try again.",
+      },
+    );
+  }
 }

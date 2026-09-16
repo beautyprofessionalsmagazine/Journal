@@ -41,6 +41,8 @@ export type CoverImageSettings = {
   customCrops: Partial<Record<CoverImagePlacement, CoverCropMetadata>>;
   /** Server-rendered derivatives. The original coverImage remains untouched. */
   generatedImages: Partial<Record<CoverImagePlacement, GeneratedCoverImage>>;
+  /** Hash of source + effective crops used to avoid needless regeneration. */
+  generationKey?: string;
 };
 
 export type CoverImagePlacementDefinition = {
@@ -134,6 +136,10 @@ export function normalizeCoverImageSettings(value: unknown): CoverImageSettings 
   const generatedImages = isRecord(value.generatedImages)
     ? value.generatedImages
     : {};
+
+  if (typeof value.generationKey === "string" && value.generationKey.length > 0) {
+    defaults.generationKey = value.generationKey;
+  }
 
   for (const placement of COVER_IMAGE_PLACEMENTS) {
     defaults.sharedCrops[placement.id] = normalizeCropMetadata(
