@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import type { Article } from "@/features/articles/types/article";
-import { getCoverImageStyle } from "@/features/articles/lib/cover-image-settings";
+import { getCoverImageSource } from "@/features/articles/lib/cover-image-settings";
 import { cn } from "@/shared/lib/cn";
 
 /*
@@ -27,6 +27,12 @@ export function ArticleHeroMedia({
   priority = false,
   sizes,
 }: ArticleHeroMediaProps) {
+  const coverImageSource = getCoverImageSource(
+    article.coverImage,
+    article.coverImageSettings,
+    "articleHero",
+  );
+
   return (
     <div
       className={cn(
@@ -35,7 +41,7 @@ export function ArticleHeroMedia({
         className,
       )}
     >
-      {article.coverImage ? (
+      {coverImageSource ? (
         <Image
           alt={article.coverImageAlt ?? article.title}
           className={cn(
@@ -45,8 +51,7 @@ export function ArticleHeroMedia({
           fill
           priority={priority}
           sizes={sizes}
-          src={article.coverImage}
-          style={getCoverImageStyle(article.coverImageSettings)}
+          src={coverImageSource}
         />
       ) : (
         <div className="flex h-full flex-col items-center justify-center px-6 text-center">

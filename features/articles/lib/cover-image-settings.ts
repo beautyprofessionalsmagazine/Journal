@@ -181,12 +181,6 @@ export function getCoverImageSource(
   return normalizeCoverImageSettings(settings).generatedImages[placement]?.url ?? originalUrl;
 }
 
-/** Existing renderers remain centered until their generated placement is wired. */
-export function getCoverImageStyle(settings?: unknown) {
-  void settings;
-  return undefined;
-}
-
 function normalizeCropMetadata(
   value: unknown,
   aspect: number,
