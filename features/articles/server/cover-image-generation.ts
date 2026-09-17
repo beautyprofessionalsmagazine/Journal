@@ -49,28 +49,39 @@ export async function generateCoverImageVariants({
   })
     .autoOrient()
     .toBuffer();
+  // Most placements use the same rotation. Cache the in-flight work rather
+  // than only the finished buffer: Promise.all otherwise lets every placement
+  // miss the cache at once and decode/rotate the full source four times. That
+  // redundant work is especially expensive in a production function and can
+  // push an otherwise valid publish past its execution deadline.
   const rotatedImages = new Map<
     number,
-    { data: Buffer; height: number; width: number }
+    Promise<{ data: Buffer; height: number; width: number }>
   >();
+
+  function getRotatedImage(rotation: number) {
+    let rotatedImage = rotatedImages.get(rotation);
+
+    if (!rotatedImage) {
+      rotatedImage = sharp(oriented)
+        .rotate(rotation)
+        .toBuffer({ resolveWithObject: true })
+        .then((result) => ({
+          data: result.data,
+          width: result.info.width,
+          height: result.info.height,
+        }));
+      rotatedImages.set(rotation, rotatedImage);
+    }
+
+    return rotatedImage;
+  }
 
   const generatedImages = await Promise.all(
     COVER_IMAGE_PLACEMENTS.map(async (placement) => {
       const crop = getCoverCrop(settings, placement.id);
       const rotation = normalizeRotation(crop.rotation);
-      let rotated = rotatedImages.get(rotation);
-
-      if (!rotated) {
-        const result = await sharp(oriented)
-          .rotate(rotation)
-          .toBuffer({ resolveWithObject: true });
-        rotated = {
-          data: result.data,
-          width: result.info.width,
-          height: result.info.height,
-        };
-        rotatedImages.set(rotation, rotated);
-      }
+      const rotated = await getRotatedImage(rotation);
 
       const extract = resolveExtractArea(
         crop,
