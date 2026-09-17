@@ -43,6 +43,13 @@ export type CoverImageSettings = {
   generationKey?: string;
 };
 
+/** JSON value stored in the single articles.cover_image column. */
+export type CoverImageData = {
+  src: string;
+  alt: string;
+  settings: CoverImageSettings;
+};
+
 export type CoverImagePlacementDefinition = {
   id: CoverImagePlacement;
   label: string;
@@ -123,6 +130,34 @@ export function createDefaultCoverImageSettings(): CoverImageSettings {
 
 export const defaultCoverImageSettings = createDefaultCoverImageSettings();
 
+export function createCoverImageData(
+  src: string,
+  alt: string,
+  settings: unknown,
+): CoverImageData {
+  return {
+    src,
+    alt,
+    settings: normalizeCoverImageSettings(settings),
+  };
+}
+
+export function normalizeCoverImageData(value: unknown): CoverImageData | null {
+  if (typeof value === "string" && value.trim()) {
+    return createCoverImageData(value.trim(), "", defaultCoverImageSettings);
+  }
+
+  if (!isRecord(value) || typeof value.src !== "string" || !value.src.trim()) {
+    return null;
+  }
+
+  return createCoverImageData(
+    value.src.trim(),
+    typeof value.alt === "string" ? value.alt : "",
+    value.settings,
+  );
+}
+
 /** Keeps historical null, v1, or malformed settings safe with a centered crop. */
 export function normalizeCoverImageSettings(value: unknown): CoverImageSettings {
   const defaults = createDefaultCoverImageSettings();
@@ -173,12 +208,12 @@ export function getCoverCrop(
 }
 
 export function getCoverImageSource(
-  originalUrl: string | null | undefined,
-  settings: CoverImageSettings | null | undefined,
+  coverImage: CoverImageData | null | undefined,
   placement: CoverImagePlacement,
 ) {
-  if (!originalUrl) return null;
-  return normalizeCoverImageSettings(settings).generatedImages[placement]?.url ?? originalUrl;
+  if (!coverImage?.src) return null;
+  const settings = normalizeCoverImageSettings(coverImage.settings);
+  return settings.generatedImages[placement]?.url ?? coverImage.src;
 }
 
 function normalizeCropMetadata(

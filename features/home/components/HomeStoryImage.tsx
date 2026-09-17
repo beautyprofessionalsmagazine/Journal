@@ -5,8 +5,8 @@ import { useState } from "react";
 
 import {
   getCoverImageSource,
+  type CoverImageData,
   type CoverImagePlacement,
-  type CoverImageSettings,
 } from "@/features/articles/lib/cover-image-settings";
 
 type HomeStoryImageProps = {
@@ -15,8 +15,7 @@ type HomeStoryImageProps = {
   priority?: boolean;
   placement: CoverImagePlacement;
   sizes: string;
-  src: string | null;
-  settings?: CoverImageSettings | null;
+  coverImage: CoverImageData | null;
 };
 
 /** Keeps a failed or missing editorial image from exposing browser error chrome. */
@@ -26,12 +25,11 @@ export function HomeStoryImage({
   priority = false,
   placement,
   sizes,
-  src,
-  settings,
+  coverImage,
 }: HomeStoryImageProps) {
   const [failed, setFailed] = useState(false);
 
-  const imageSource = getCoverImageSource(src, settings, placement);
+  const imageSource = getCoverImageSource(coverImage, placement);
 
   if (!imageSource || failed) {
     return (

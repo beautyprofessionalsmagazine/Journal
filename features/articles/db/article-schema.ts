@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { articleStatusValues } from "@/features/articles/types/article";
-import type { CoverImageSettings } from "@/features/articles/lib/cover-image-settings";
+import type { CoverImageData } from "@/features/articles/lib/cover-image-settings";
 
 export const articleStatusEnum = pgEnum("article_status", articleStatusValues);
 
@@ -25,11 +25,9 @@ export const articlesTable = pgTable(
     category: text("category").notNull(),
     author: text("author").notNull(),
     description: text("description"),
-    coverImage: text("cover_image"),
-    coverImageAlt: text("cover_image_alt"),
-    // Non-destructive art direction for the cover. Existing records intentionally
-    // remain null and render with the legacy centered composition.
-    coverImageSettings: jsonb("cover_image_settings").$type<CoverImageSettings>(),
+    // The source URL, alt text, per-placement crops, and generated derivatives
+    // travel together so the database has one canonical cover record.
+    coverImage: jsonb("cover_image").$type<CoverImageData>(),
     tags: text("tags")
       .array()
       .notNull()
