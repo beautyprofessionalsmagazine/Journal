@@ -107,22 +107,25 @@ export function MotionProvider({ children }: MotionProviderProps) {
           );
 
           if (genericReveals.length) {
-            gsap.set(genericReveals, { autoAlpha: 0, y: 18 });
             ScrollTrigger.batch(genericReveals, {
-              start: "clamp(top 88%)",
+              start: "top 88%",
               once: true,
               interval: 0.08,
               batchMax: 4,
               onEnter: (batch) => {
-                gsap.to(batch, {
-                  autoAlpha: 1,
-                  y: 0,
-                  duration: 0.62,
-                  ease: "power3.out",
-                  stagger: 0.07,
-                  overwrite: "auto",
-                  clearProps: "transform,opacity,visibility",
-                });
+                gsap.fromTo(
+                  batch,
+                  { autoAlpha: 0, y: 18 },
+                  {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.62,
+                    ease: "power3.out",
+                    stagger: 0.07,
+                    overwrite: "auto",
+                    clearProps: "transform,opacity,visibility",
+                  },
+                );
               },
             });
           }

@@ -1,5 +1,7 @@
 export type Lookbook = {
   id: string;
+  issueYear: number;
+  issueMonth: number;
   fileUrl: string;
   fileName: string;
   fileSize: number;

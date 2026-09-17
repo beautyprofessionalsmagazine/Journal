@@ -83,6 +83,14 @@ boundaries, so the map needs no map service or API key. Regenerate with:
 node scripts/generate-us-map.mjs features/distribution/data/us-state-shapes.ts
 ```
 
+## Lookbook archive
+
+`/lookbook` lists published PDF editions by year and month and keeps the
+selected edition in the URL. `/admin/lookbook` lets an editor choose an issue
+date, publish or replace its PDF, preview it, and remove only that edition.
+Existing singleton Lookbook data is dated from its previous `updated_at` value
+when migration `0006` runs.
+
 ## Database migrations
 
 ```bash
