@@ -84,6 +84,14 @@ body::-webkit-scrollbar-thumb:hover,
   z-index: var(--z-backdrop);
 }
 
+.pdf-reader-dialog {
+  z-index: calc(var(--z-dialog) + 10);
+}
+
+.pdf-reader-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.76);
+}
+
 /*
  * The cropper owns gestures inside its fixed-height stage. These rules are
  * deliberately global because WebKit otherwise permits image dragging and
