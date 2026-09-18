@@ -307,7 +307,11 @@ async function generateCoverVariantsOrThrow(
       slug,
       sourceUrl,
     });
-  } catch {
+  } catch (error) {
+    // The editor only ever sees the friendly message below, so without this the
+    // real cause never reaches the deployment logs. A native sharp load failure
+    // and a corrupt upload look identical from the browser.
+    console.error("Cover variant generation failed", { slug, sourceUrl, error });
     throw new ArticleActionError(
       "The cover crops could not be generated. Your original upload is safe; try applying the crop again.",
       {
