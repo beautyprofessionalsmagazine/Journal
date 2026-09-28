@@ -61,6 +61,13 @@ export function CoverImageComposer({
     useState<CoverImagePlacement>("homepageFeature");
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [cropperRevision, setCropperRevision] = useState(0);
+  // react-easy-crop measures its container on mount, and does so immediately
+  // when the image is already cached — always the case right after an upload,
+  // which preloads the URL. Children mount before this component's layout
+  // effect calls showModal(), so croppers rendered up front would measure a
+  // closed (display: none) dialog as 0×0 and derive a NaN zoom, which loops
+  // setState until React throws. Mount them only once the dialog is open.
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const selectedDefinition =
     COVER_IMAGE_PLACEMENTS.find(
@@ -75,12 +82,15 @@ export function CoverImageComposer({
     const previousRootOverscroll = document.documentElement.style.overscrollBehavior;
 
     if (!dialog.open) dialog.showModal();
+    setIsDialogOpen(dialog.open);
     document.body.style.overflow = "hidden";
     document.documentElement.style.overscrollBehavior = "none";
     closeButtonRef.current?.focus();
 
+    // No dialog.close() here: unmounting removes the dialog from the document,
+    // which already takes it out of the top layer. Closing it would also make
+    // Strict Mode's effect replay remount the croppers inside a closed dialog.
     return () => {
-      if (dialog.open) dialog.close();
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overscrollBehavior = previousRootOverscroll;
     };
@@ -231,67 +241,69 @@ export function CoverImageComposer({
               onContextMenu={(event) => event.preventDefault()}
               onDragStart={(event) => event.preventDefault()}
             >
-              <Cropper
-                aspect={selectedDefinition.aspect}
-                classes={{
-                  containerClassName: "cover-cropper",
-                  mediaClassName: "cover-cropper-media",
-                  cropAreaClassName: "cover-cropper-frame",
-                }}
-                crop={{ x: selectedCrop.x, y: selectedCrop.y }}
-                cropShape="rect"
-                disableAutomaticStylesInjection
-                cropperProps={{
-                  "aria-describedby": "cover-crop-help",
-                  "aria-label": `Crop ${selectedDefinition.label}. Drag the image, use arrow keys to reposition, or use the zoom controls.`,
-                  role: "application",
-                }}
-                image={imageUrl}
-                initialCroppedAreaPercentages={selectedCrop.croppedArea}
-                key={`${selectedPlacement}-${cropperRevision}`}
-                maxZoom={MAX_ZOOM}
-                mediaProps={{
-                  draggable: false,
-                  onDragStart: (event) => event.preventDefault(),
-                }}
-                minZoom={MIN_ZOOM}
-                onCropChange={(point) => {
-                  if (Number.isFinite(point.x) && Number.isFinite(point.y)) {
-                    updateSelectedTransform(point);
+              {isDialogOpen ? (
+                <Cropper
+                  aspect={selectedDefinition.aspect}
+                  classes={{
+                    containerClassName: "cover-cropper",
+                    mediaClassName: "cover-cropper-media",
+                    cropAreaClassName: "cover-cropper-frame",
+                  }}
+                  crop={{ x: selectedCrop.x, y: selectedCrop.y }}
+                  cropShape="rect"
+                  disableAutomaticStylesInjection
+                  cropperProps={{
+                    "aria-describedby": "cover-crop-help",
+                    "aria-label": `Crop ${selectedDefinition.label}. Drag the image, use arrow keys to reposition, or use the zoom controls.`,
+                    role: "application",
+                  }}
+                  image={imageUrl}
+                  initialCroppedAreaPercentages={selectedCrop.croppedArea}
+                  key={`${selectedPlacement}-${cropperRevision}`}
+                  maxZoom={MAX_ZOOM}
+                  mediaProps={{
+                    draggable: false,
+                    onDragStart: (event) => event.preventDefault(),
+                  }}
+                  minZoom={MIN_ZOOM}
+                  onCropChange={(point) => {
+                    if (Number.isFinite(point.x) && Number.isFinite(point.y)) {
+                      updateSelectedTransform(point);
+                    }
+                  }}
+                  onCropComplete={(croppedArea, croppedAreaPixels) =>
+                    saveCropResult(
+                      selectedPlacement,
+                      croppedArea,
+                      croppedAreaPixels,
+                    )
                   }
-                }}
-                onCropComplete={(croppedArea, croppedAreaPixels) =>
-                  saveCropResult(
-                    selectedPlacement,
-                    croppedArea,
-                    croppedAreaPixels,
-                  )
-                }
-                onInteractionEnd={handleInteractionEnd}
-                onInteractionStart={handleInteractionStart}
-                onRotationChange={(rotation) => {
-                  if (Number.isFinite(rotation)) {
-                    updateSelectedTransform({ rotation });
-                  }
-                }}
-                onTouchRequest={() => true}
-                onWheelRequest={() => true}
-                onZoomChange={changeZoom}
-                restrictPosition
-                rotation={selectedCrop.rotation}
-                roundCropAreaPixels
-                showGrid={isAdjusting}
-                style={{
-                  containerStyle: {
-                    touchAction: "none",
-                    WebkitUserSelect: "none",
-                    userSelect: "none",
-                  },
-                }}
-                zoom={selectedCrop.zoom}
-                zoomSpeed={0.14}
-                zoomWithScroll
-              />
+                  onInteractionEnd={handleInteractionEnd}
+                  onInteractionStart={handleInteractionStart}
+                  onRotationChange={(rotation) => {
+                    if (Number.isFinite(rotation)) {
+                      updateSelectedTransform({ rotation });
+                    }
+                  }}
+                  onTouchRequest={() => true}
+                  onWheelRequest={() => true}
+                  onZoomChange={changeZoom}
+                  restrictPosition
+                  rotation={selectedCrop.rotation}
+                  roundCropAreaPixels
+                  showGrid={isAdjusting}
+                  style={{
+                    containerStyle: {
+                      touchAction: "none",
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                    },
+                  }}
+                  zoom={selectedCrop.zoom}
+                  zoomSpeed={0.14}
+                  zoomWithScroll
+                />
+              ) : null}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-3 pb-7 pt-3 text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white"
@@ -341,12 +353,14 @@ export function CoverImageComposer({
                           placement.previewClassName,
                         )}
                       >
-                        <CoverPlacementPreview
-                          crop={crop}
-                          imageUrl={imageUrl}
-                          placement={placement}
-                          revision={cropperRevision}
-                        />
+                        {isDialogOpen ? (
+                          <CoverPlacementPreview
+                            crop={crop}
+                            imageUrl={imageUrl}
+                            placement={placement}
+                            revision={cropperRevision}
+                          />
+                        ) : null}
                       </div>
                       <span className="mt-2 flex min-w-0 items-center justify-between gap-2 px-0.5 pb-0.5 text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.07em]">
                         <span className="truncate">{placement.label}</span>
@@ -512,14 +526,18 @@ function CoverPlacementPreview({
       maxZoom={MAX_ZOOM}
       mediaProps={{ draggable: false }}
       minZoom={MIN_ZOOM}
-      onCropChange={(point) =>
+      // Mirror the main cropper's guards: a NaN never equals itself, so letting
+      // one through would re-render this preview forever.
+      onCropChange={(point) => {
+        if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
         setPreviewCrop((current) =>
           current.x === point.x && current.y === point.y ? current : point,
-        )
-      }
-      onZoomChange={(nextZoom) =>
-        setPreviewZoom((current) => (current === nextZoom ? current : nextZoom))
-      }
+        );
+      }}
+      onZoomChange={(nextZoom) => {
+        if (!Number.isFinite(nextZoom)) return;
+        setPreviewZoom((current) => (current === nextZoom ? current : nextZoom));
+      }}
       objectFit="cover"
       rotation={crop.rotation}
       roundCropAreaPixels
