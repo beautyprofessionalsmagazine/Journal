@@ -135,7 +135,7 @@ body::-webkit-scrollbar-thumb:hover,
 
 .cover-cropper-media,
 .cover-cropper img,
-.cover-cropper-preview img {
+.cover-cropper-preview-media {
   -webkit-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
@@ -146,8 +146,7 @@ body::-webkit-scrollbar-thumb:hover,
   color: rgba(0, 0, 0, 0.58) !important;
 }
 
-.cover-cropper-preview,
-.cover-cropper-preview-frame {
+.cover-cropper-preview-media {
   pointer-events: none;
 }
 

@@ -8,25 +8,32 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import Cropper, {
-  type Area,
-} from "react-easy-crop";
+import Cropper, { type Area } from "react-easy-crop";
 import {
+  type CSSProperties,
+  useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 
 import {
-  COVER_IMAGE_PLACEMENTS,
-  createDefaultCoverImageSettings,
-  getCoverCrop,
+  createDefaultCrop,
   normalizeCoverImageSettings,
+  resolveCoverCrop,
   type CoverCropMetadata,
   type CoverImagePlacement,
-  type CoverImagePlacementDefinition,
   type CoverImageSettings,
 } from "@/features/articles/lib/cover-image-settings";
+import {
+  COVER_PLACEMENT_LIST,
+  coverFrameProps,
+  formatPlacementSize,
+  getCoverPlacement,
+  getRotatedSize,
+  isPositiveArea,
+} from "@/features/articles/lib/cover-placements";
 import { Button } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/cn";
 
@@ -41,10 +48,13 @@ const MIN_ZOOM = 1;
 const MAX_ZOOM = 3;
 const ZOOM_STEP = 0.1;
 
+type NaturalSize = { width: number; height: number };
+
 /**
- * A non-destructive crop desk. The fixed frame and every preview are powered
- * by react-easy-crop; generated files are produced only after the article is
- * saved on the server.
+ * A non-destructive crop desk. Each placement's frame takes its aspect from
+ * the shared placement config, so the frame, the previews, the generated file,
+ * and the public container are the same shape. Generated files are produced
+ * only after the article is saved on the server.
  */
 export function CoverImageComposer({
   imageUrl,
@@ -56,6 +66,14 @@ export function CoverImageComposer({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [settings, setSettings] = useState(() =>
     normalizeCoverImageSettings(value),
+  );
+  const naturalSize = useImageNaturalSize(imageUrl);
+  // Every crop as the server will cut it: un-framed placements become the
+  // centered default and legacy crops saved for another ratio are re-fitted.
+  // The cropper, previews, and Apply all read this, never raw settings.
+  const framedSettings = useMemo(
+    () => (naturalSize ? frameAllCrops(settings, naturalSize) : null),
+    [naturalSize, settings],
   );
   const [selectedPlacement, setSelectedPlacement] =
     useState<CoverImagePlacement>("homepageFeature");
@@ -69,11 +87,8 @@ export function CoverImageComposer({
   // setState until React throws. Mount them only once the dialog is open.
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const selectedDefinition =
-    COVER_IMAGE_PLACEMENTS.find(
-      (placement) => placement.id === selectedPlacement,
-    ) ?? COVER_IMAGE_PLACEMENTS[0];
-  const selectedCrop = getCoverCrop(settings, selectedPlacement);
+  const selectedDefinition = getCoverPlacement(selectedPlacement);
+  const selectedCrop = (framedSettings ?? settings).crops[selectedPlacement];
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
@@ -114,22 +129,30 @@ export function CoverImageComposer({
 
     setSettings((current) => {
       const next = cloneSettings(current);
-      next.generatedImages = {};
-      next.generationKey = undefined;
       next.crops[selectedPlacement] = {
         ...current.crops[selectedPlacement],
         ...patch,
-        aspect: selectedDefinition.aspect,
       };
       return next;
     });
   }
 
-  function saveCropResult(
+  // Wired to onCropAreaChange, not onCropComplete: when a saved crop is
+  // restored, react-easy-crop first emits the area for the stale controlled
+  // position and then repositions — and if only x/y moved it reports the
+  // corrected area through onCropAreaChange alone. Listening to
+  // onCropComplete persisted the stale area. This also drives live previews.
+  function saveCropArea(
     placement: CoverImagePlacement,
     croppedArea: Area,
     croppedAreaPixels: Area,
   ) {
+    // A cropper measured before layout reports NaN or zero-sized areas;
+    // never let one replace a real crop.
+    if (!isPositiveArea(croppedArea) || !isPositiveArea(croppedAreaPixels)) {
+      return;
+    }
+
     setSettings((current) => {
       const currentCrop = current.crops[placement];
 
@@ -141,15 +164,11 @@ export function CoverImageComposer({
       }
 
       const next = cloneSettings(current);
-      next.generatedImages = {};
-      next.generationKey = undefined;
-      const nextCrop = {
+      next.crops[placement] = {
         ...currentCrop,
         croppedArea: roundArea(croppedArea, 4),
         croppedAreaPixels: roundArea(croppedAreaPixels, 0),
       };
-
-      next.crops[placement] = nextCrop;
       return next;
     });
   }
@@ -161,14 +180,9 @@ export function CoverImageComposer({
   }
 
   function resetSelectedCrop() {
-    const defaults = createDefaultCoverImageSettings();
     setSettings((current) => {
       const next = cloneSettings(current);
-      next.generatedImages = {};
-      next.generationKey = undefined;
-
-      next.crops[selectedPlacement] = { ...defaults.crops[selectedPlacement] };
-
+      next.crops[selectedPlacement] = createDefaultCrop();
       return next;
     });
     setCropperRevision((revision) => revision + 1);
@@ -182,9 +196,23 @@ export function CoverImageComposer({
   }
 
   function rotateBy(degrees: number) {
-    const rotation = normalizeRotation(selectedCrop.rotation + degrees);
-    updateSelectedTransform({ rotation });
+    // The saved area belongs to the previous orientation, so a rotation
+    // starts that placement again from a centered frame.
+    setSettings((current) => {
+      const next = cloneSettings(current);
+      next.crops[selectedPlacement] = createDefaultCrop(
+        current.crops[selectedPlacement].rotation + degrees,
+      );
+      return next;
+    });
     setCropperRevision((revision) => revision + 1);
+  }
+
+  function apply() {
+    // Every placement leaves the editor explicit and valid — never as the
+    // zero-sized placeholder older records persisted for unopened tabs.
+    onApply(framedSettings ?? settings);
+    close();
   }
 
   function handleInteractionStart() {
@@ -241,7 +269,7 @@ export function CoverImageComposer({
               onContextMenu={(event) => event.preventDefault()}
               onDragStart={(event) => event.preventDefault()}
             >
-              {isDialogOpen ? (
+              {isDialogOpen && framedSettings ? (
                 <Cropper
                   aspect={selectedDefinition.aspect}
                   classes={{
@@ -271,8 +299,8 @@ export function CoverImageComposer({
                       updateSelectedTransform(point);
                     }
                   }}
-                  onCropComplete={(croppedArea, croppedAreaPixels) =>
-                    saveCropResult(
+                  onCropAreaChange={(croppedArea, croppedAreaPixels) =>
+                    saveCropArea(
                       selectedPlacement,
                       croppedArea,
                       croppedAreaPixels,
@@ -280,11 +308,10 @@ export function CoverImageComposer({
                   }
                   onInteractionEnd={handleInteractionEnd}
                   onInteractionStart={handleInteractionStart}
-                  onRotationChange={(rotation) => {
-                    if (Number.isFinite(rotation)) {
-                      updateSelectedTransform({ rotation });
-                    }
-                  }}
+                  // No onRotationChange on purpose: with it, react-easy-crop
+                  // turns two-finger touch and Safari trackpad gestures into
+                  // free-angle rotations the generator cannot reproduce.
+                  // Rotation is quarter turns through the buttons only.
                   onTouchRequest={() => true}
                   onWheelRequest={() => true}
                   onZoomChange={changeZoom}
@@ -309,7 +336,7 @@ export function CoverImageComposer({
                 className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-3 pb-7 pt-3 text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white"
               >
                 <span>{selectedDefinition.label}</span>
-                <span>Independent crop</span>
+                <span>{formatPlacementSize(selectedPlacement)}</span>
               </div>
             </div>
             <p className="sr-only" id="cover-crop-help">
@@ -329,8 +356,8 @@ export function CoverImageComposer({
                 <span className="text-xs text-black/52">Crop each placement</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                {COVER_IMAGE_PLACEMENTS.map((placement) => {
-                  const crop = getCoverCrop(settings, placement.id);
+                {COVER_PLACEMENT_LIST.map((placement) => {
+                  const crop = framedSettings?.crops[placement.id];
                   const selected = placement.id === selectedPlacement;
 
                   return (
@@ -348,23 +375,23 @@ export function CoverImageComposer({
                       type="button"
                     >
                       <div
-                        className={cn(
-                          "relative w-full overflow-hidden bg-[#151515]",
-                          placement.previewClassName,
-                        )}
+                        {...coverFrameProps(placement.id)}
+                        className="relative w-full overflow-hidden bg-[#151515]"
                       >
-                        {isDialogOpen ? (
+                        {crop && naturalSize ? (
                           <CoverPlacementPreview
                             crop={crop}
                             imageUrl={imageUrl}
-                            placement={placement}
-                            revision={cropperRevision}
+                            naturalSize={naturalSize}
                           />
                         ) : null}
                       </div>
-                      <span className="mt-2 flex min-w-0 items-center justify-between gap-2 px-0.5 pb-0.5 text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.07em]">
+                      <span className="mt-2 flex min-w-0 items-center justify-between gap-2 px-0.5 text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.07em]">
                         <span className="truncate">{placement.label}</span>
                         <span className="shrink-0 text-[var(--champagne-dark)]">Edit</span>
+                      </span>
+                      <span className="block truncate px-0.5 pb-0.5 text-[0.6rem] leading-4 text-black/52">
+                        {placement.usage}
                       </span>
                     </button>
                   );
@@ -468,18 +495,13 @@ export function CoverImageComposer({
 
         <footer className="flex shrink-0 flex-col-reverse gap-3 border-t border-black bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
           <p className="text-xs leading-5 text-black/55">
-            {selectedDefinition.label} has its own crop. Select another placement to edit it.
+            {selectedDefinition.label} has its own crop, shown exactly as {selectedDefinition.usage.toLowerCase()} will display it. Select another placement to edit it.
           </p>
           <div className="flex flex-col-reverse gap-3 sm:flex-row">
             <Button onClick={close} variant="secondary">
               Cancel
             </Button>
-            <Button
-              onClick={() => {
-                onApply(settings);
-                close();
-              }}
-            >
+            <Button onClick={apply}>
               Apply crop
             </Button>
           </div>
@@ -490,76 +512,105 @@ export function CoverImageComposer({
 }
 
 type CoverPlacementPreviewProps = {
+  /** A resolved crop: valid and already in the placement aspect. */
   crop: CoverCropMetadata;
   imageUrl: string;
-  placement: CoverImagePlacementDefinition;
-  revision: number;
+  naturalSize: NaturalSize;
 };
 
+/**
+ * Draws a placement exactly as the server will cut it: the frame has the
+ * placement aspect and the image is positioned from the same percentage area
+ * that becomes croppedAreaPixels. Plain CSS, so it follows every drag and
+ * zoom of the main cropper live instead of remounting a cropper per change.
+ */
 function CoverPlacementPreview({
   crop,
   imageUrl,
-  placement,
-  revision,
+  naturalSize,
 }: CoverPlacementPreviewProps) {
-  const [previewCrop, setPreviewCrop] = useState({ x: crop.x, y: crop.y });
-  const [previewZoom, setPreviewZoom] = useState(crop.zoom);
+  const area = crop.croppedArea;
+  const rotation = crop.rotation;
+  const rotated = getRotatedSize(naturalSize.width, naturalSize.height, rotation);
+
+  const boxStyle: CSSProperties = {
+    position: "absolute",
+    left: `${(-area.x / area.width) * 100}%`,
+    top: `${(-area.y / area.height) * 100}%`,
+    width: `${(100 / area.width) * 100}%`,
+    height: `${(100 / area.height) * 100}%`,
+  };
+  const quarterTurned = rotation % 180 !== 0;
+  // The box is the rotated bounding box. A quarter-turned image is laid out
+  // with its unrotated sides, centered, then turned into place.
+  const imageStyle: CSSProperties = {
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    maxWidth: "none",
+    width: quarterTurned ? `${(rotated.height / rotated.width) * 100}%` : "100%",
+    height: quarterTurned ? `${(rotated.width / rotated.height) * 100}%` : "100%",
+    transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+  };
 
   return (
-    <Cropper
-      aspect={placement.aspect}
-      classes={{
-        containerClassName: "cover-cropper-preview",
-        mediaClassName: "cover-cropper-media",
-        cropAreaClassName: "cover-cropper-preview-frame",
-      }}
-      crop={previewCrop}
-      cropShape="rect"
-      disableAutomaticStylesInjection
-      cropperProps={{
-        "aria-hidden": true,
-        tabIndex: -1,
-      }}
-      image={imageUrl}
-      initialCroppedAreaPercentages={crop.croppedArea}
-      key={`${placement.id}-${revision}-${crop.croppedArea.x}-${crop.croppedArea.y}-${crop.croppedArea.width}-${crop.croppedArea.height}-${crop.zoom}-${crop.rotation}`}
-      maxZoom={MAX_ZOOM}
-      mediaProps={{ draggable: false }}
-      minZoom={MIN_ZOOM}
-      // Mirror the main cropper's guards: a NaN never equals itself, so letting
-      // one through would re-render this preview forever.
-      onCropChange={(point) => {
-        if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
-        setPreviewCrop((current) =>
-          current.x === point.x && current.y === point.y ? current : point,
-        );
-      }}
-      onZoomChange={(nextZoom) => {
-        if (!Number.isFinite(nextZoom)) return;
-        setPreviewZoom((current) => (current === nextZoom ? current : nextZoom));
-      }}
-      objectFit="cover"
-      rotation={crop.rotation}
-      roundCropAreaPixels
-      showGrid={false}
-      style={{
-        containerStyle: { pointerEvents: "none", touchAction: "none" },
-        cropAreaStyle: {
-          border: 0,
-          boxShadow: "none",
-        },
-      }}
-      zoom={previewZoom}
-      zoomWithScroll={false}
-    />
+    <div aria-hidden="true" style={boxStyle}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- positioned by percentage crop math that next/image cannot express */}
+      <img
+        alt=""
+        className="cover-cropper-preview-media"
+        draggable={false}
+        src={imageUrl}
+        style={imageStyle}
+      />
+    </div>
   );
+}
+
+/**
+ * The upright (EXIF-applied) size the browser decodes, which is also what
+ * react-easy-crop measures and what Sharp's autoOrient() produces.
+ */
+function useImageNaturalSize(url: string) {
+  const [size, setSize] = useState<(NaturalSize & { url: string }) | null>(null);
+
+  useEffect(() => {
+    const image = new Image();
+    image.onload = () => {
+      if (image.naturalWidth > 0 && image.naturalHeight > 0) {
+        setSize({ url, width: image.naturalWidth, height: image.naturalHeight });
+      }
+    };
+    image.src = url;
+    return () => {
+      image.onload = null;
+    };
+  }, [url]);
+
+  return size?.url === url ? size : null;
+}
+
+function frameAllCrops(
+  settings: CoverImageSettings,
+  naturalSize: NaturalSize,
+): CoverImageSettings {
+  const next = cloneSettings(settings);
+  for (const placement of COVER_PLACEMENT_LIST) {
+    next.crops[placement.id] = resolveCoverCrop(
+      next.crops[placement.id],
+      placement.id,
+      naturalSize.width,
+      naturalSize.height,
+    );
+  }
+  return next;
 }
 
 function cloneSettings(settings: CoverImageSettings): CoverImageSettings {
   return {
     ...settings,
     crops: Object.fromEntries(
-      COVER_IMAGE_PLACEMENTS.map((placement) => [
+      COVER_PLACEMENT_LIST.map((placement) => [
         placement.id,
         { ...settings.crops[placement.id] },
       ]),
@@ -585,9 +636,4 @@ function roundArea(area: Area, decimalPlaces: number): Area {
     width: Math.round(area.width * factor) / factor,
     height: Math.round(area.height * factor) / factor,
   };
-}
-
-function normalizeRotation(rotation: number) {
-  const normalized = rotation % 360;
-  return Object.is(normalized, -0) ? 0 : normalized;
 }

@@ -1,18 +1,22 @@
 import { createHash } from "node:crypto";
 
 import { put } from "@vercel/blob";
-import sharp from "sharp";
 
 import {
-  COVER_IMAGE_PLACEMENTS,
-  getCoverCrop,
+  isGeneratedImageCurrent,
   normalizeCoverImageSettings,
-  type CoverCropMetadata,
   type CoverImageSettings,
-  type CropArea,
+  type GeneratedCoverImage,
 } from "@/features/articles/lib/cover-image-settings";
+import {
+  COVER_PLACEMENT_LIST,
+  type CoverImagePlacement,
+} from "@/features/articles/lib/cover-placements";
+import { renderCoverVariants } from "@/features/articles/server/cover-image-rendering";
 
 const MAX_SOURCE_BYTES = 30 * 1024 * 1024;
+/** Bump when rendering changes in a way that should replace existing files. */
+const GENERATION_PIPELINE_VERSION = 4;
 
 type GenerateCoverImageVariantsInput = {
   settings: CoverImageSettings;
@@ -23,6 +27,10 @@ type GenerateCoverImageVariantsInput = {
 /**
  * Produces the permanent placement files from the untouched original upload.
  * Browser canvas output is deliberately never accepted as a source of truth.
+ *
+ * The returned settings carry the exact crop each file was cut from, so the
+ * stored crop, the generated file, and the editor all describe one area —
+ * including placements the editor never opened, which get the centered crop.
  */
 export async function generateCoverImageVariants({
   settings: rawSettings,
@@ -30,80 +38,42 @@ export async function generateCoverImageVariants({
   sourceUrl,
 }: GenerateCoverImageVariantsInput): Promise<CoverImageSettings> {
   const settings = normalizeCoverImageSettings(rawSettings);
-  const generationKey = createGenerationKey(sourceUrl, settings);
 
   if (
-    settings.generationKey === generationKey &&
-    COVER_IMAGE_PLACEMENTS.every(
-      (placement) => settings.generatedImages[placement.id]?.url,
+    settings.generationKey === createGenerationKey(sourceUrl, settings) &&
+    COVER_PLACEMENT_LIST.every((placement) =>
+      isGeneratedImageCurrent(placement.id, settings.generatedImages[placement.id]),
     )
   ) {
     return settings;
   }
 
   const sourceBuffer = await downloadSourceImage(sourceUrl);
-  // autoOrient applies EXIF orientation before any editor rotation or extract.
-  const oriented = await sharp(sourceBuffer, {
-    animated: false,
-    limitInputPixels: 268_402_689,
-  })
-    .autoOrient()
-    .toBuffer();
-  // Most placements use the same rotation. Cache the in-flight work rather
-  // than only the finished buffer: Promise.all otherwise lets every placement
-  // miss the cache at once and decode/rotate the full source four times. That
-  // redundant work is especially expensive in a production function and can
-  // push an otherwise valid publish past its execution deadline.
-  const rotatedImages = new Map<
-    number,
-    Promise<{ data: Buffer; height: number; width: number }>
-  >();
+  const variants = await renderCoverVariants(sourceBuffer, settings);
+  const nextSettings: CoverImageSettings = {
+    ...settings,
+    crops: { ...settings.crops },
+    generatedImages: {},
+  };
 
-  function getRotatedImage(rotation: number) {
-    let rotatedImage = rotatedImages.get(rotation);
-
-    if (!rotatedImage) {
-      rotatedImage = sharp(oriented)
-        .rotate(rotation)
-        .toBuffer({ resolveWithObject: true })
-        .then((result) => ({
-          data: result.data,
-          width: result.info.width,
-          height: result.info.height,
-        }));
-      rotatedImages.set(rotation, rotatedImage);
-    }
-
-    return rotatedImage;
+  for (const placement of COVER_PLACEMENT_LIST) {
+    nextSettings.crops[placement.id] = variants[placement.id].crop;
   }
 
-  const generatedImages = await Promise.all(
-    COVER_IMAGE_PLACEMENTS.map(async (placement) => {
-      const crop = getCoverCrop(settings, placement.id);
-      const rotation = normalizeRotation(crop.rotation);
-      const rotated = await getRotatedImage(rotation);
-
-      const extract = resolveExtractArea(
-        crop,
-        rotated.width,
-        rotated.height,
-        placement.aspect,
-      );
-      const output = await sharp(rotated.data)
-        .extract(extract)
-        .resize(placement.width, placement.height, {
-          fit: "fill",
-        })
-        .webp({ effort: 4, quality: 88 })
-        .toBuffer();
+  // Keyed on the crops actually used, so saving again without changes skips
+  // generation, and new crops never overwrite files a live page still uses.
+  const generationKey = createGenerationKey(sourceUrl, nextSettings);
+  const uploads = await Promise.all(
+    COVER_PLACEMENT_LIST.map(async (placement) => {
+      const variant = variants[placement.id];
       const pathname = [
         "articles",
         "covers",
         "generated",
         sanitizePathSegment(slug),
-        `${generationKey}-${placement.id}-${placement.width}x${placement.height}.webp`,
+        `${generationKey}-${placement.id}-${variant.width}x${variant.height}.webp`,
       ].join("/");
-      const blob = await put(pathname, output, {
+      const blob = await put(pathname, variant.data, {
         access: "public",
         addRandomSuffix: false,
         allowOverwrite: true,
@@ -112,20 +82,17 @@ export async function generateCoverImageVariants({
 
       return [
         placement.id,
-        {
-          url: blob.url,
-          width: placement.width,
-          height: placement.height,
-        },
+        { url: blob.url, width: variant.width, height: variant.height },
       ] as const;
     }),
   );
 
-  return {
-    ...settings,
-    generatedImages: Object.fromEntries(generatedImages),
-    generationKey,
-  };
+  nextSettings.generatedImages = Object.fromEntries(uploads) as Record<
+    CoverImagePlacement,
+    GeneratedCoverImage
+  >;
+  nextSettings.generationKey = generationKey;
+  return nextSettings;
 }
 
 async function downloadSourceImage(sourceUrl: string) {
@@ -156,81 +123,27 @@ async function downloadSourceImage(sourceUrl: string) {
   return buffer;
 }
 
-function createGenerationKey(sourceUrl: string, settings: CoverImageSettings) {
-  const crops = COVER_IMAGE_PLACEMENTS.map((placement) => {
-    const crop = getCoverCrop(settings, placement.id);
+export function createGenerationKey(
+  sourceUrl: string,
+  settings: CoverImageSettings,
+) {
+  const crops = COVER_PLACEMENT_LIST.map((placement) => {
+    const crop = settings.crops[placement.id];
     return {
       placement: placement.id,
+      size: [placement.width, placement.height],
+      croppedArea: crop.croppedArea,
       croppedAreaPixels: crop.croppedAreaPixels,
       rotation: crop.rotation,
-      zoom: crop.zoom,
-      aspect: crop.aspect,
     };
   });
 
   return createHash("sha256")
-    .update(JSON.stringify({ sourceUrl, crops }))
+    .update(
+      JSON.stringify({ pipeline: GENERATION_PIPELINE_VERSION, sourceUrl, crops }),
+    )
     .digest("hex")
     .slice(0, 20);
-}
-
-function resolveExtractArea(
-  crop: CoverCropMetadata,
-  sourceWidth: number,
-  sourceHeight: number,
-  aspect: number,
-) {
-  const pixels = crop.croppedAreaPixels;
-  if (pixels.width >= 1 && pixels.height >= 1) {
-    return clampExtractArea(pixels, sourceWidth, sourceHeight);
-  }
-
-  return createCenteredExtract(sourceWidth, sourceHeight, aspect);
-}
-
-function clampExtractArea(
-  area: CropArea,
-  sourceWidth: number,
-  sourceHeight: number,
-) {
-  const left = Math.max(0, Math.min(sourceWidth - 1, Math.round(area.x)));
-  const top = Math.max(0, Math.min(sourceHeight - 1, Math.round(area.y)));
-  const width = Math.max(
-    1,
-    Math.min(sourceWidth - left, Math.round(area.width)),
-  );
-  const height = Math.max(
-    1,
-    Math.min(sourceHeight - top, Math.round(area.height)),
-  );
-
-  return { left, top, width, height };
-}
-
-function createCenteredExtract(
-  sourceWidth: number,
-  sourceHeight: number,
-  aspect: number,
-) {
-  const sourceAspect = sourceWidth / sourceHeight;
-  const width = Math.round(
-    sourceAspect > aspect ? sourceHeight * aspect : sourceWidth,
-  );
-  const height = Math.round(
-    sourceAspect > aspect ? sourceHeight : sourceWidth / aspect,
-  );
-
-  return {
-    left: Math.max(0, Math.round((sourceWidth - width) / 2)),
-    top: Math.max(0, Math.round((sourceHeight - height) / 2)),
-    width: Math.max(1, Math.min(sourceWidth, width)),
-    height: Math.max(1, Math.min(sourceHeight, height)),
-  };
-}
-
-function normalizeRotation(rotation: number) {
-  const normalized = Math.round(rotation / 90) * 90;
-  return ((normalized % 360) + 360) % 360;
 }
 
 function sanitizePathSegment(value: string) {
