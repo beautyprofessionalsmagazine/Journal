@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate:map": "node scripts/generate-us-map.mjs features/distribution/data/us-state-shapes.ts"
+    "generate:map": "node scripts/generate-us-map.mjs features/distribution/data/us-state-shapes.ts",
+    "test": "node --import ./scripts/test-resolve-hooks.mjs --test \"features/**/*.test.ts\""
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
