@@ -91,6 +91,36 @@ date, publish or replace its PDF, preview it, and remove only that edition.
 Existing singleton Lookbook data is dated from its previous `updated_at` value
 when migration `0006` runs.
 
+## Article cover images
+
+`features/articles/lib/cover-placements.ts` is the single source of truth for
+every cover placement. Its width and height (aspect is derived) drive the crop
+editor frame, the Sharp-generated file, and the frontend container, which
+reads the ratio through `coverFrameProps()`:
+
+| Placement | Output | Ratio | Used by |
+| --- | --- | --- | --- |
+| `homepageFeature` | 1600 × 1200 | 4:3 | Homepage lead story, dark spotlight |
+| `storyCard` | 1200 × 900 | 4:3 | Story cards, lists, related stories, homepage rails |
+| `portraitRail` | 800 × 1000 | 4:5 | Compact rails, admin lists |
+| `articleHero` | 1200 × 1500 | 4:5 | Article page header |
+
+Saving an article generates one WebP per placement from the untouched original
+and stores the exact crop used. Older records load as-is: a variant whose size
+no longer matches its placement is ignored (the original is shown centered
+until the article is saved again), and a crop saved for another ratio is
+re-fitted around its center. Changing a placement size therefore needs no
+migration — re-saving an article regenerates its files.
+
+## Tests
+
+```bash
+npm test
+```
+
+Runs `node:test` directly on the TypeScript sources (cover placements,
+legacy cover metadata, and Sharp rendering).
+
 ## Database migrations
 
 ```bash
