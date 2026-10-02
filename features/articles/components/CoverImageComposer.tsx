@@ -263,7 +263,7 @@ export function CoverImageComposer({
         </header>
 
         <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_21rem] lg:overflow-hidden">
-          <main className="min-h-0 bg-[#111] p-3 sm:p-5 lg:p-7">
+          <main className="bg-[#111] p-3 sm:p-5 lg:min-h-0 lg:p-7">
             <div
               className="cover-crop-stage relative h-[clamp(20rem,57dvh,43rem)] min-h-[20rem] w-full overflow-hidden bg-[#181818]"
               onContextMenu={(event) => event.preventDefault()}
