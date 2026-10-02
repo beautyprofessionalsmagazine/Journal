@@ -5,9 +5,12 @@ import {
   getFeaturedArticle,
   listPublishedArticles,
 } from "@/features/articles/server/article-queries";
+import { ArticleCoverImage } from "@/features/articles/components/ArticleCoverImage";
 import type { Article } from "@/features/articles/types/article";
-import type { CoverImagePlacement } from "@/features/articles/lib/cover-image-settings";
-import { HomeStoryImage } from "@/features/home/components/HomeStoryImage";
+import {
+  coverFrameProps,
+  type CoverImagePlacement,
+} from "@/features/articles/lib/cover-placements";
 
 export async function HomeEditorialLead() {
   const [featuredArticle, publishedArticles] = await Promise.all([
@@ -68,9 +71,12 @@ function FeaturedStory({ article }: { article: Article }) {
       className="home-feature relative min-w-0 border-b border-black bg-[#e9e5de] lg:min-h-[42rem] lg:border-b-0"
       data-motion-managed
     >
+      {/* Desktop fills the lead panel, whose height follows the headline and
+          the recent-stories rail; it stays close to 4:3 at common widths. */}
       <Link
+        {...coverFrameProps("homepageFeature")}
         aria-label={`Read ${article.title}`}
-        className="home-feature-media focus-ring group relative block aspect-[4/3] overflow-hidden lg:absolute lg:inset-0 lg:aspect-auto"
+        className="home-feature-media focus-ring group relative block overflow-hidden lg:absolute lg:inset-0 lg:aspect-auto"
         data-motion-feature-media
         data-motion-story-hover
         href={href}
@@ -140,7 +146,8 @@ function RecentStories({ articles }: { articles: Article[] }) {
           key={article.id}
         >
           <Link
-            className="focus-ring relative block aspect-[4/3] overflow-hidden bg-[#eceae4] lg:aspect-[1.1/1]"
+            {...coverFrameProps("storyCard")}
+            className="focus-ring relative block overflow-hidden bg-[#eceae4]"
             href={`/articles/${article.slug}`}
           >
             <StoryImage
@@ -205,7 +212,8 @@ function StoryCard({ article, compact }: { article: Article; compact: boolean })
   return (
     <article className="group min-w-0" data-reveal data-motion-story-hover>
       <Link
-        className={`focus-ring relative block overflow-hidden bg-[#eceae4] ${compact ? "aspect-[16/9]" : "aspect-[4/3]"}`}
+        {...coverFrameProps("storyCard")}
+        className="focus-ring relative block overflow-hidden bg-[#eceae4]"
         href={href}
       >
         <StoryImage
@@ -257,6 +265,8 @@ function SpotlightStory({ article, dark }: { article: Article; dark: boolean }) 
         data-reveal
         data-motion-story-hover
       >
+        {/* A background behind the copy: the panel's height follows the
+            text, so this is the one place a frame cannot hold a ratio. */}
         <StoryImage
           article={article}
           placement="homepageFeature"
@@ -277,7 +287,11 @@ function SpotlightStory({ article, dark }: { article: Article; dark: boolean }) 
       <div className="relative z-10 flex items-center">
         <SpotlightCopy article={article} href={href} />
       </div>
-      <Link className="focus-ring relative min-h-80 overflow-hidden" href={href}>
+      <Link
+        {...coverFrameProps("storyCard")}
+        className="focus-ring relative w-full self-center overflow-hidden"
+        href={href}
+      >
         <StoryImage
           article={article}
           placement="storyCard"
@@ -366,13 +380,18 @@ function StoryImage({
   sizes: string;
 }) {
   return (
-    <HomeStoryImage
+    <ArticleCoverImage
       alt={article.coverImage?.alt || article.title}
-      category={article.category}
+      className="story-image"
+      coverImage={article.coverImage}
+      fallback={
+        <span className="absolute inset-0 flex items-center justify-center bg-[#eceae4] [font-family:var(--font-editorial-title)] text-[clamp(4rem,12vw,9rem)] font-bold text-black/12">
+          {article.category.charAt(0)}
+        </span>
+      }
       placement={placement}
       priority={priority}
       sizes={sizes}
-      coverImage={article.coverImage}
     />
   );
 }

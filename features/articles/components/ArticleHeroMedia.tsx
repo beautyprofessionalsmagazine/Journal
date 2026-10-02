@@ -1,16 +1,7 @@
-import Image from "next/image";
-
+import { ArticleCoverImage } from "@/features/articles/components/ArticleCoverImage";
 import type { Article } from "@/features/articles/types/article";
-import { getCoverImageSource } from "@/features/articles/lib/cover-image-settings";
+import { coverFrameProps } from "@/features/articles/lib/cover-placements";
 import { cn } from "@/shared/lib/cn";
-
-/*
- * Below lg the media sits in its own row with no shared height to fill, so it
- * keeps a fixed ratio there. At lg+ it lives beside the headline column in a
- * stretched grid row and instead fills that row's full height edge to edge,
- * so the frame never shows matting above or below the photo.
- */
-const HERO_ASPECT_RATIO = "aspect-[3/2] lg:aspect-auto lg:h-full";
 
 type ArticleHeroMediaProps = {
   article: Article;
@@ -20,6 +11,11 @@ type ArticleHeroMediaProps = {
   sizes: string;
 };
 
+/**
+ * The article-page cover. It keeps the articleHero ratio at every breakpoint:
+ * it used to stretch to the headline column on desktop, which turned a
+ * landscape file into a tall sliver and cropped most of the photo away.
+ */
 export function ArticleHeroMedia({
   article,
   className,
@@ -27,41 +23,35 @@ export function ArticleHeroMedia({
   priority = false,
   sizes,
 }: ArticleHeroMediaProps) {
-  const coverImageSource = getCoverImageSource(article.coverImage, "articleHero");
-
   return (
     <div
+      {...coverFrameProps("articleHero")}
       className={cn(
         "relative w-full min-w-0 overflow-hidden bg-[#eceae4]",
-        HERO_ASPECT_RATIO,
         className,
       )}
     >
-      {coverImageSource ? (
-        <Image
-          alt={article.coverImage?.alt || article.title}
-          className={cn(
-            "object-cover object-center",
-            imageClassName,
-          )}
-          fill
-          priority={priority}
-          sizes={sizes}
-          src={coverImageSource}
-        />
-      ) : (
-        <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-          <span
-            aria-hidden="true"
-            className="[font-family:var(--font-editorial-title)] text-[clamp(5rem,14vw,11rem)] font-bold leading-none text-black/10"
-          >
-            {article.category.charAt(0)}
-          </span>
-          <span className="editorial-kicker mt-2 text-black/40">
-            Cover image forthcoming
-          </span>
-        </div>
-      )}
+      <ArticleCoverImage
+        alt={article.coverImage?.alt || article.title}
+        className={imageClassName}
+        coverImage={article.coverImage}
+        fallback={
+          <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+            <span
+              aria-hidden="true"
+              className="[font-family:var(--font-editorial-title)] text-[clamp(5rem,14vw,11rem)] font-bold leading-none text-black/10"
+            >
+              {article.category.charAt(0)}
+            </span>
+            <span className="editorial-kicker mt-2 text-black/40">
+              Cover image forthcoming
+            </span>
+          </div>
+        }
+        placement="articleHero"
+        priority={priority}
+        sizes={sizes}
+      />
     </div>
   );
 }

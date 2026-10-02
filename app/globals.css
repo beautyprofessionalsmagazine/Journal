@@ -28,6 +28,17 @@
   box-sizing: border-box;
 }
 
+/*
+ * Cover frames take their ratio from the shared placement config through
+ * coverFrameProps(). Layered so a text-driven layout can still opt out with a
+ * utility such as lg:aspect-auto.
+ */
+@layer components {
+  [data-cover-placement] {
+    aspect-ratio: var(--cover-aspect);
+  }
+}
+
 html {
   background: var(--background);
   color: var(--foreground);
@@ -124,7 +135,7 @@ body::-webkit-scrollbar-thumb:hover,
 
 .cover-cropper-media,
 .cover-cropper img,
-.cover-cropper-preview img {
+.cover-cropper-preview-media {
   -webkit-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
@@ -135,8 +146,7 @@ body::-webkit-scrollbar-thumb:hover,
   color: rgba(0, 0, 0, 0.58) !important;
 }
 
-.cover-cropper-preview,
-.cover-cropper-preview-frame {
+.cover-cropper-preview-media {
   pointer-events: none;
 }
 

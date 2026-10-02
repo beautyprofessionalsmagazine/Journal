@@ -61,13 +61,15 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
             </div>
 
             <div
-              className="reveal reveal-delay-1 min-w-0"
+              // A portrait cover at full tablet width would push the story
+              // below the fold, so the stacked layout caps its width.
+              className="reveal reveal-delay-1 min-w-0 max-w-xl lg:max-w-none"
               suppressHydrationWarning
             >
               <ArticleHeroMedia
                 article={article}
                 priority
-                sizes="(min-width: 1440px) 520px, (min-width: 1024px) 38vw, 100vw"
+                sizes="(min-width: 1440px) 520px, (min-width: 1024px) 38vw, (min-width: 640px) 576px, 100vw"
               />
             </div>
           </div>
