@@ -295,9 +295,11 @@ export function CoverImageUploader({
       >
         {displayPreviewUrl ? (
           <div className="relative aspect-[4/3] w-full">
+            {/* The untouched original, shown whole: crops are set per
+                placement in the crop editor, not implied by this preview. */}
             <Image
               alt=""
-              className="object-cover"
+              className="object-contain"
               fill
               onError={handlePreviewError}
               sizes="(min-width: 1280px) 304px, 100vw"

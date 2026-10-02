@@ -1,9 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { ArticleCoverImage } from "@/features/articles/components/ArticleCoverImage";
 import { ArticleMetadata } from "@/features/articles/components/ArticleMetadata";
 import type { Article } from "@/features/articles/types/article";
-import { getCoverImageSource } from "@/features/articles/lib/cover-image-settings";
+import {
+  coverFrameProps,
+  type CoverImagePlacement,
+} from "@/features/articles/lib/cover-placements";
 import { cn } from "@/shared/lib/cn";
 
 export type ArticleCardVariant = "primary" | "standard" | "compact";
@@ -24,12 +27,11 @@ export function ArticleCard({
   const href = `/articles/${article.slug}`;
   const isCompact = variant === "compact";
   const isPrimary = variant === "primary";
-  const imagePlacement = isCompact
+  const imagePlacement: CoverImagePlacement = isCompact
     ? "portraitRail"
     : isPrimary
       ? "homepageFeature"
       : "storyCard";
-  const coverImageSource = getCoverImageSource(article.coverImage, imagePlacement);
 
   return (
     <article
@@ -44,40 +46,37 @@ export function ArticleCard({
       suppressHydrationWarning
     >
       <Link
-        className={cn(
-          "focus-ring relative block overflow-hidden bg-[#eceae4]",
-          isCompact ? "aspect-[4/5]" : isPrimary ? "aspect-[16/9]" : "aspect-[4/3]",
-        )}
+        {...coverFrameProps(imagePlacement)}
+        className="focus-ring relative block overflow-hidden bg-[#eceae4]"
         href={href}
       >
-        {coverImageSource ? (
-          <Image
-            alt={article.coverImage?.alt || article.title}
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-            fill
-            priority={priority}
-            sizes={
-              isCompact
-                ? "104px"
-                : isPrimary
-                  ? "(min-width: 1280px) 62vw, (min-width: 768px) 66vw, 100vw"
-                  : "(min-width: 1280px) 29vw, (min-width: 768px) 47vw, 100vw"
-            }
-            src={coverImageSource}
-          />
-        ) : (
-          <span className="flex h-full flex-col items-center justify-center gap-2 border border-black/10 px-3 text-center">
-            <span
-              aria-hidden="true"
-              className="[font-family:var(--font-editorial-title)] text-[clamp(3rem,10vw,7rem)] font-bold leading-none text-black/12"
-            >
-              {article.category.charAt(0)}
+        <ArticleCoverImage
+          alt={article.coverImage?.alt || article.title}
+          className="transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+          coverImage={article.coverImage}
+          fallback={
+            <span className="flex h-full flex-col items-center justify-center gap-2 border border-black/10 px-3 text-center">
+              <span
+                aria-hidden="true"
+                className="[font-family:var(--font-editorial-title)] text-[clamp(3rem,10vw,7rem)] font-bold leading-none text-black/12"
+              >
+                {article.category.charAt(0)}
+              </span>
+              <span className="editorial-kicker text-black/42">
+                Image forthcoming
+              </span>
             </span>
-            <span className="editorial-kicker text-black/42">
-              Image forthcoming
-            </span>
-          </span>
-        )}
+          }
+          placement={imagePlacement}
+          priority={priority}
+          sizes={
+            isCompact
+              ? "104px"
+              : isPrimary
+                ? "(min-width: 1280px) 62vw, (min-width: 768px) 66vw, 100vw"
+                : "(min-width: 1280px) 29vw, (min-width: 768px) 47vw, 100vw"
+          }
+        />
       </Link>
 
       <div

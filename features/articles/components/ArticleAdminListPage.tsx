@@ -1,8 +1,7 @@
-import Image from "next/image";
-
 import { AdminLayout } from "@/features/admin";
+import { ArticleCoverImage } from "@/features/articles/components/ArticleCoverImage";
+import { coverFrameProps } from "@/features/articles/lib/cover-placements";
 import { listArticles } from "@/features/articles/server/article-queries";
-import { getCoverImageSource } from "@/features/articles/lib/cover-image-settings";
 import { ButtonLink, EmptyState } from "@/shared/components/ui";
 
 export async function ArticleAdminListPage() {
@@ -41,20 +40,21 @@ export async function ArticleAdminListPage() {
             {articles.map((article) => (
               <article className="py-6" data-reveal key={article.id} suppressHydrationWarning>
                 <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#eceae4]">
-                    {article.coverImage ? (
-                      <Image
-                        alt={article.coverImage?.alt || article.title}
-                        className="object-cover"
-                        fill
-                        sizes="88px"
-                        src={getCoverImageSource(article.coverImage, "portraitRail")!}
-                      />
-                    ) : (
-                      <span className="flex h-full items-center justify-center [font-family:var(--font-editorial-title)] text-5xl font-bold text-black/15">
-                        {article.category.charAt(0)}
-                      </span>
-                    )}
+                  <div
+                    {...coverFrameProps("portraitRail")}
+                    className="relative overflow-hidden bg-[#eceae4]"
+                  >
+                    <ArticleCoverImage
+                      alt={article.coverImage?.alt || article.title}
+                      coverImage={article.coverImage}
+                      fallback={
+                        <span className="flex h-full items-center justify-center [font-family:var(--font-editorial-title)] text-5xl font-bold text-black/15">
+                          {article.category.charAt(0)}
+                        </span>
+                      }
+                      placement="portraitRail"
+                      sizes="88px"
+                    />
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -127,16 +127,17 @@ export async function ArticleAdminListPage() {
                 <tr className="border-b border-black/10 align-top" key={article.id}>
                   <td className="px-4 py-4">
                     <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-4">
-                      <div className="relative h-[72px] w-[72px] overflow-hidden border border-black/10 bg-black/[0.03]">
-                        {article.coverImage ? (
-                          <Image
-                            alt={article.coverImage?.alt || article.title}
-                            className="object-cover"
-                            fill
-                            sizes="72px"
-                            src={getCoverImageSource(article.coverImage, "storyCard")!}
-                          />
-                        ) : null}
+                      <div
+                        {...coverFrameProps("portraitRail")}
+                        className="relative w-[72px] overflow-hidden border border-black/10 bg-black/[0.03]"
+                      >
+                        <ArticleCoverImage
+                          alt={article.coverImage?.alt || article.title}
+                          coverImage={article.coverImage}
+                          fallback={null}
+                          placement="portraitRail"
+                          sizes="72px"
+                        />
                       </div>
                       <div>
                         <p className="[font-family:var(--font-editorial-title)] text-xl font-bold leading-tight">
