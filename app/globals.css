@@ -28,6 +28,17 @@
   box-sizing: border-box;
 }
 
+/*
+ * Cover frames take their ratio from the shared placement config through
+ * coverFrameProps(). Layered so a text-driven layout can still opt out with a
+ * utility such as lg:aspect-auto.
+ */
+@layer components {
+  [data-cover-placement] {
+    aspect-ratio: var(--cover-aspect);
+  }
+}
+
 html {
   background: var(--background);
   color: var(--foreground);
