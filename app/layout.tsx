@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
 
 import { MotionProvider } from "@/shared/components/ui";
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" data-scroll-behavior="smooth">
       <body>
         <MotionProvider>{children}</MotionProvider>
+        <Analytics />
       </body>
     </html>
   );
