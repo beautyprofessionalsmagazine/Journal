@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
+
 import { ButtonLink } from "@/shared/components/ui";
+
+// Next.js adds `noindex` to not-found responses itself; only the title is set.
+export const metadata: Metadata = {
+  title: "Page not found",
+};
 
 export default function NotFound() {
   return (

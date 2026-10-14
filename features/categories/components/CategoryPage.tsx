@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
 import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
+import { getCategoryJsonLd } from "@/features/categories/seo/category-seo";
 import { getCategoryBySlug } from "@/features/categories/server/categories";
+import { JsonLd } from "@/shared/components/seo/JsonLd";
 
 type CategoryPageProps = {
   filters?: PublishedArticleFilters;
@@ -18,6 +20,7 @@ export function CategoryPage({ filters, slug }: CategoryPageProps) {
 
   return (
     <main className="bg-white">
+      <JsonLd data={getCategoryJsonLd(category)} />
       <section className="site-container py-[var(--section-space)]">
         <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end" suppressHydrationWarning>
           <div>

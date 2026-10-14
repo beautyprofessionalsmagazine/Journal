@@ -1,5 +1,7 @@
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
 import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
+import { JsonLd } from "@/shared/components/seo/JsonLd";
+import { pageJsonLd } from "@/shared/seo/json-ld";
 
 type ArticlesPageProps = {
   filters?: PublishedArticleFilters;
@@ -8,6 +10,15 @@ type ArticlesPageProps = {
 export function ArticlesPage({ filters }: ArticlesPageProps) {
   return (
     <main className="bg-white">
+      <JsonLd
+        data={pageJsonLd({
+          path: "/articles",
+          name: "Articles",
+          description:
+            "Interviews, professional notes, culture stories, and style coverage from Beauty Professionals Magazine.",
+          type: "CollectionPage",
+        })}
+      />
       <section className="site-container py-[var(--section-space)]">
         <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end" suppressHydrationWarning>
           <div>

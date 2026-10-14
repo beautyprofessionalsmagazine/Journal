@@ -46,7 +46,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
   return (
     <main className="overflow-x-clip bg-[#f7f5f0]">
       <section className="relative overflow-hidden border-b border-black/12 bg-[radial-gradient(circle_at_72%_24%,rgba(184,155,98,0.2),transparent_32%),linear-gradient(108deg,#f7f4ed_0%,#ebe6dc_100%)]">
-        <div className="absolute inset-0 opacity-[0.16] [background-image:url('/images/journal-bg.PNG')] [background-size:100%_auto]" />
+        <div className="absolute inset-0 opacity-[0.16] [background-image:url('/images/journal-bg.webp')] [background-size:100%_auto]" />
         <div className="site-container relative grid min-h-[clamp(35rem,72vh,50rem)] items-center gap-10 py-[clamp(3rem,7vw,7rem)] lg:grid-cols-[minmax(0,0.9fr)_minmax(23rem,0.72fr)]">
           <div className="relative z-10 max-w-3xl" data-reveal>
             <p className="editorial-kicker text-[var(--champagne-dark)]">

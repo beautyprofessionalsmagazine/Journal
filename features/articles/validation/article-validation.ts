@@ -226,12 +226,18 @@ const createArticleInputSchema = z
   });
 
 export function normalizeSlug(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-");
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      // Apostrophes are dropped, not turned into hyphens: "men's" becomes
+      // "mens", not "men-s". Existing slugs are hyphenated already, so
+      // normalizing them again changes nothing.
+      .replace(/['‘’ʼ`´]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-{2,}/g, "-")
+  );
 }
 
 // Builds the blob pathname for a client-side cover upload. The server adds a

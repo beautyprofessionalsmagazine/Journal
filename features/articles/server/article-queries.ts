@@ -4,12 +4,14 @@ import {
   arrayOverlaps,
   desc,
   eq,
+  getTableColumns,
   ilike,
   ne,
   or,
   sql,
   type SQL,
 } from "drizzle-orm";
+import { cache } from "react";
 
 import { articlesTable } from "@/features/articles/db/article-schema";
 import type {
@@ -17,6 +19,18 @@ import type {
   ArticleStatus,
 } from "@/features/articles/types/article";
 import { db } from "@/shared/lib/db";
+
+/**
+ * Columns for listing surfaces (home, archive, category and related rails).
+ * Cards never render the body, and `content_json` is by far the heaviest
+ * column, so list queries skip it and hand back `null` in its place. That keeps
+ * the `Article` shape intact without shipping every article's full body from
+ * the database on every list request.
+ */
+const articleListSelection = {
+  ...getTableColumns(articlesTable),
+  contentJson: sql<null>`null`,
+};
 
 export type ArticleSort = "latest" | "popular";
 
@@ -96,7 +110,7 @@ export async function listPublishedArticles(
       ? [desc(articlesTable.views), desc(articlesTable.publishedAt)]
       : [desc(articlesTable.publishedAt), desc(articlesTable.createdAt)];
   const queryBuilder = db
-    .select()
+    .select(articleListSelection)
     .from(articlesTable)
     .where(and(...conditions))
     .orderBy(...orderBy);
@@ -108,22 +122,27 @@ export async function listPublishedArticles(
   return queryBuilder;
 }
 
-export async function getPublishedArticleBySlug(
-  slug: string,
-): Promise<Article | null> {
-  const [article] = await db
-    .select()
-    .from(articlesTable)
-    .where(
-      and(
-        eq(articlesTable.slug, slug),
-        eq(articlesTable.status, "published"),
-      ),
-    )
-    .limit(1);
+/**
+ * `cache` de-duplicates this lookup within one render: both `generateMetadata`
+ * and the page component ask for the same article, and this way the database
+ * is queried once.
+ */
+export const getPublishedArticleBySlug = cache(
+  async (slug: string): Promise<Article | null> => {
+    const [article] = await db
+      .select()
+      .from(articlesTable)
+      .where(
+        and(
+          eq(articlesTable.slug, slug),
+          eq(articlesTable.status, "published"),
+        ),
+      )
+      .limit(1);
 
-  return article ?? null;
-}
+    return article ?? null;
+  },
+);
 
 export async function getFeaturedArticle(): Promise<Article | null> {
   const [article] = await listPublishedArticles({
@@ -147,7 +166,7 @@ export async function getRelatedArticles(
       : eq(articlesTable.category, article.category);
 
   return db
-    .select()
+    .select(articleListSelection)
     .from(articlesTable)
     .where(
       and(
@@ -158,6 +177,23 @@ export async function getRelatedArticles(
     )
     .orderBy(desc(articlesTable.publishedAt), desc(articlesTable.views))
     .limit(limit);
+}
+
+/**
+ * What the sitemap needs per published article, newest first. Selects only
+ * the columns it reads, so building the sitemap never loads article bodies.
+ */
+export async function listPublishedArticleSitemapEntries() {
+  return db
+    .select({
+      slug: articlesTable.slug,
+      category: articlesTable.category,
+      coverImage: articlesTable.coverImage,
+      updatedAt: articlesTable.updatedAt,
+    })
+    .from(articlesTable)
+    .where(eq(articlesTable.status, "published"))
+    .orderBy(desc(articlesTable.publishedAt), desc(articlesTable.createdAt));
 }
 
 export async function getPublishedArticleFilterOptions() {

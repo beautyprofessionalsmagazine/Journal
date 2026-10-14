@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "generate:map": "node scripts/generate-us-map.mjs features/distribution/data/us-state-shapes.ts",
-    "test": "node --import ./scripts/test-resolve-hooks.mjs --test \"features/**/*.test.ts\""
+    "generate:seo-assets": "node scripts/generate-seo-assets.mjs",
+    "seo:check": "node scripts/seo-check.mjs",
+    "test": "node --import ./scripts/test-resolve-hooks.mjs --test \"features/**/*.test.ts\" \"shared/**/*.test.ts\""
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

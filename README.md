@@ -112,6 +112,50 @@ until the article is saved again), and a crop saved for another ratio is
 re-fitted around its center. Changing a placement size therefore needs no
 migration — re-saving an article regenerates its files.
 
+## SEO
+
+All search-engine logic lives in `shared/seo/` (generic) and in each feature's
+`seo/` folder (page-specific). Pages do not hand-write `<head>` tags.
+
+| Concern | Where |
+| --- | --- |
+| Canonical origin, brand name, ISSN, logo, share image | `shared/seo/site.ts` |
+| Title, description, canonical, robots, Open Graph, Twitter | `buildPageMetadata()` in `shared/seo/metadata.ts` |
+| JSON-LD (Organization, WebSite, Article, BreadcrumbList ...) | `shared/seo/json-ld.ts`, rendered by `<JsonLd>` |
+| Fixed pages, and whether each is indexable | `shared/seo/pages.ts` |
+| `robots.txt`, `sitemap.xml`, `feed.xml` | `app/robots.ts`, `app/sitemap.ts`, `app/feed.xml/route.ts` |
+| Article metadata and structured data | `features/articles/seo/article-seo.ts` |
+| Cache refresh when an article changes | `features/articles/server/article-revalidation.ts` |
+
+Rules worth knowing:
+
+- **Placeholder pages are `noindex`.** A page whose copy is still "coming soon"
+  has `indexable: false` in `shared/seo/pages.ts`; it is excluded from the
+  sitemap. Flip the flag to `true` when the page has real content.
+- **Filtered views are `noindex`.** `?q=`, `?tag=`, `?category=` and
+  `?sort=popular` never carry a canonical of their own.
+- **Do not add `loading.tsx` to public routes.** It wraps the page in a
+  Suspense boundary, so the server HTML contains only a skeleton and the real
+  content sits in a hidden block that JavaScript reveals. Crawlers that do not
+  run JavaScript, and 404 status codes, depend on the content being inline.
+- **A new fixed page** needs an entry in `STATIC_PAGES`, an exported
+  `metadata = getStaticPageMetadata("key")`, and nothing else; the sitemap
+  picks it up.
+- Optional environment variables are listed in `.env.example`
+  (`NEXT_PUBLIC_SITE_URL`, `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`).
+
+```bash
+npm run seo:check -- https://beautyprofessionalsmagazine.com   # audit a live URL
+npm run seo:check                                              # audit http://localhost:3000
+npm run generate:seo-assets   # rebuild favicon, share image and background texture
+```
+
+`seo:check` fetches `robots.txt`, the sitemap and every URL it lists, and
+asserts status codes, canonicals, robots directives, titles, headings,
+structured data and that the content is present without JavaScript. Run it
+against a preview deployment before promoting it. The full audit and roadmap
+are in [`docs/SEO_AUDIT.md`](docs/SEO_AUDIT.md).
+
 ## Tests
 
 ```bash
@@ -119,7 +163,8 @@ npm test
 ```
 
 Runs `node:test` directly on the TypeScript sources (cover placements,
-legacy cover metadata, and Sharp rendering).
+legacy cover metadata, Sharp rendering, and the SEO modules: metadata,
+structured data, sitemap, robots, feed, slugs and indexing rules).
 
 ## Database migrations
 

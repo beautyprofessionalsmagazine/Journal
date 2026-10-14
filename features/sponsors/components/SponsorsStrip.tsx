@@ -149,12 +149,11 @@ export function SponsorsStrip() {
                     alt={sponsor.name}
                     className="object-contain"
                     fill
-                    unoptimized
-                    sizes={
-                      sponsor.id === "ibpa"
-                        ? "(min-width: 640px) 1024px, 512px"
-                        : "(min-width: 640px) 512px, 256px"
-                    }
+                    // Each logo sits in a third of a 56rem strip (about 300px at
+                    // most) and is scaled by at most 1.65 in globals.css. The IBPA
+                    // logo used to ask for twice this, a leftover from when it was
+                    // scaled by 5x; it no longer needs a larger rendition.
+                    sizes="(min-width: 640px) 512px, 256px"
                     src={sponsor.logo}
                   />
                 </div>

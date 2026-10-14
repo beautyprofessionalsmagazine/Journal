@@ -11,6 +11,7 @@ import {
   getArticleById,
   getArticleBySlug,
 } from "@/features/articles/server/article-queries";
+import { revalidateArticleSurfaces } from "@/features/articles/server/article-revalidation";
 import { generateCoverImageVariants } from "@/features/articles/server/cover-image-generation";
 import { createCoverImageData } from "@/features/articles/lib/cover-image-settings";
 import type {
@@ -148,6 +149,9 @@ export async function createArticleAction(
     };
   }
 
+  // Creating a published article must refresh the public home, listings,
+  // sitemap and feed too; previously only the admin pages were revalidated.
+  revalidateArticleSurfaces(article.slug);
   revalidatePath("/admin/articles");
   revalidatePath("/admin/articles/create");
   revalidatePath(`/admin/articles/${article.id}/edit`);
@@ -257,6 +261,9 @@ export async function updateArticleAction(
   }
 
   let article: Article;
+  // The slug the article had before this edit, so a slug change can also
+  // refresh the old URL.
+  const previousSlug = (await getArticleById(id))?.slug;
 
   try {
     article = await updateArticle(id, getArticleInputFromFormData(formData));
@@ -284,11 +291,9 @@ export async function updateArticleAction(
     };
   }
 
-  revalidatePath("/");
-  revalidatePath("/articles");
+  revalidateArticleSurfaces(article.slug, previousSlug);
   revalidatePath("/admin");
   revalidatePath("/admin/articles");
-  revalidatePath(`/articles/${article.slug}`);
   revalidatePath(`/admin/articles/${article.id}/edit`);
   redirect(`/admin/articles/${article.id}/edit?saved=1`);
 }

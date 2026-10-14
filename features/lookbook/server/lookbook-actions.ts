@@ -58,6 +58,7 @@ export async function saveLookbookAction(
     }
 
     revalidatePath("/lookbook");
+    revalidatePath("/sitemap.xml");
     revalidatePath("/admin/lookbook");
 
     return {
@@ -109,6 +110,7 @@ export async function removeLookbookAction(
       );
     await deleteStoredPdf(current.fileUrl);
     revalidatePath("/lookbook");
+    revalidatePath("/sitemap.xml");
     revalidatePath("/admin/lookbook");
 
     return {

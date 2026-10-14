@@ -15,7 +15,10 @@ import {
 export async function HomeEditorialLead() {
   const [featuredArticle, publishedArticles] = await Promise.all([
     getFeaturedArticle(),
-    listPublishedArticles({ sort: "latest" }),
+    // The page shows 13 stories besides the cover story; one extra covers the
+    // case where the cover story is also among the newest, so the query no
+    // longer pulls every published article on each render.
+    listPublishedArticles({ sort: "latest", limit: 14 }),
   ]);
 
   const remainingArticles = publishedArticles.filter(
@@ -101,7 +104,8 @@ function FeaturedStory({ article }: { article: Article }) {
         <p className="editorial-kicker text-[var(--champagne-dark)]">
           {article.category}
         </p>
-        <h1
+        {/* An <h2>: the page's <h1> names the publication (see HomePage). */}
+        <h2
           className={`${getFeatureHeadlineClass(article.title)} mt-3 [overflow-wrap:break-word] [font-family:var(--font-editorial-title)] font-bold tracking-[-0.048em]`}
         >
           <Link
@@ -110,7 +114,7 @@ function FeaturedStory({ article }: { article: Article }) {
           >
             {article.title}
           </Link>
-        </h1>
+        </h2>
         {article.description ? (
           <p className="mt-5 max-w-[31rem] text-[clamp(0.95rem,1.25vw,1.08rem)] leading-7 text-black/68">
             {article.description}
@@ -331,6 +335,9 @@ function SpotlightCopy({
         href={href}
       >
         Read more
+        {/* Distinguishes this link from its siblings for search engines and
+            screen readers; "Read more" alone is not descriptive link text. */}
+        <span className="sr-only"> about {article.title}</span>
         <ArrowRight aria-hidden="true" size={14} />
       </Link>
     </div>
@@ -361,9 +368,9 @@ function EmptyEditorialDesk() {
   return (
     <section className="site-container py-[var(--section-space)] text-center">
       <p className="editorial-kicker text-black/45">From the editorial desk</p>
-      <h1 className="mx-auto mt-4 max-w-4xl [font-family:var(--font-editorial-title)] text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.88] tracking-[-0.05em]">
+      <h2 className="mx-auto mt-4 max-w-4xl [font-family:var(--font-editorial-title)] text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.88] tracking-[-0.05em]">
         The next cover story is being prepared.
-      </h1>
+      </h2>
     </section>
   );
 }
