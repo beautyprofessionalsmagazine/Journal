@@ -55,6 +55,13 @@ describe("cover placements", () => {
     const { width, height } = COVER_PLACEMENTS.articleHero;
     assert.ok(width < height);
   });
+
+  it("gives social and Discover previews an editor-controlled 16:9 image", () => {
+    const { width, height } = COVER_PLACEMENTS.socialShare;
+    assert.equal(width / height, 16 / 9);
+    assert.ok(width >= 1200);
+    assert.ok(width * height > 300_000);
+  });
 });
 
 describe("crop geometry", () => {

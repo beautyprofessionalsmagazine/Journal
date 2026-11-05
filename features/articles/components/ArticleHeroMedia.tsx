@@ -43,7 +43,7 @@ export function ArticleHeroMedia({
             >
               {article.category.charAt(0)}
             </span>
-            <span className="editorial-kicker mt-2 text-black/40">
+            <span className="editorial-kicker mt-2 text-black/60">
               Cover image forthcoming
             </span>
           </div>

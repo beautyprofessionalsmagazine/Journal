@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { getArticleDates } from "@/features/articles/lib/article-dates";
 import {
   normalizeCoverImageData,
   normalizeCoverImageSettings,
@@ -64,12 +65,13 @@ function getGeneratedCover(
 /**
  * The cover images search and social platforms may use.
  *
- * - `share`: the 4:3 homepage-feature rendition (1600 x 1200). It is wider
- *   than the 1200 px Google Discover asks for and crops cleanly to the 1.91:1
- *   link-preview frame. Falls back to the untouched original upload.
+ * - `share`: the dedicated 16:9 rendition (1600 x 900), framed by an editor
+ *   for wide social cards and Google Discover. It is wider than the 1200 px
+ *   Discover minimum. Legacy records fall back to the 4:3 homepage feature,
+ *   then to the untouched original upload.
  * - `structured`: every distinct rendition for Article JSON-LD, so Google can
- *   pick the aspect ratio it needs (4:3 and 4:5 are generated; the original
- *   covers whatever else the editor uploaded).
+ *   pick the aspect ratio it needs (16:9, 4:3 and 4:5 are generated; the
+ *   original covers whatever else the editor uploaded).
  */
 export function getArticleImages(
   article: Pick<SeoArticle, "coverImage" | "title">,
@@ -84,12 +86,19 @@ export function getArticleImages(
   }
 
   const alt = cover.alt || article.title;
+  const social = getGeneratedCover(article, "socialShare");
   const feature = getGeneratedCover(article, "homepageFeature");
   const hero = getGeneratedCover(article, "articleHero");
-  const share: SeoImage = feature
-    ? { url: feature.url, width: feature.width, height: feature.height, alt }
+  const shareImage = social ?? feature;
+  const share: SeoImage = shareImage
+    ? {
+        url: shareImage.url,
+        width: shareImage.width,
+        height: shareImage.height,
+        alt,
+      }
     : { url: cover.src, alt };
-  const structured = [feature?.url, hero?.url, cover.src].filter(
+  const structured = [social?.url, feature?.url, hero?.url, cover.src].filter(
     (url): url is string => Boolean(url),
   );
 
@@ -110,6 +119,7 @@ export function getArticleDescription(article: SeoArticle): string {
 export function getArticleMetadata(article: SeoArticle): Metadata {
   const { share } = getArticleImages(article);
   const authorName = getAuthorName(article.author);
+  const dates = getArticleDates(article);
 
   return buildPageMetadata({
     title: article.title,
@@ -118,8 +128,8 @@ export function getArticleMetadata(article: SeoArticle): Metadata {
     image: share,
     type: "article",
     article: {
-      publishedTime: article.publishedAt ?? article.createdAt,
-      modifiedTime: article.updatedAt,
+      publishedTime: dates.published,
+      modifiedTime: dates.modified,
       authors: authorName ? [authorName] : undefined,
       section: article.category,
       tags: article.tags,
@@ -140,6 +150,7 @@ export function getArticleJsonLd(
   const path = getArticlePath(article.slug);
   const { structured } = getArticleImages(article);
   const description = getArticleDescription(article);
+  const dates = getArticleDates(article);
   const nodes: JsonLdNode[] = [
     organizationNode(),
     webSiteNode(),
@@ -157,8 +168,8 @@ export function getArticleJsonLd(
       images: structured.map((url) => absoluteUrl(url)),
       // An article published without a date still has a creation date; using
       // it is closer to the truth than leaving datePublished out.
-      datePublished: article.publishedAt ?? article.createdAt,
-      dateModified: article.updatedAt,
+      datePublished: dates.published,
+      dateModified: dates.modified,
       authorName: getAuthorName(article.author) || null,
       section: article.category,
       keywords: article.tags,

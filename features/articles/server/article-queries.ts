@@ -189,6 +189,10 @@ export async function listPublishedArticleSitemapEntries() {
       slug: articlesTable.slug,
       category: articlesTable.category,
       coverImage: articlesTable.coverImage,
+      // Inline images belong in the image sitemap too. This is the one listing
+      // query that intentionally reads the body; it runs only for sitemap
+      // generation, which is cached and revalidated after editorial changes.
+      contentJson: articlesTable.contentJson,
       updatedAt: articlesTable.updatedAt,
     })
     .from(articlesTable)

@@ -86,12 +86,12 @@ export function SubscriptionForm({ type, onReset }: SubscriptionFormProps) {
     <form action={formAction} className="min-w-0" noValidate>
       <div className="mb-8 flex items-end justify-between gap-4 border-b border-black pb-4">
         <div>
-          <p className="editorial-kicker text-black/42">Step two</p>
+          <p className="editorial-kicker text-black/60">Step two</p>
           <h3 className="mt-1 [font-family:var(--font-editorial-title)] text-[clamp(1.9rem,3vw,2.6rem)] font-bold leading-none tracking-[-0.03em]">
             Tell us where to send it
           </h3>
         </div>
-        <p className="hidden text-xs text-black/44 sm:block">* Required</p>
+        <p className="hidden text-xs text-black/60 sm:block">* Required</p>
       </div>
       {state.status === "error" && state.message ? (
         <div
@@ -464,7 +464,7 @@ export function SubscriptionForm({ type, onReset }: SubscriptionFormProps) {
               {type === "individual" ? (
                 <span aria-hidden="true"> *</span>
               ) : (
-                <span className="text-black/45"> (optional)</span>
+                <span className="text-black/60"> (optional)</span>
               )}
             </span>
           </label>
@@ -477,7 +477,7 @@ export function SubscriptionForm({ type, onReset }: SubscriptionFormProps) {
               {getError("emailConsent")}
             </p>
           ) : (
-            <p className="mt-2 text-xs leading-5 text-black/48">
+            <p className="mt-2 text-xs leading-5 text-black/60">
               You can unsubscribe at any time. We never share your address.
             </p>
           )}
@@ -511,7 +511,7 @@ type FieldsetHeadingProps = {
 function FieldsetHeading({ label, className }: FieldsetHeadingProps) {
   return (
     <p
-      className={`editorial-kicker mb-5 border-b border-black/15 pb-3 text-black/45 ${className ?? ""}`}
+      className={`editorial-kicker mb-5 border-b border-black/15 pb-3 text-black/60 ${className ?? ""}`}
     >
       {label}
     </p>

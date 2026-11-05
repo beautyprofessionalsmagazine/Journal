@@ -13,6 +13,9 @@ import type { CSSProperties } from "react";
  * - portraitRail: compact rail cards and the admin article list.
  * - articleHero: the article page header, which sits beside a tall headline
  *   column on desktop and therefore reads as a portrait.
+ * - socialShare: Open Graph, X/Twitter, Discover, and Article structured data.
+ *   Its dedicated 16:9 crop prevents a card or portrait crop from cutting off
+ *   the subject when platforms render a wide preview.
  */
 export const COVER_PLACEMENTS = {
   homepageFeature: {
@@ -39,6 +42,12 @@ export const COVER_PLACEMENTS = {
     width: 1200,
     height: 1500,
   },
+  socialShare: {
+    label: "Social & Discover",
+    usage: "Social previews and Google Discover",
+    width: 1600,
+    height: 900,
+  },
 } as const satisfies Record<
   string,
   { label: string; usage: string; width: number; height: number }
@@ -62,6 +71,7 @@ export const coverImagePlacementValues = [
   "storyCard",
   "portraitRail",
   "articleHero",
+  "socialShare",
 ] as const satisfies readonly CoverImagePlacement[];
 
 export const COVER_PLACEMENT_LIST: readonly CoverPlacementDefinition[] =
@@ -168,6 +178,9 @@ export function fitCropAreaToAspect(
     Math.min(sourceHeight - top, Math.round(area.height)),
   );
 
+  // Integer pixels cannot always represent a placement ratio exactly. When
+  // width is the limiting side, round height upward so the result never flips
+  // to the opposite branch and loses a pixel when the same crop is saved again.
   let width: number;
   let height: number;
   if (boundedWidth / boundedHeight > aspect) {
@@ -175,7 +188,7 @@ export function fitCropAreaToAspect(
     width = Math.max(1, Math.min(boundedWidth, Math.round(height * aspect)));
   } else {
     width = boundedWidth;
-    height = Math.max(1, Math.min(boundedHeight, Math.round(width / aspect)));
+    height = Math.max(1, Math.min(boundedHeight, Math.ceil(width / aspect)));
   }
 
   const centerX = left + boundedWidth / 2;

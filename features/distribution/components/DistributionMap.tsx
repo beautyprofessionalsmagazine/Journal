@@ -150,7 +150,7 @@ export function DistributionMap({ locations, focusId }: DistributionMapProps) {
         <div className="relative w-full md:max-w-md">
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/40"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/60"
             size={17}
           />
           <input
@@ -164,7 +164,7 @@ export function DistributionMap({ locations, focusId }: DistributionMapProps) {
           {query ? (
             <button
               aria-label="Clear search"
-              className="focus-ring absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center text-black/45 hover:text-black"
+              className="focus-ring absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center text-black/60 hover:text-black"
               onClick={() => setQuery("")}
               type="button"
             >
@@ -314,7 +314,7 @@ export function DistributionMap({ locations, focusId }: DistributionMapProps) {
         <div className="min-w-0">
           {groupedLocations.length === 0 ? (
             <div className="border border-black/15 p-[clamp(1.25rem,3vw,2rem)]">
-              <p className="editorial-kicker text-black/45">Nothing matched</p>
+              <p className="editorial-kicker text-black/60">Nothing matched</p>
               <h3 className="mt-3 [font-family:var(--font-editorial-title)] text-3xl font-bold leading-none">
                 No locations found
               </h3>
@@ -356,7 +356,7 @@ export function DistributionMap({ locations, focusId }: DistributionMapProps) {
                             className={`mt-1 shrink-0 ${
                               location.id === focusId
                                 ? "text-black"
-                                : "text-black/45"
+                                : "text-black/60"
                             }`}
                             size={15}
                           />
@@ -368,7 +368,7 @@ export function DistributionMap({ locations, focusId }: DistributionMapProps) {
                               {formatDistributionAddress(location) ||
                                 location.stateName}
                             </p>
-                            <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-black/45">
+                            <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-black/60">
                               {location.organizationType
                                 ? `${organizationTypeLabels[location.organizationType]} · Official Distribution Partner`
                                 : "Official Distribution Partner"}

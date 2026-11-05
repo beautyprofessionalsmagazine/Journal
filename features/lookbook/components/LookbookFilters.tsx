@@ -47,7 +47,7 @@ export function LookbookFilters({
         }))}
         value={String(selectedMonth)}
       />
-      <p className="text-xs leading-5 text-black/48 lg:pb-3">
+      <p className="text-xs leading-5 text-black/60 lg:pb-3">
         {months.length} {months.length === 1 ? "edition" : "editions"} in {selectedYear}
       </p>
       <button

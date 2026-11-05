@@ -77,7 +77,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang={SITE.language} data-scroll-behavior="smooth">
       <body>
         <MotionProvider>{children}</MotionProvider>
-        <Analytics />
+        {process.env.VERCEL ? <Analytics /> : null}
       </body>
     </html>
   );

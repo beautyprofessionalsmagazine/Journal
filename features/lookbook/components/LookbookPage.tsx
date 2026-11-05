@@ -110,7 +110,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
             <PdfCover eager src={selectedLookbook.fileUrl} title={selectedLabel} />
           </div>
           <div className="min-w-0 max-w-2xl">
-            <p className="editorial-kicker text-black/42">Featured edition</p>
+            <p className="editorial-kicker text-black/60">Featured edition</p>
             <h2 className="mt-3 [font-family:var(--font-editorial-title)] text-[clamp(3rem,7vw,6.5rem)] font-bold leading-[0.86] tracking-[-0.052em]">
               {selectedLabel}
             </h2>
@@ -150,12 +150,12 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
         <div className="site-container">
           <div className="flex items-end justify-between gap-5 border-b border-black pb-5">
             <div>
-              <p className="editorial-kicker text-black/42">The archive</p>
+              <p className="editorial-kicker text-black/60">The archive</p>
               <h2 className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(2.5rem,5vw,4.5rem)] font-bold leading-none tracking-[-0.04em]">
                 All editions
               </h2>
             </div>
-            <p className="text-xs text-black/45">
+            <p className="text-xs text-black/60">
               {lookbooks.length} {lookbooks.length === 1 ? "issue" : "issues"}
             </p>
           </div>
@@ -182,7 +182,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
                   <p className="mt-3 [font-family:var(--font-editorial-title)] text-xl font-bold leading-tight">
                     {label}
                   </p>
-                  <p className="mt-1 truncate text-[0.65rem] uppercase tracking-[0.08em] text-black/42">
+                  <p className="mt-1 truncate text-[0.65rem] uppercase tracking-[0.08em] text-black/60">
                     {lookbook.fileName}
                   </p>
                 </Link>

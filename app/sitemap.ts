@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { getTiptapImageUrls } from "@/features/articles/lib/article-text";
 import { getArticleImages } from "@/features/articles/seo/article-seo";
 import { listPublishedArticleSitemapEntries } from "@/features/articles/server/article-queries";
 import { categoryConfigs } from "@/features/categories/data/categories";
@@ -38,10 +39,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       slug: article.slug,
       category: article.category,
       updatedAt: article.updatedAt,
-      imageUrls: getArticleImages({
-        coverImage: article.coverImage,
-        title: article.slug,
-      }).structured,
+      imageUrls: [...new Set([
+        ...getArticleImages({
+          coverImage: article.coverImage,
+          title: article.slug,
+        }).structured,
+        ...getTiptapImageUrls(article.contentJson),
+      ])],
     })),
     lookbooks,
   });

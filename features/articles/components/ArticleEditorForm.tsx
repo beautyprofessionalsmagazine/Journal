@@ -39,6 +39,7 @@ import {
   initialArticleFormState,
 } from "@/features/articles/types/article";
 import { defaultCoverImageSettings } from "@/features/articles/lib/cover-image-settings";
+import { getTiptapImages } from "@/features/articles/lib/article-text";
 import {
   getArticleFieldErrors,
   hasMeaningfulTiptapContent,
@@ -121,26 +122,34 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
     [initialValuesSnapshot, values],
   );
   const readinessItems = useMemo(
-    () => [
-      {
-        label: "Headline and byline",
-        complete: Boolean(values.title.trim() && values.author.trim()),
-      },
-      {
-        label: "Description",
-        complete: Boolean(values.description.trim()),
-      },
-      {
-        label: "Article body",
-        complete: hasMeaningfulTiptapContent(values.contentJson),
-      },
-      {
-        label: "Cover and alt text",
-        complete: Boolean(
-          values.coverImage.trim() && values.coverImageAlt.trim(),
-        ),
-      },
-    ],
+    () => {
+      const inlineImages = getTiptapImages(values.contentJson);
+
+      return [
+        {
+          label: "Headline and byline",
+          complete: Boolean(values.title.trim() && values.author.trim()),
+        },
+        {
+          label: "Description",
+          complete: Boolean(values.description.trim()),
+        },
+        {
+          label: "Article body",
+          complete: hasMeaningfulTiptapContent(values.contentJson),
+        },
+        {
+          label: "Cover and alt text",
+          complete: Boolean(
+            values.coverImage.trim() && values.coverImageAlt.trim(),
+          ),
+        },
+        {
+          label: "Inline image alt text",
+          complete: inlineImages.every((image) => Boolean(image.alt)),
+        },
+      ];
+    },
     [values],
   );
 

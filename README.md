@@ -104,6 +104,7 @@ reads the ratio through `coverFrameProps()`:
 | `storyCard` | 1200 × 900 | 4:3 | Story cards, lists, related stories, homepage rails |
 | `portraitRail` | 800 × 1000 | 4:5 | Compact rails, admin lists |
 | `articleHero` | 1200 × 1500 | 4:5 | Article page header |
+| `socialShare` | 1600 × 900 | 16:9 | Open Graph, X/Twitter, Google Discover, structured data |
 
 Saving an article generates one WebP per placement from the untouched original
 and stores the exact crop used. Older records load as-is: a variant whose size
@@ -154,7 +155,7 @@ npm run generate:seo-assets   # rebuild favicon, share image and background text
 asserts status codes, canonicals, robots directives, titles, headings,
 structured data and that the content is present without JavaScript. Run it
 against a preview deployment before promoting it. The full audit and roadmap
-are in [`docs/SEO_AUDIT.md`](docs/SEO_AUDIT.md).
+are in [`SEO_AUDIT.md`](SEO_AUDIT.md).
 
 ## Tests
 

@@ -14,6 +14,12 @@ type TextNode = {
   type?: unknown;
   text?: unknown;
   content?: unknown;
+  attrs?: unknown;
+};
+
+export type TiptapImageData = {
+  src: string;
+  alt: string;
 };
 
 function collectText(node: unknown, parts: string[]) {
@@ -61,4 +67,42 @@ export function countWords(text: string): number {
   const trimmed = text.trim();
 
   return trimmed ? trimmed.split(/\s+/).length : 0;
+}
+
+function collectImages(node: unknown, images: TiptapImageData[]) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+
+  const { type, content, attrs } = node as TextNode;
+
+  if (type === "image" && attrs && typeof attrs === "object") {
+    const imageAttrs = attrs as { src?: unknown; alt?: unknown };
+    const src = typeof imageAttrs.src === "string" ? imageAttrs.src.trim() : "";
+
+    if (src) {
+      images.push({
+        src,
+        alt: typeof imageAttrs.alt === "string" ? imageAttrs.alt.trim() : "",
+      });
+    }
+  }
+
+  if (Array.isArray(content)) {
+    for (const child of content) {
+      collectImages(child, images);
+    }
+  }
+}
+
+/** Finds every stored inline image, including images nested in rich-text blocks. */
+export function getTiptapImages(document: unknown): TiptapImageData[] {
+  const images: TiptapImageData[] = [];
+  collectImages(document, images);
+  return images;
+}
+
+/** Unique inline image URLs for the article's image sitemap entry. */
+export function getTiptapImageUrls(document: unknown): string[] {
+  return [...new Set(getTiptapImages(document).map((image) => image.src))];
 }

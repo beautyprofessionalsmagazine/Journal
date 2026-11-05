@@ -23,6 +23,7 @@ const cover = {
     version: 4,
     crops: {},
     generatedImages: {
+      socialShare: { url: `${BLOB}/gen/social-1600x900.webp`, width: 1600, height: 900 },
       homepageFeature: { url: `${BLOB}/gen/feature-1600x1200.webp`, width: 1600, height: 1200 },
       storyCard: { url: `${BLOB}/gen/card-1200x900.webp`, width: 1200, height: 900 },
       articleHero: { url: `${BLOB}/gen/hero-1200x1500.webp`, width: 1200, height: 1500 },
@@ -57,11 +58,12 @@ function article(overrides: Record<string, unknown> = {}) {
 }
 
 describe("getArticleImages", () => {
-  it("shares the 4:3 homepage-feature render, wide enough for Discover", () => {
+  it("shares the dedicated 16:9 render, wide enough for Discover", () => {
     const { share } = getArticleImages(article());
 
-    assert.equal(share?.url, `${BLOB}/gen/feature-1600x1200.webp`);
+    assert.equal(share?.url, `${BLOB}/gen/social-1600x900.webp`);
     assert.equal(share?.width, 1600);
+    assert.equal(share?.height, 900);
     assert.ok((share?.width ?? 0) >= 1200);
     assert.equal(share?.alt, "Two stylists looking at the camera");
   });
@@ -70,10 +72,29 @@ describe("getArticleImages", () => {
     const { structured } = getArticleImages(article());
 
     assert.deepEqual(structured, [
+      `${BLOB}/gen/social-1600x900.webp`,
       `${BLOB}/gen/feature-1600x1200.webp`,
       `${BLOB}/gen/hero-1200x1500.webp`,
       `${BLOB}/articles/original.jpg`,
     ]);
+  });
+
+  it("keeps legacy covers shareable until their 16:9 rendition is generated", () => {
+    const legacyImages: Partial<typeof cover.settings.generatedImages> = {
+      ...cover.settings.generatedImages,
+    };
+    delete legacyImages.socialShare;
+    const legacyCover = {
+      ...cover,
+      settings: { ...cover.settings, generatedImages: legacyImages },
+    };
+    const { share } = getArticleImages(
+      article({ coverImage: legacyCover as never }),
+    );
+
+    assert.equal(share?.url, `${BLOB}/gen/feature-1600x1200.webp`);
+    assert.equal(share?.width, 1600);
+    assert.equal(share?.height, 1200);
   });
 
   it("falls back to the untouched upload when no renditions were generated", () => {
@@ -127,9 +148,9 @@ describe("getArticleMetadata", () => {
 
   it("uses the cover as the social image, with its dimensions and alt text", () => {
     assert.deepEqual(og.images[0], {
-      url: `${BLOB}/gen/feature-1600x1200.webp`,
+      url: `${BLOB}/gen/social-1600x900.webp`,
       width: 1600,
-      height: 1200,
+      height: 900,
       alt: "Two stylists looking at the camera",
     });
   });
@@ -189,7 +210,7 @@ describe("getArticleJsonLd", () => {
     assert.equal(node.headline, "The Return of the Fringe");
     assert.equal(node.datePublished, "2026-10-08T09:00:00.000Z");
     assert.equal(node.dateModified, "2026-10-09T09:00:00.000Z");
-    assert.equal(node.image.length, 3);
+    assert.equal(node.image.length, 4);
     assert.ok(node.image.every((url: string) => url.startsWith("https://")));
     assert.equal(node.articleSection, "Beauty");
     assert.equal(node.keywords, "Fringe, Hair");

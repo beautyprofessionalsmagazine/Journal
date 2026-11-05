@@ -11,7 +11,7 @@ export default function NotFound() {
   return (
     <main className="flex min-h-[65vh] items-center bg-white py-[var(--section-space)]">
       <div className="site-container">
-        <p className="editorial-kicker text-black/45">Error 404</p>
+        <p className="editorial-kicker text-black/60">Error 404</p>
         <h1 className="page-title mt-4">This page left the issue.</h1>
         <p className="mt-7 max-w-xl text-base leading-8 text-black/62">
           The story may have moved, or the address may be incomplete. Return

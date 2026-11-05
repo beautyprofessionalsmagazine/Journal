@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { countWords, getTiptapPlainText } from "@/features/articles/lib/article-text";
+import {
+  countWords,
+  getTiptapImages,
+  getTiptapImageUrls,
+  getTiptapPlainText,
+} from "@/features/articles/lib/article-text";
 
 describe("getTiptapPlainText", () => {
   it("joins blocks with spaces so neighbouring paragraphs never fuse", () => {
@@ -61,5 +66,37 @@ describe("countWords", () => {
   it("counts nothing for empty text", () => {
     assert.equal(countWords(""), 0);
     assert.equal(countWords("   "), 0);
+  });
+});
+
+describe("getTiptapImages", () => {
+  const document = {
+    type: "doc",
+    content: [
+      { type: "image", attrs: { src: "https://cdn.example.com/one.webp", alt: "  First image  " } },
+      {
+        type: "blockquote",
+        content: [
+          { type: "image", attrs: { src: "https://cdn.example.com/two.webp", alt: "" } },
+          { type: "image", attrs: { src: "https://cdn.example.com/one.webp", alt: "Duplicate use" } },
+        ],
+      },
+      { type: "image", attrs: { src: "", alt: "Missing source" } },
+    ],
+  };
+
+  it("collects inline image URLs and normalized alt text", () => {
+    assert.deepEqual(getTiptapImages(document), [
+      { src: "https://cdn.example.com/one.webp", alt: "First image" },
+      { src: "https://cdn.example.com/two.webp", alt: "" },
+      { src: "https://cdn.example.com/one.webp", alt: "Duplicate use" },
+    ]);
+  });
+
+  it("deduplicates URLs for sitemap output", () => {
+    assert.deepEqual(getTiptapImageUrls(document), [
+      "https://cdn.example.com/one.webp",
+      "https://cdn.example.com/two.webp",
+    ]);
   });
 });

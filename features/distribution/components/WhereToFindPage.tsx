@@ -17,7 +17,7 @@ export async function WhereToFindPage({ focusId }: WhereToFindPageProps) {
       <section className="site-container py-[var(--section-space)]">
         <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.15fr_0.85fr] lg:items-end" suppressHydrationWarning>
           <div>
-            <p className="editorial-kicker mb-3 text-black/45">
+            <p className="editorial-kicker mb-3 text-black/60">
               Distribution network
             </p>
             {/*
@@ -36,13 +36,13 @@ export async function WhereToFindPage({ focusId }: WhereToFindPageProps) {
             </p>
             <dl className="mt-7 grid grid-cols-2 gap-4 border-t border-black/15 pt-5">
               <div>
-                <dt className="editorial-kicker text-black/45">Locations</dt>
+                <dt className="editorial-kicker text-black/60">Locations</dt>
                 <dd className="mt-2 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-none">
                   {locations.length}
                 </dd>
               </div>
               <div>
-                <dt className="editorial-kicker text-black/45">States</dt>
+                <dt className="editorial-kicker text-black/60">States</dt>
                 <dd className="mt-2 [font-family:var(--font-editorial-title)] text-4xl font-bold leading-none">
                   {stateCount}
                 </dd>
@@ -56,7 +56,7 @@ export async function WhereToFindPage({ focusId }: WhereToFindPageProps) {
         </div>
 
         <div className="reveal reveal-delay-2 mt-[clamp(3rem,6vw,6rem)] grid gap-6 border-t border-black pt-10 md:grid-cols-[0.7fr_1.3fr] md:items-start" suppressHydrationWarning>
-          <p className="editorial-kicker text-black/45">Become a partner</p>
+          <p className="editorial-kicker text-black/60">Become a partner</p>
           <div className="max-w-xl">
             <h2 className="[font-family:var(--font-editorial-title)] text-[clamp(1.8rem,4vw,3rem)] font-bold leading-none">
               Carry the magazine in your space.

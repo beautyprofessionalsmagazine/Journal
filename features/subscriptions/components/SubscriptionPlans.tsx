@@ -76,7 +76,7 @@ export function SubscriptionPlans() {
     <div className="min-w-0">
       <div className="mb-6 flex flex-col justify-between gap-3 border-b border-black pb-4 sm:flex-row sm:items-end">
         <div>
-          <p className="editorial-kicker text-black/45">Step one</p>
+          <p className="editorial-kicker text-black/60">Step one</p>
           <h2 className="mt-1 [font-family:var(--font-editorial-title)] text-[clamp(2.25rem,4vw,3.6rem)] font-bold leading-none tracking-[-0.035em]">
             Choose your edition
           </h2>
@@ -114,7 +114,7 @@ export function SubscriptionPlans() {
             >
               <span className="flex w-full items-center justify-between gap-3">
                 <span
-                  className={`editorial-kicker ${isActive ? "text-white/60" : "text-black/45"}`}
+                  className={`editorial-kicker ${isActive ? "text-white/60" : "text-black/60"}`}
                 >
                   {plan.audience}
                 </span>
@@ -151,7 +151,7 @@ export function SubscriptionPlans() {
         tabIndex={-1}
       >
         <div className="border-t border-black pt-5 lg:sticky lg:top-32">
-          <p className="editorial-kicker text-black/42">Your selection</p>
+          <p className="editorial-kicker text-black/60">Your selection</p>
           <h2 className="mt-3 [font-family:var(--font-editorial-title)] text-[clamp(2.15rem,3.4vw,3.25rem)] font-bold leading-[0.93] tracking-[-0.035em]">
             {activePlan.name}
           </h2>

@@ -33,7 +33,7 @@ export function SubscribePage() {
                   className="flex flex-col gap-2 py-5 sm:px-5 sm:first:pl-0 sm:last:pr-0"
                   key={fact.label}
                 >
-                  <dt className="editorial-kicker text-black/40">{fact.label}</dt>
+                  <dt className="editorial-kicker text-black/60">{fact.label}</dt>
                   <dd className="text-xs leading-5 text-black/68">{fact.value}</dd>
                 </div>
               ))}
@@ -51,7 +51,7 @@ export function SubscribePage() {
           className="reveal reveal-delay-2 mt-[clamp(4rem,8vw,8rem)] grid gap-6 border-t border-black pt-9 md:grid-cols-[0.72fr_1.28fr] md:items-start"
           suppressHydrationWarning
         >
-          <p className="editorial-kicker text-black/45">Already a partner</p>
+          <p className="editorial-kicker text-black/60">Already a partner</p>
           <div className="max-w-xl">
             <h2 className="[font-family:var(--font-editorial-title)] text-[clamp(1.8rem,4vw,3rem)] font-bold leading-none">
               Find a copy near you.

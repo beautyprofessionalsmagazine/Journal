@@ -103,7 +103,7 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
         <div className="site-container">
           <div className="mb-[clamp(2.5rem,5vw,5rem)] flex flex-col gap-4 border-b border-black pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="editorial-kicker mb-2 text-black/45">
+              <p className="editorial-kicker mb-2 text-black/60">
                 Continue reading
               </p>
               <h2 className="section-title">Related Stories</h2>
