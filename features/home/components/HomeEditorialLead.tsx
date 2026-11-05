@@ -11,11 +11,15 @@ import {
   coverFrameProps,
   type CoverImagePlacement,
 } from "@/features/articles/lib/cover-placements";
+import { getAuthorName } from "@/shared/seo/text";
 
 export async function HomeEditorialLead() {
   const [featuredArticle, publishedArticles] = await Promise.all([
     getFeaturedArticle(),
-    listPublishedArticles({ sort: "latest" }),
+    // The page shows 13 stories besides the cover story; one extra covers the
+    // case where the cover story is also among the newest, so the query no
+    // longer pulls every published article on each render.
+    listPublishedArticles({ sort: "latest", limit: 14 }),
   ]);
 
   const remainingArticles = publishedArticles.filter(
@@ -101,7 +105,8 @@ function FeaturedStory({ article }: { article: Article }) {
         <p className="editorial-kicker text-[var(--champagne-dark)]">
           {article.category}
         </p>
-        <h1
+        {/* An <h2>: the page's <h1> names the publication (see HomePage). */}
+        <h2
           className={`${getFeatureHeadlineClass(article.title)} mt-3 [overflow-wrap:break-word] [font-family:var(--font-editorial-title)] font-bold tracking-[-0.048em]`}
         >
           <Link
@@ -110,13 +115,13 @@ function FeaturedStory({ article }: { article: Article }) {
           >
             {article.title}
           </Link>
-        </h1>
+        </h2>
         {article.description ? (
           <p className="mt-5 max-w-[31rem] text-[clamp(0.95rem,1.25vw,1.08rem)] leading-7 text-black/68">
             {article.description}
           </p>
         ) : null}
-        <p className="mt-4 text-xs text-black/52">
+        <p className="mt-4 text-xs text-black/60">
           {formatArticleDate(article)}
         </p>
         <Link
@@ -157,7 +162,7 @@ function RecentStories({ articles }: { articles: Article[] }) {
             />
           </Link>
           <div className="min-w-0 self-center">
-            <p className="editorial-kicker text-black/45">{article.category}</p>
+            <p className="editorial-kicker text-black/60">{article.category}</p>
             <h2 className="mt-2 [overflow-wrap:break-word] [font-family:var(--font-editorial-title)] text-[clamp(1.25rem,2.1vw,1.75rem)] font-bold leading-[0.98] tracking-[-0.025em]">
               <Link
                 className="focus-ring decoration-1 underline-offset-4 hover:underline"
@@ -171,7 +176,7 @@ function RecentStories({ articles }: { articles: Article[] }) {
                 {article.description}
               </p>
             ) : null}
-            <p className="mt-3 text-[0.7rem] text-black/45">
+            <p className="mt-3 text-[0.7rem] text-black/60">
               {formatArticleDate(article)}
             </p>
           </div>
@@ -222,7 +227,7 @@ function StoryCard({ article, compact }: { article: Article; compact: boolean })
           sizes="(min-width: 1280px) 22vw, (min-width: 640px) 46vw, 100vw"
         />
       </Link>
-      <p className="editorial-kicker mt-4 text-black/48">{article.category}</p>
+      <p className="editorial-kicker mt-4 text-black/60">{article.category}</p>
       <h3
         className={`mt-2 [overflow-wrap:break-word] [font-family:var(--font-editorial-title)] font-bold tracking-[-0.025em] ${getCardHeadlineClass(article.title, compact)}`}
       >
@@ -238,7 +243,7 @@ function StoryCard({ article, compact }: { article: Article; compact: boolean })
           {article.description}
         </p>
       ) : null}
-      <p className="mt-3 text-xs text-black/45">{formatArticleDate(article)}</p>
+      <p className="mt-3 text-xs text-black/60">{formatArticleDate(article)}</p>
     </article>
   );
 }
@@ -313,7 +318,7 @@ function SpotlightCopy({
 }) {
   return (
     <div className="relative z-10 p-[clamp(2rem,5vw,4rem)]">
-      <p className={`editorial-kicker ${inverted ? "text-white/62" : "text-black/45"}`}>
+      <p className={`editorial-kicker ${inverted ? "text-white/62" : "text-black/60"}`}>
         {article.category}
       </p>
       <h2 className="mt-3 max-w-[13ch] [overflow-wrap:break-word] [font-family:var(--font-editorial-title)] text-[clamp(2rem,4vw,3.4rem)] font-bold leading-[0.94] tracking-[-0.035em]">
@@ -331,6 +336,9 @@ function SpotlightCopy({
         href={href}
       >
         Read more
+        {/* Distinguishes this link from its siblings for search engines and
+            screen readers; "Read more" alone is not descriptive link text. */}
+        <span className="sr-only"> about {article.title}</span>
         <ArrowRight aria-hidden="true" size={14} />
       </Link>
     </div>
@@ -341,7 +349,7 @@ function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) 
   return (
     <div className="flex items-end justify-between gap-5 border-b border-black pb-3">
       <div>
-        <p className="editorial-kicker text-black/42">{eyebrow}</p>
+        <p className="editorial-kicker text-black/60">{eyebrow}</p>
         <h2 className="mt-1 [font-family:var(--font-editorial-title)] text-[clamp(2.25rem,4vw,3.6rem)] font-bold leading-none tracking-[-0.035em]">
           {title}
         </h2>
@@ -360,10 +368,10 @@ function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) 
 function EmptyEditorialDesk() {
   return (
     <section className="site-container py-[var(--section-space)] text-center">
-      <p className="editorial-kicker text-black/45">From the editorial desk</p>
-      <h1 className="mx-auto mt-4 max-w-4xl [font-family:var(--font-editorial-title)] text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.88] tracking-[-0.05em]">
+      <p className="editorial-kicker text-black/60">From the editorial desk</p>
+      <h2 className="mx-auto mt-4 max-w-4xl [font-family:var(--font-editorial-title)] text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.88] tracking-[-0.05em]">
         The next cover story is being prepared.
-      </h1>
+      </h2>
     </section>
   );
 }
@@ -425,7 +433,9 @@ function getCardHeadlineClass(title: string, compact: boolean) {
 }
 
 function formatArticleDate(article: Article) {
-  if (!article.publishedAt) return `By ${article.author}`;
+  if (!article.publishedAt) {
+    return `By ${getAuthorName(article.author) || article.author}`;
+  }
 
   return new Intl.DateTimeFormat("en", {
     month: "long",

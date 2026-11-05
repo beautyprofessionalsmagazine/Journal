@@ -45,6 +45,9 @@ export function ArticleCoverImage({
     <Image
       alt={alt}
       className={cn("object-cover object-center", className)}
+      // The LCP image: besides the preload `priority` adds, tell the browser
+      // to fetch it ahead of the sponsor strip and other early images.
+      fetchPriority={priority ? "high" : undefined}
       fill
       onError={() => setFailed(true)}
       priority={priority}

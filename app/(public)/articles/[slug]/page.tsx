@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import {
   ArticleDetailPage,
   getPublishedArticleBySlug,
   getPublishedArticleRouteParams,
 } from "@/features/articles";
+import { getArticleMetadata } from "@/features/articles/seo/article-seo";
 
 type ArticleDetailRouteProps = {
   params: Promise<{
@@ -23,14 +25,13 @@ export async function generateMetadata({
 
   const article = await getPublishedArticleBySlug(slug);
 
+  // Resolving a missing article here (not only in the page) gives crawlers a
+  // real 404 status; a lookup that merely returned `{}` produced a 200 page.
   if (!article) {
-    return {};
+    notFound();
   }
 
-  return {
-    title: article.title,
-    description: article.description,
-  };
+  return getArticleMetadata(article);
 }
 
 export default async function Page({ params }: ArticleDetailRouteProps) {

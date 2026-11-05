@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AdminLoginForm } from "@/features/admin/components/AdminLoginForm";
 import { hasAdminSession } from "@/features/admin/server/admin-auth";
+import { PRIVATE_ROBOTS } from "@/shared/seo/metadata";
+
+export const metadata: Metadata = {
+  title: { absolute: "Admin sign in" },
+  robots: PRIVATE_ROBOTS,
+};
 
 export default async function AdminLoginPage() {
   if (await hasAdminSession()) {

@@ -1,5 +1,6 @@
 import { type ZodError, z } from "zod";
 
+import { getTiptapImages } from "@/features/articles/lib/article-text";
 import {
   articleImageAlignValues,
   articleStatusValues,
@@ -195,6 +196,19 @@ const createArticleInputSchema = z
       });
     }
 
+    if (
+      value.status === "published" &&
+      value.publishedAt &&
+      value.publishedAt.getTime() > Date.now() + 5 * 60_000
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["publishedAt"],
+        message:
+          "Published date cannot be in the future. Keep the article as a draft until it is ready to publish.",
+      });
+    }
+
     if (!value.contentJson) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -223,15 +237,35 @@ const createArticleInputSchema = z
         message: "Article body is required.",
       });
     }
+
+    if (value.status === "published" && isTiptapDocument(value.contentJson)) {
+      const missingAltCount = getTiptapImages(value.contentJson).filter(
+        (image) => !image.alt,
+      ).length;
+
+      if (missingAltCount > 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["contentJson"],
+          message: `Add alt text to every inline image before publishing (${missingAltCount} missing).`,
+        });
+      }
+    }
   });
 
 export function normalizeSlug(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-");
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      // Apostrophes are dropped, not turned into hyphens: "men's" becomes
+      // "mens", not "men-s". Existing slugs are hyphenated already, so
+      // normalizing them again changes nothing.
+      .replace(/['‘’ʼ`´]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-{2,}/g, "-")
+  );
 }
 
 // Builds the blob pathname for a client-side cover upload. The server adds a

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { WhereToFindPage } from "@/features/distribution";
+import { JsonLd } from "@/shared/components/seo/JsonLd";
+import { getStaticPageJsonLd, getStaticPageMetadata } from "@/shared/seo/pages";
 
 /**
  * Approving a subscription calls `revalidatePath("/where-to-find")`, so the map
@@ -9,11 +11,9 @@ import { WhereToFindPage } from "@/features/distribution";
  */
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Where to Find Beauty Professionals Magazine",
-  description:
-    "Find Beauty Professionals Magazine at salons, beauty schools, Med Spas, and clinics across the United States. Search by state, city, or ZIP Code.",
-};
+// `?location=<id>` only highlights a pin on the same map, so it shares this
+// page's canonical URL (the registry entry declares it).
+export const metadata: Metadata = getStaticPageMetadata("whereToFind");
 
 type WhereToFindRouteProps = {
   searchParams: Promise<{ location?: string | string[] }>;
@@ -23,8 +23,11 @@ export default async function Page({ searchParams }: WhereToFindRouteProps) {
   const { location } = await searchParams;
 
   return (
-    <WhereToFindPage
-      focusId={Array.isArray(location) ? location[0] : location}
-    />
+    <>
+      <JsonLd data={getStaticPageJsonLd("whereToFind")} />
+      <WhereToFindPage
+        focusId={Array.isArray(location) ? location[0] : location}
+      />
+    </>
   );
 }

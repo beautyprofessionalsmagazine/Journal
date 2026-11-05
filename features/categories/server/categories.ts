@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-
 import { categoryConfigs } from "@/features/categories/data/categories";
 import type {
   CategoryConfig,
@@ -24,19 +22,6 @@ export function getCategoryBySlug(slug: string) {
 
 export function getCategoryByName(name: CategoryName) {
   return categoryConfigs.find((category) => category.name === name);
-}
-
-export function getCategoryMetadata(slug: string): Metadata {
-  const category = getCategoryBySlug(slug);
-
-  if (!category) {
-    return {};
-  }
-
-  return {
-    title: category.name,
-    description: category.description,
-  };
 }
 
 export function isStandaloneCategory(category: CategoryConfig) {

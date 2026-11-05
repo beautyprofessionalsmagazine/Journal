@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 
 import { ArticleExplorer } from "@/features/articles/components/ArticleExplorer";
+import { hasActiveArticleFilters } from "@/features/articles/server/article-filter-params";
 import type { PublishedArticleFilters } from "@/features/articles/server/article-queries";
+import { getCategoryJsonLd } from "@/features/categories/seo/category-seo";
 import { getCategoryBySlug } from "@/features/categories/server/categories";
+import { JsonLd } from "@/shared/components/seo/JsonLd";
 
 type CategoryPageProps = {
   filters?: PublishedArticleFilters;
@@ -16,12 +19,15 @@ export function CategoryPage({ filters, slug }: CategoryPageProps) {
     notFound();
   }
 
+  const filtered = hasActiveArticleFilters(filters ?? {});
+
   return (
     <main className="bg-white">
+      {!filtered ? <JsonLd data={getCategoryJsonLd(category)} /> : null}
       <section className="site-container py-[var(--section-space)]">
         <header className="reveal grid gap-6 border-b border-black pb-[clamp(2rem,5vw,4rem)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end" suppressHydrationWarning>
           <div>
-            <p className="editorial-kicker mb-3 text-black/45">
+            <p className="editorial-kicker mb-3 text-black/60">
               Journal section
             </p>
             <h1 className="page-title">

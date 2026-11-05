@@ -9,7 +9,7 @@ export function SiteFooter() {
       <div className="site-container py-[clamp(3rem,7vw,6.5rem)]">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_0.8fr_0.8fr]">
           <div className="flex flex-col items-start gap-6">
-            <p className="editorial-kicker text-black/52">The Journal</p>
+            <p className="editorial-kicker text-black/60">The Journal</p>
             <Link
               className="focus-ring link-transition max-w-[12ch] [font-family:var(--font-editorial-title)] text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[0.86] tracking-[-0.045em]"
               href="/"

@@ -17,14 +17,14 @@ export function ArticleHero({ article }: ArticleHeroProps) {
     <section className="border-b border-black bg-white">
       <div className="mx-auto grid max-w-[100rem] lg:grid-cols-[minmax(0,0.92fr)_minmax(28rem,0.8fr)]">
         <div className="reveal flex min-w-0 flex-col justify-center px-[var(--page-padding)] py-[clamp(3rem,7vw,7rem)]" suppressHydrationWarning>
-          <p className="editorial-kicker text-black/48">Cover story</p>
+          <p className="editorial-kicker text-black/60">Cover story</p>
           <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="editorial-kicker border-y border-black py-2">
               {article.category}
             </span>
             {article.tags.slice(0, 2).map((tag) => (
               <span
-                className="editorial-kicker text-black/45"
+                className="editorial-kicker text-black/60"
                 key={tag}
               >
                 {tag}

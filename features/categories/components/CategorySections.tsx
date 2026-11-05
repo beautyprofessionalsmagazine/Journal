@@ -20,7 +20,7 @@ export async function CategorySections() {
     <section>
       <div className="flex flex-col gap-4 border-b border-black pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="editorial-kicker mb-2 text-black/45">Browse by desk</p>
+          <p className="editorial-kicker mb-2 text-black/60">Browse by desk</p>
           <h2 className="section-title">Journal Sections</h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-black/58">
@@ -37,7 +37,7 @@ export async function CategorySections() {
             suppressHydrationWarning
           >
             <div className="flex flex-col items-start gap-5">
-              <p className="editorial-kicker text-black/42">
+              <p className="editorial-kicker text-black/60">
                 0{sectionIndex + 1}
               </p>
               <h3 className="[font-family:var(--font-editorial-title)] text-[clamp(2.5rem,5vw,4.5rem)] font-bold leading-[0.9] tracking-[-0.04em]">

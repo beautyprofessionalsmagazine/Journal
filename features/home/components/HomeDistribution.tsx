@@ -22,7 +22,7 @@ export async function HomeDistribution() {
           suppressHydrationWarning
         >
           <div>
-            <p className="editorial-kicker flex items-center gap-2 text-black/45">
+            <p className="editorial-kicker flex items-center gap-2 text-black/60">
               <MapPin aria-hidden="true" size={15} />
               Where to find us
             </p>
@@ -45,13 +45,13 @@ export async function HomeDistribution() {
           </div>
           <dl className="grid grid-cols-2 gap-4 border-t border-black pt-5 lg:justify-self-end">
             <div>
-              <dt className="editorial-kicker text-black/45">Locations</dt>
+              <dt className="editorial-kicker text-black/60">Locations</dt>
               <dd className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(2.5rem,5vw,4rem)] font-bold leading-none">
                 {locations.length}
               </dd>
             </div>
             <div>
-              <dt className="editorial-kicker text-black/45">States</dt>
+              <dt className="editorial-kicker text-black/60">States</dt>
               <dd className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(2.5rem,5vw,4rem)] font-bold leading-none">
                 {stateCount}
               </dd>
