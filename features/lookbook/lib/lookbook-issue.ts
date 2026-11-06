@@ -1,6 +1,7 @@
 import type { Lookbook } from "@/features/lookbook/types/lookbook";
 
 export const LOOKBOOK_MIN_YEAR = 2000;
+export const MAX_LOOKBOOK_SIZE_BYTES = 50 * 1024 * 1024;
 
 export const LOOKBOOK_MONTHS = [
   "January",

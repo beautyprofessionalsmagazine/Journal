@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { LookbookPage } from "@/features/lookbook";
+import { LookbookPage } from "@/features/lookbook/components/LookbookPage";
 import { buildLookbookMetadata } from "@/features/lookbook/seo/lookbook-seo";
 import { getLookbooks } from "@/features/lookbook/server/lookbook-queries";
 import { JsonLd } from "@/shared/components/seo/JsonLd";
@@ -25,16 +25,18 @@ type LookbookRouteProps = {
 
 function readNumber(value: string | string[] | undefined) {
   const first = Array.isArray(value) ? value[0] : value;
+  if (!first) return undefined;
 
-  return first ? Number(first) : undefined;
+  const parsed = Number(first);
+  return Number.isInteger(parsed) ? parsed : undefined;
 }
 
 export async function generateMetadata({
   searchParams,
 }: LookbookRouteProps): Promise<Metadata> {
   const params = await searchParams;
-  // If the editions cannot be read the page itself errors; never index that.
-  const lookbooks = await getLookbooks().catch(() => []);
+  // getLookbooks never throws; an unreadable archive is an empty list (noindex).
+  const lookbooks = await getLookbooks();
 
   return buildLookbookMetadata({
     lookbooks,

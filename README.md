@@ -91,6 +91,18 @@ date, publish or replace its PDF, preview it, and remove only that edition.
 Existing singleton Lookbook data is dated from its previous `updated_at` value
 when migration `0006` runs.
 
+If a database has not run migration `0006` yet, `/lookbook` and
+`/admin/lookbook` still load: editions are dated from `updated_at` the same way,
+publishing is paused, and the admin page shows a "Database update required"
+notice. Apply it with `npm run db:migrate` against that database's
+`DATABASE_URL`. Any other database failure renders a calm "unavailable" state
+instead of the error page, and is logged with a `[lookbook]` prefix.
+
+PDFs are read through byte ranges: Vercel Blob serves ranges but does not
+expose `Accept-Ranges` to scripts, so the viewer fetches ranges itself and
+shares one document per PDF across the page. A cover needs only the first few
+hundred kilobytes instead of the whole file.
+
 ## Article cover images
 
 `features/articles/lib/cover-placements.ts` is the single source of truth for
@@ -171,8 +183,11 @@ structured data, sitemap, robots, feed, slugs and indexing rules).
 
 ```bash
 npx drizzle-kit generate
-npx drizzle-kit migrate
+npm run db:migrate
 ```
+
+Run `npm run db:migrate` against the production `DATABASE_URL` whenever a
+deploy includes a new migration.
 
 `drizzle.config.ts` picks up every `features/*/db/*-schema.ts` file.
 

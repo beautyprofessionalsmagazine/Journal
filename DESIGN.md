@@ -63,7 +63,7 @@ The display stack carries article headlines and mastheads with tight leading and
 
 ## Layout
 
-Public content uses a fluid page gutter and a maximum reading frame of 90rem. The homepage lead becomes an approximately 70/30 spread at desktop sizes, a dominant feature plus compact rail at tablet sizes, and one clear reading sequence on mobile. Long feature headlines step down through length-aware display sizes so editorial titles remain intact without breaking the spread. Images always reserve an aspect ratio. The three-part sponsor row stays centered and reflows within the viewport; it never creates a nested horizontal scroll region. Below the lead, ruled story grids, a two-part spotlight, distribution coverage, and archive stories create a complete issue-like reading sequence. The Lookbook opens with an oversized title and a live cover stack built from the selected PDF, then moves through filters, a featured edition, and cover-led archive cards. Admin routes use a dark production-desk rail, a restrained white workspace, and natural document scrolling.
+Public content uses a fluid page gutter and a maximum reading frame of 90rem. The homepage lead becomes an approximately 70/30 spread at desktop sizes, a dominant feature plus compact rail at tablet sizes, and one clear reading sequence on mobile. Long feature headlines step down through length-aware display sizes so editorial titles remain intact without breaking the spread. Images always reserve an aspect ratio. The three-part sponsor row stays centered and reflows within the viewport; it never creates a nested horizontal scroll region. Below the lead, ruled story grids, a two-part spotlight, distribution coverage, and archive stories create a complete issue-like reading sequence. The Lookbook opens with a cover-led spread: an oversized title, the selected PDF cover on a paper stack, and the "Now reading" issue with its read and download actions (on mobile: title, cover, then issue). A ruled twelve-month edition grid with year links replaces form filters, followed by cover-led archive cards grouped by year and a dark print-edition band. Admin routes use a dark production-desk rail, a restrained white workspace, and natural document scrolling.
 
 ## Elevation & Depth
 
@@ -93,7 +93,7 @@ Fields are square, white, and explicitly labeled. Lookbook edition selectors use
 
 ### PDF reader
 
-Lookbook PDFs render through the app-owned reader rather than browser PDF chrome. The reader presents consecutive pages as a two-page spread, advances by two, provides zoom and download controls, and opens in a full-viewport modal that preserves the spread. The source PDF remains available as a recovery path. Loading, rendering failure, and the final page of an odd-length document keep stable geometry.
+Lookbook PDFs render through the app-owned reader rather than browser PDF chrome. The reader presents consecutive pages as a two-page spread, advances by two, provides zoom and download controls, and opens in a full-viewport modal that fits the whole spread to the viewport height. Below 640px it shows one page at a time so text stays legible; arrow keys turn pages in full screen. The source PDF remains available as a recovery path. Loading, rendering failure, and the final page of an odd-length document keep stable geometry.
 
 ### Iconography
 

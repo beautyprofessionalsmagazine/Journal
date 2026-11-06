@@ -26,18 +26,20 @@ import {
   getLookbookMonthName,
   LOOKBOOK_MIN_YEAR,
   LOOKBOOK_MONTHS,
+  MAX_LOOKBOOK_SIZE_BYTES,
   sortLookbooksNewestFirst,
 } from "@/features/lookbook/lib/lookbook-issue";
 import { PdfCover, PdfReader } from "@/features/lookbook/components/PdfViewer";
 import type { Lookbook, LookbookActionResult } from "@/features/lookbook/types/lookbook";
 import { Button, ButtonLink, ConfirmDialog, Select } from "@/shared/components/ui";
 
-const MAX_LOOKBOOK_SIZE_BYTES = 50 * 1024 * 1024;
 const MULTIPART_UPLOAD_THRESHOLD = 5 * 1024 * 1024;
 const idleResult: LookbookActionResult = { status: "idle", message: "" };
 
 type LookbookAdminPageProps = {
   initialLookbooks: Lookbook[];
+  /** Set when the archive could not be read in the current database shape. */
+  databaseIssue?: "migration-required" | "unavailable" | null;
 };
 
 type PendingLookbook = Pick<Lookbook, "fileUrl" | "fileName" | "fileSize"> & {
@@ -45,7 +47,10 @@ type PendingLookbook = Pick<Lookbook, "fileUrl" | "fileName" | "fileSize"> & {
   issueYear: number;
 };
 
-export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) {
+export function LookbookAdminPage({
+  initialLookbooks,
+  databaseIssue = null,
+}: LookbookAdminPageProps) {
   const today = new Date();
   const initialIssue = initialLookbooks[0];
   const [lookbooks, setLookbooks] = useState(
@@ -78,6 +83,7 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
   const preview = pendingLookbook ?? selectedLookbook ?? null;
   const hasUnsavedUpload = Boolean(pendingLookbook);
   const isBusy = isUploading || isSaving || isRemoving || isDiscarding;
+  const isPublishingBlocked = databaseIssue !== null;
   const issueLabel = getLookbookIssueLabel({ issueYear, issueMonth });
   const yearOptions = useMemo(() => {
     const maximumYear = new Date().getFullYear() + 1;
@@ -221,6 +227,29 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
 
   return (
     <div className="space-y-6">
+      {databaseIssue ? (
+        <div
+          className="flex items-start gap-3 rounded-[0.55rem] border border-amber-700/25 bg-amber-50 p-4 text-sm leading-6 text-amber-950"
+          role="alert"
+        >
+          <AlertCircle aria-hidden="true" className="mt-1 shrink-0" size={16} />
+          {databaseIssue === "migration-required" ? (
+            <p>
+              <strong>Database update required.</strong> The lookbook table has not
+              received migration 0006, so editions are shown dated from their last
+              update and publishing is paused. Run{" "}
+              <code className="rounded bg-amber-100 px-1">npm run db:migrate</code>{" "}
+              against this database, then reload.
+            </p>
+          ) : (
+            <p>
+              <strong>The Lookbook archive could not be loaded.</strong> The database
+              did not respond. Reload the page; if it persists, check the deployment
+              logs for <code className="rounded bg-amber-100 px-1">[lookbook]</code>.
+            </p>
+          )}
+        </div>
+      ) : null}
       <section className="overflow-hidden rounded-[0.55rem] border border-black/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
         <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.55fr)] xl:items-end">
           <div>
@@ -322,7 +351,7 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
           {preview ? (
             <div className="mt-5 grid min-w-0 gap-6 md:grid-cols-[13rem_minmax(0,1fr)] md:items-center">
               <div className="min-w-0 border border-black/10 bg-[#ebe9e3] p-2 shadow-[0_14px_35px_rgba(0,0,0,0.1)]">
-                <PdfCover eager src={preview.fileUrl} title={issueLabel} />
+                <PdfCover eager fileSize={preview.fileSize} src={preview.fileUrl} title={issueLabel} />
               </div>
               <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[0.35rem] border border-black/10 bg-black/10">
                 <AdminFact icon={<CalendarDays aria-hidden="true" size={16} />} label="Issue date" value={issueLabel} />
@@ -363,7 +392,13 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
 
           <div className="mt-5 grid gap-3">
             <Button
-              disabled={hasUnsavedUpload || isSaving || isRemoving || isDiscarding}
+              disabled={
+                isPublishingBlocked ||
+                hasUnsavedUpload ||
+                isSaving ||
+                isRemoving ||
+                isDiscarding
+              }
               isLoading={isUploading}
               loadingLabel="Uploading"
               onClick={() => fileInputRef.current?.click()}
@@ -411,7 +446,7 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
             ) : null}
           </div>
 
-          {selectedLookbook && !hasUnsavedUpload ? (
+          {selectedLookbook && !hasUnsavedUpload && !isPublishingBlocked ? (
             <div className="border-t border-black/10 pt-5">
               <p className="text-xs leading-5 text-black/45">
                 Removing {issueLabel} permanently deletes its PDF. Other editions stay published.
@@ -447,7 +482,7 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
           </p>
         </div>
         {preview ? (
-          <PdfReader fileName={preview.fileName} src={preview.fileUrl} title={issueLabel} />
+          <PdfReader fileName={preview.fileName} fileSize={preview.fileSize} src={preview.fileUrl} title={issueLabel} />
         ) : (
           <div className="flex min-h-80 items-center justify-center rounded-[0.4rem] bg-[#242424] px-8 text-center text-white/55">
             Upload a PDF to preview this edition.
@@ -491,7 +526,7 @@ export function LookbookAdminPage({ initialLookbooks }: LookbookAdminPageProps) 
                   onClick={() => selectIssue(lookbook)}
                   type="button"
                 >
-                  <PdfCover className="border border-black/10" src={lookbook.fileUrl} title={label} />
+                  <PdfCover className="border border-black/10" fileSize={lookbook.fileSize} src={lookbook.fileUrl} title={label} />
                   <span className="min-w-0">
                     <span className={`editorial-kicker ${isSelected ? "text-white/48" : "text-black/38"}`}>
                       {lookbook.issueYear}

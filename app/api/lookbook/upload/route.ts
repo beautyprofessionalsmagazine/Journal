@@ -1,6 +1,5 @@
+import { MAX_LOOKBOOK_SIZE_BYTES } from "@/features/lookbook/lib/lookbook-issue";
 import { createAdminBlobUploadResponse } from "@/shared/lib/admin-blob-upload";
-
-const MAX_LOOKBOOK_SIZE_BYTES = 50 * 1024 * 1024;
 
 export async function POST(request: Request) {
   return createAdminBlobUploadResponse({

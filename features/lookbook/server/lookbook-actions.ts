@@ -7,12 +7,20 @@ import { redirect } from "next/navigation";
 
 import { hasAdminSession } from "@/features/admin/server/admin-auth";
 import { lookbookTable } from "@/features/lookbook/db/lookbook-schema";
-import { getLookbookIssueLabel, isValidLookbookIssue } from "@/features/lookbook/lib/lookbook-issue";
-import { getLookbookIssue } from "@/features/lookbook/server/lookbook-queries";
+import {
+  getLookbookIssueLabel,
+  isValidLookbookIssue,
+  MAX_LOOKBOOK_SIZE_BYTES,
+} from "@/features/lookbook/lib/lookbook-issue";
+import {
+  getLookbookIssue,
+  isUndefinedColumnError,
+} from "@/features/lookbook/server/lookbook-queries";
 import type { LookbookActionResult } from "@/features/lookbook/types/lookbook";
 import { db } from "@/shared/lib/db";
 
-const MAX_LOOKBOOK_SIZE_BYTES = 50 * 1024 * 1024;
+const MIGRATION_REQUIRED_MESSAGE =
+  "The database is missing the dated Lookbook columns. Run `npm run db:migrate` (migration 0006), then try again.";
 
 type SaveLookbookInput = {
   issueYear: number;
@@ -35,10 +43,10 @@ export async function saveLookbookAction(
     return { status: "error", message: validationError };
   }
 
-  const previous = await getLookbookIssue(input.issueYear, input.issueMonth);
   const issueLabel = getLookbookIssueLabel(input);
 
   try {
+    const previous = await getLookbookIssue(input.issueYear, input.issueMonth);
     const [lookbook] = await db
       .insert(lookbookTable)
       .values({ id: crypto.randomUUID(), ...input, updatedAt: new Date() })
@@ -72,7 +80,9 @@ export async function saveLookbookAction(
     console.error("[lookbook] Failed to save Lookbook.", error);
     return {
       status: "error",
-      message: "The Lookbook could not be saved. Your uploaded PDF is still available to retry.",
+      message: isUndefinedColumnError(error)
+        ? MIGRATION_REQUIRED_MESSAGE
+        : "The Lookbook could not be saved. Your uploaded PDF is still available to retry.",
     };
   }
 }
@@ -93,13 +103,13 @@ export async function removeLookbookAction(
     return { status: "error", message: "Choose a valid issue date." };
   }
 
-  const current = await getLookbookIssue(input.issueYear, input.issueMonth);
-
-  if (!current) {
-    return { status: "error", message: "There is no Lookbook for that issue." };
-  }
-
   try {
+    const current = await getLookbookIssue(input.issueYear, input.issueMonth);
+
+    if (!current) {
+      return { status: "error", message: "There is no Lookbook for that issue." };
+    }
+
     await db
       .delete(lookbookTable)
       .where(
@@ -121,7 +131,9 @@ export async function removeLookbookAction(
     console.error("[lookbook] Failed to remove Lookbook.", error);
     return {
       status: "error",
-      message: "The Lookbook could not be removed. Please try again.",
+      message: isUndefinedColumnError(error)
+        ? MIGRATION_REQUIRED_MESSAGE
+        : "The Lookbook could not be removed. Please try again.",
     };
   }
 }
@@ -190,5 +202,3 @@ async function deleteStoredPdf(url: string) {
     console.error("[lookbook] Failed to delete replaced PDF from Blob.", error);
   }
 }
-
-export { MAX_LOOKBOOK_SIZE_BYTES };
