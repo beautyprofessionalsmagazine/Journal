@@ -24,7 +24,7 @@ export function DigitalUnavailableNotice({
       <span className="inline-flex size-11 items-center justify-center border border-black/25 text-black">
         <Clock aria-hidden="true" size={20} strokeWidth={1.6} />
       </span>
-      <p className="editorial-kicker mt-6 text-black/45">Currently paused</p>
+      <p className="editorial-kicker mt-6 text-black/60">Currently paused</p>
       <h3 className="mt-3 [font-family:var(--font-editorial-title)] text-[clamp(1.7rem,3.2vw,2.4rem)] font-bold leading-[1] tracking-[-0.02em]">
         Email delivery is paused
       </h3>

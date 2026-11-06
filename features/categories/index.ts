@@ -1,11 +1,11 @@
 export { CategoryPage } from "./components/CategoryPage";
 export { CategorySections } from "./components/CategorySections";
 export { categoryConfigs } from "./data/categories";
+export { getCategoryListingMetadata } from "./server/category-metadata";
 export {
   getCategoryByName,
   getCategoryBySlug,
   getCategoryConfigs,
-  getCategoryMetadata,
   getDynamicCategories,
   getDynamicCategoryRouteParams,
   isStandaloneCategory,

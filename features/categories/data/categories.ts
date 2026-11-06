@@ -4,6 +4,7 @@ export const categoryConfigs: CategoryConfig[] = [
   {
     name: "Fashion",
     slug: "fashion",
+    seoTitle: "Fashion: Style, Models, Designers & Trends",
     description:
       "Celebrity style, street style, models, designers, trends, and sustainability with a professional eye.",
     subcategories: [
@@ -20,6 +21,7 @@ export const categoryConfigs: CategoryConfig[] = [
   {
     name: "Runway",
     slug: "runway",
+    seoTitle: "Runway: Backstage Beauty & Runway Ideas",
     description:
       "Backstage beauty notes, runway ideas, and the details that translate into professional practice.",
     subcategories: [],
@@ -29,6 +31,7 @@ export const categoryConfigs: CategoryConfig[] = [
   {
     name: "Shopping",
     slug: "shopping",
+    seoTitle: "Shopping: Tools, Products & Workwear",
     description:
       "Tools, products, workwear, and objects chosen for usefulness, quality, and everyday studio life.",
     subcategories: [],
@@ -38,6 +41,7 @@ export const categoryConfigs: CategoryConfig[] = [
   {
     name: "Beauty",
     slug: "beauty",
+    seoTitle: "Beauty: Hair, Makeup, Nails, Skin & Wellness",
     description:
       "Hair, makeup, nails, wellness, skin, and professional interviews from the beauty industry.",
     subcategories: [
@@ -54,6 +58,7 @@ export const categoryConfigs: CategoryConfig[] = [
   {
     name: "Culture",
     slug: "culture",
+    seoTitle: "Culture: Opinion, Music, Arts, Books & News",
     description:
       "Opinion, TV and movies, music, arts, books, news, and sports through an editorial beauty lens.",
     subcategories: [
@@ -71,6 +76,7 @@ export const categoryConfigs: CategoryConfig[] = [
   {
     name: "Living",
     slug: "living",
+    seoTitle: "Living: Homes, Travel & Education Trips",
     description:
       "Homes, travel, education trips, and the practical life surrounding beauty work.",
     subcategories: ["Homes", "Travel"],

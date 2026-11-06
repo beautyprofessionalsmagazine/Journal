@@ -1,4 +1,5 @@
 import { and, desc, eq, sql } from "drizzle-orm";
+import { cache } from "react";
 
 import { lookbookTable } from "@/features/lookbook/db/lookbook-schema";
 import { sortLookbooksNewestFirst } from "@/features/lookbook/lib/lookbook-issue";
@@ -24,8 +25,11 @@ type LookbookRow = typeof lookbookTable.$inferSelect;
  * route, that edition is dated from `updated_at` — exactly what the migration
  * itself does — and the archive reports `schema: "legacy"` so the admin can
  * warn that publishing needs the migration.
+ *
+ * `cache` de-duplicates the read within one render: the page and its
+ * `generateMetadata` both need the edition list.
  */
-export async function getLookbookArchive(): Promise<LookbookArchive> {
+export const getLookbookArchive = cache(async (): Promise<LookbookArchive> => {
   try {
     const rows = await db
       .select()
@@ -51,7 +55,7 @@ export async function getLookbookArchive(): Promise<LookbookArchive> {
     console.error("[lookbook] Failed to load the Lookbook archive.", error);
     return unavailableArchive;
   }
-}
+});
 
 export async function getLookbooks(): Promise<Lookbook[]> {
   return (await getLookbookArchive()).lookbooks;

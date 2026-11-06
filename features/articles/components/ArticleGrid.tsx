@@ -7,6 +7,13 @@ type ArticleGridProps = {
   emptyTitle?: string;
   emptyDescription?: string;
   editorial?: boolean;
+  /**
+   * Load the first card's image eagerly and ahead of other images. Right for
+   * a listing, where that card is the first thing on screen; wrong for a grid
+   * far below the fold (related stories), where it would compete with the
+   * page's own hero image.
+   */
+  prioritizeFirst?: boolean;
 };
 
 export function ArticleGrid({
@@ -14,6 +21,7 @@ export function ArticleGrid({
   emptyTitle = "No articles found",
   emptyDescription = "Try a different search term, category, or tag.",
   editorial = false,
+  prioritizeFirst = true,
 }: ArticleGridProps) {
   if (articles.length === 0) {
     return (
@@ -31,7 +39,7 @@ export function ArticleGrid({
         <ArticleCard
           article={article}
           key={article.id}
-          priority={index === 0}
+          priority={prioritizeFirst && index === 0}
           variant={
             editorial && index === 0
               ? "primary"

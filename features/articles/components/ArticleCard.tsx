@@ -62,7 +62,7 @@ export function ArticleCard({
               >
                 {article.category.charAt(0)}
               </span>
-              <span className="editorial-kicker text-black/42">
+              <span className="editorial-kicker text-black/60">
                 Image forthcoming
               </span>
             </span>

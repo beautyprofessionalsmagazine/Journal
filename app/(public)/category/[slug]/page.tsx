@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import {
   CategoryPage,
-  getCategoryMetadata,
+  getCategoryBySlug,
+  getCategoryListingMetadata,
   getDynamicCategoryRouteParams,
 } from "@/features/categories";
 import {
@@ -21,12 +23,25 @@ export function generateStaticParams() {
   return getDynamicCategoryRouteParams();
 }
 
+// The section list is fixed configuration, so any other slug is a hard 404
+// without rendering the page or touching the database.
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: CategoryRouteProps): Promise<Metadata> {
   const { slug } = await params;
+  const category = getCategoryBySlug(slug);
 
-  return getCategoryMetadata(slug);
+  if (!category) {
+    notFound();
+  }
+
+  return getCategoryListingMetadata(
+    category,
+    parseArticleFilters(await searchParams),
+  );
 }
 
 export default async function Page({

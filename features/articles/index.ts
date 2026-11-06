@@ -18,6 +18,7 @@ export {
   getPublishedArticleRouteParams,
   getRelatedArticles,
   listArticles,
+  listPublishedArticleSitemapEntries,
   listPublishedArticles,
 } from "./server/article-queries";
 export type {

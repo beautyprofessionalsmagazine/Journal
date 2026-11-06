@@ -14,6 +14,7 @@ import {
   isValidLookbookIssue,
   LOOKBOOK_MONTHS,
 } from "@/features/lookbook/lib/lookbook-issue";
+import { getLookbookEditionPath } from "@/features/lookbook/seo/lookbook-seo";
 import { getLookbookArchive } from "@/features/lookbook/server/lookbook-queries";
 import type { Lookbook } from "@/features/lookbook/types/lookbook";
 import { ButtonLink } from "@/shared/components/ui";
@@ -73,7 +74,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
               <p className="editorial-kicker text-[var(--champagne-dark)]">
                 The collected editions
               </p>
-              <p className="editorial-kicker text-black/45">
+              <p className="editorial-kicker text-black/60">
                 {lookbooks.length} {lookbooks.length === 1 ? "issue" : "issues"}
               </p>
             </div>
@@ -110,7 +111,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
                 <span className="editorial-kicker text-[var(--champagne-dark)]">
                   {isLatest ? "Latest edition" : "From the archive"}
                 </span>
-                <span className="editorial-kicker text-black/45">{selectedLabel}</span>
+                <span className="editorial-kicker text-black/60">{selectedLabel}</span>
               </p>
             </div>
           </div>
@@ -126,7 +127,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
               </p>
             ) : null}
 
-            <p className="editorial-kicker text-black/45">Now reading</p>
+            <p className="editorial-kicker text-black/60">Now reading</p>
             <h2 className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(2.6rem,6.5vw,5.5rem)] font-bold leading-[0.9] tracking-[-0.045em]">
               {getLookbookMonthName(selectedLookbook.issueMonth)}{" "}
               <span className="text-black/35">{selectedLookbook.issueYear}</span>
@@ -180,7 +181,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
         <div className="site-container">
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="editorial-kicker text-black/42">Browse by issue</p>
+              <p className="editorial-kicker text-black/60">Browse by issue</p>
               <h2
                 className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(2.2rem,4.5vw,3.75rem)] font-bold leading-none tracking-[-0.04em]"
                 id="lookbook-browse-title"
@@ -201,7 +202,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
                           "focus-ring link-transition inline-flex min-h-11 items-center border-b-2 [font-family:var(--font-editorial-title)] text-2xl font-bold tabular-nums",
                           isActive
                             ? "border-black text-black"
-                            : "border-transparent text-black/38 hover:border-black/30 hover:text-black",
+                            : "border-transparent text-black/60 hover:border-black/30 hover:text-black",
                         )}
                         href={issueHref(group.lookbooks[0])}
                       >
@@ -283,7 +284,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
         <div className="site-container">
           <div className="flex items-end justify-between gap-5 border-b border-black pb-4">
             <div>
-              <p className="editorial-kicker text-black/42">The archive</p>
+              <p className="editorial-kicker text-black/60">The archive</p>
               <h2
                 className="mt-2 [font-family:var(--font-editorial-title)] text-[clamp(2.2rem,4.5vw,3.75rem)] font-bold leading-none tracking-[-0.04em]"
                 id="lookbook-archive-title"
@@ -299,7 +300,7 @@ export async function LookbookPage({ issueMonth, issueYear }: LookbookPageProps)
                 <h3 className="[font-family:var(--font-editorial-title)] text-3xl font-bold tabular-nums">
                   {group.year}
                 </h3>
-                <p className="text-xs text-black/45">
+                <p className="text-xs text-black/60">
                   {group.lookbooks.length}{" "}
                   {group.lookbooks.length === 1 ? "edition" : "editions"}
                 </p>
@@ -386,7 +387,7 @@ function ArchiveCard({
       <p className="mt-3 [font-family:var(--font-editorial-title)] text-xl font-bold leading-tight">
         {getLookbookMonthName(lookbook.issueMonth)}
       </p>
-      <p className="mt-1 flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-black/45 group-hover:text-black">
+      <p className="mt-1 flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-black/60 group-hover:text-black">
         {lookbook.issueYear} · Open
         <ArrowRight
           aria-hidden="true"
@@ -401,7 +402,7 @@ function ArchiveCard({
 function EditionDetail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 border-r border-black/15 py-4 pl-3 first:pl-0 last:border-r-0">
-      <dt className="editorial-kicker text-black/40">{label}</dt>
+      <dt className="editorial-kicker text-black/60">{label}</dt>
       <dd className="mt-2 truncate text-sm font-semibold">{value}</dd>
     </div>
   );
@@ -473,7 +474,7 @@ function groupLookbooksByYear(lookbooks: Lookbook[]): LookbookYearGroup[] {
 }
 
 function issueHref(lookbook: Pick<Lookbook, "issueYear" | "issueMonth">) {
-  return `/lookbook?year=${lookbook.issueYear}&month=${lookbook.issueMonth}`;
+  return getLookbookEditionPath(lookbook);
 }
 
 function formatFileSize(bytes: number) {

@@ -44,7 +44,7 @@ export async function ArticleExplorer({
     <section className="flex flex-col gap-[clamp(2rem,4vw,3.5rem)]">
       <div className="flex flex-col gap-4 border-b border-black pb-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="editorial-kicker mb-2 text-black/45">The edit</p>
+          <p className="editorial-kicker mb-2 text-black/60">The edit</p>
           <h2 className="section-title">
           {title}
           </h2>

@@ -126,7 +126,7 @@ export function SponsorsStrip() {
       ref={rootRef}
     >
       <div className="site-container bg-[#ecebe7] py-2.5 sm:py-3">
-        <p className="editorial-kicker text-center text-black/42">
+        <p className="editorial-kicker text-center text-black/60">
           Our sponsors &amp; partners
         </p>
         <ul className="mx-auto mt-1.5 grid w-full max-w-4xl grid-cols-3 items-center divide-x divide-black/12">
@@ -149,12 +149,11 @@ export function SponsorsStrip() {
                     alt={sponsor.name}
                     className="object-contain"
                     fill
-                    unoptimized
-                    sizes={
-                      sponsor.id === "ibpa"
-                        ? "(min-width: 640px) 1024px, 512px"
-                        : "(min-width: 640px) 512px, 256px"
-                    }
+                    // Mobile slots render at roughly 110–145px. On larger
+                    // screens the widest logo may reach about 380px after its
+                    // intentional CSS scale, so request only the pixels that
+                    // each viewport can actually display.
+                    sizes="(min-width: 640px) 384px, 144px"
                     src={sponsor.logo}
                   />
                 </div>
@@ -178,7 +177,7 @@ export function SponsorsStrip() {
             >
               <div className="grid gap-3 sm:grid-cols-[minmax(10rem,0.35fr)_minmax(0,1fr)] sm:gap-8">
                 <div>
-                  <p className="editorial-kicker text-black/42">Partner profile</p>
+                  <p className="editorial-kicker text-black/60">Partner profile</p>
                   <h2 className="mt-1 font-[var(--font-editorial-title)] text-xl font-bold leading-none tracking-[-0.03em] sm:text-2xl">
                     {activeDetails.name}
                   </h2>

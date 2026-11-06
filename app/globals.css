@@ -205,7 +205,9 @@ button:disabled {
 .site-shell {
   min-height: 100vh;
   background-color: var(--paper);
-  background-image: url("/images/journal-bg.PNG");
+  /* WebP of the original PNG (958 KB -> 10 KB); regenerate with
+     scripts/generate-seo-assets.mjs. */
+  background-image: url("/images/journal-bg.webp");
   background-attachment: scroll;
   background-position: center top;
   background-repeat: repeat-y;

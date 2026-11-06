@@ -2,6 +2,12 @@ import Image from "next/image";
 import { Fragment, type CSSProperties, type ReactNode } from "react";
 
 import {
+  getHeadingLevel,
+  getHeadingTag,
+  getHeadingTagOverrides,
+  type HeadingTag,
+} from "@/features/articles/lib/article-headings";
+import {
   normalizeArticleImageAlign,
   type ArticleImageAlign,
   type TiptapDocument,
@@ -32,16 +38,24 @@ export function ArticleBody({ content }: ArticleBodyProps) {
     );
   }
 
+  // Sections that open with a level-3 heading still need a valid outline
+  // (h1 -> h2 -> h3); see getHeadingTagOverrides.
+  const headingTags = getHeadingTagOverrides(content.content);
+
   return (
     <div className="mx-auto flex max-w-[54rem] min-w-0 flex-col gap-[clamp(1.4rem,3vw,2rem)] [overflow-wrap:anywhere]">
       {content.content.map((node, index) =>
-        renderTiptapNode(node, `node-${index}`),
+        renderTiptapNode(node, `node-${index}`, headingTags.get(index)),
       )}
     </div>
   );
 }
 
-function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
+function renderTiptapNode(
+  node: TiptapNode,
+  key: string,
+  headingTag?: HeadingTag,
+): ReactNode {
   const content = renderInlineContent(node.content);
   const style = getTextAlignStyle(node);
 
@@ -58,7 +72,7 @@ function renderTiptapNode(node: TiptapNode, key: string): ReactNode {
       );
     case "heading": {
       const level = getHeadingLevel(node);
-      const HeadingTag = getHeadingTag(level);
+      const HeadingTag = headingTag ?? getHeadingTag(level);
       const headingClassName =
         level === 2
           ? "mt-[clamp(2rem,5vw,4rem)] border-t border-black pt-[clamp(1.5rem,4vw,2.5rem)] [font-family:var(--font-editorial-title)] text-[clamp(2.3rem,6vw,4.5rem)] font-bold leading-[0.98] tracking-[-0.035em] text-black"
@@ -239,29 +253,6 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: string) 
         return <Fragment key={markKey}>{children}</Fragment>;
     }
   }, text);
-}
-
-function getHeadingLevel(node: TiptapNode) {
-  const level = node.attrs?.level;
-
-  return typeof level === "number" && level >= 1 && level <= 6 ? level : 2;
-}
-
-function getHeadingTag(level: number) {
-  switch (level) {
-    case 1:
-      return "h1" as const;
-    case 3:
-      return "h3" as const;
-    case 4:
-      return "h4" as const;
-    case 5:
-      return "h5" as const;
-    case 6:
-      return "h6" as const;
-    default:
-      return "h2" as const;
-  }
 }
 
 function getTextAlignStyle(node: TiptapNode): CSSProperties | undefined {
