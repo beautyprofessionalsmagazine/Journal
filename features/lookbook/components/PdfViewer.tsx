@@ -16,6 +16,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 
@@ -32,20 +33,25 @@ type PdfReaderProps = {
   src: string;
   title: string;
   className?: string;
+  /** Byte size of the PDF; enables page-by-page range loading. */
+  fileSize?: number;
 };
 
 type PdfReaderLaunchProps = {
   fileName: string;
   src: string;
   title: string;
+  fileSize?: number;
   children?: ReactNode;
   className?: string;
-  variant?: "primary" | "secondary";
+  size?: "sm" | "default" | "lg";
+  variant?: "primary" | "secondary" | "outline";
 };
 
 type PdfCoverProps = {
   src: string;
   title: string;
+  fileSize?: number;
   className?: string;
   eager?: boolean;
 };
@@ -53,12 +59,13 @@ type PdfCoverProps = {
 export function PdfCover({
   src,
   title,
+  fileSize,
   className,
   eager = false,
 }: PdfCoverProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [shouldLoad, setShouldLoad] = useState(eager);
-  const pdfState = usePdfDocument(shouldLoad ? src : null);
+  const pdfState = usePdfDocument(shouldLoad ? src : null, fileSize);
 
   useEffect(() => {
     if (shouldLoad || !rootRef.current) return;
@@ -109,6 +116,7 @@ export function PdfReader({
   src,
   title,
   className,
+  fileSize,
 }: PdfReaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -117,6 +125,7 @@ export function PdfReader({
       <div className={cn("min-w-0 overflow-hidden border border-black/15", className)}>
         <ReaderExperience
           fileName={fileName}
+          fileSize={fileSize}
           key={src}
           onOpenFullScreen={() => setIsOpen(true)}
           src={src}
@@ -125,6 +134,7 @@ export function PdfReader({
       </div>
       <ReaderDialog
         fileName={fileName}
+        fileSize={fileSize}
         onOpenChange={setIsOpen}
         open={isOpen}
         src={src}
@@ -138,8 +148,10 @@ export function PdfReaderLaunch({
   fileName,
   src,
   title,
+  fileSize,
   children,
   className,
+  size,
   variant = "primary",
 }: PdfReaderLaunchProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -149,6 +161,10 @@ export function PdfReaderLaunch({
       <Button
         className={className}
         onClick={() => setIsOpen(true)}
+        // Start fetching the first pages as soon as the reader is likely.
+        onFocus={() => void loadPdfDocument(src, fileSize).catch(() => null)}
+        onPointerEnter={() => void loadPdfDocument(src, fileSize).catch(() => null)}
+        size={size}
         variant={variant}
       >
         {children ?? (
@@ -159,6 +175,7 @@ export function PdfReaderLaunch({
       </Button>
       <ReaderDialog
         fileName={fileName}
+        fileSize={fileSize}
         onOpenChange={setIsOpen}
         open={isOpen}
         src={src}
@@ -170,12 +187,14 @@ export function PdfReaderLaunch({
 
 function ReaderDialog({
   fileName,
+  fileSize,
   onOpenChange,
   open,
   src,
   title,
 }: {
   fileName: string;
+  fileSize?: number;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   src: string;
@@ -193,7 +212,7 @@ function ReaderDialog({
 
   return (
     <dialog
-      aria-label={`${title} two-page PDF reader`}
+      aria-label={`${title} PDF reader`}
       className="pdf-reader-dialog m-0 h-dvh max-h-none w-screen max-w-none bg-[#151515] p-0 text-white backdrop:bg-black/72"
       onCancel={(event) => {
         event.preventDefault();
@@ -225,6 +244,7 @@ function ReaderDialog({
           <ReaderExperience
             className="min-h-0 flex-1"
             fileName={fileName}
+            fileSize={fileSize}
             isDialog
             key={src}
             src={src}
@@ -238,6 +258,7 @@ function ReaderDialog({
 
 function ReaderExperience({
   fileName,
+  fileSize,
   src,
   title,
   className,
@@ -247,13 +268,36 @@ function ReaderExperience({
   isDialog?: boolean;
   onOpenFullScreen?: () => void;
 }) {
-  const pdfState = usePdfDocument(src);
-  const [spreadStart, setSpreadStart] = useState(1);
+  const pdfState = usePdfDocument(src, fileSize);
+  // Phones get one legible page at a time; wider screens keep the spread.
+  const isSinglePage = useMediaQuery("(max-width: 639px)");
+  const pagesPerView = isSinglePage ? 1 : 2;
+  const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(1);
   const numberOfPages =
     pdfState.status === "ready" ? pdfState.document.numPages : 0;
-  const secondPage = spreadStart + 1 <= numberOfPages ? spreadStart + 1 : null;
-  const maximumSpreadStart = getMaximumSpreadStart(numberOfPages);
+  const viewStart = isSinglePage ? currentPage : toSpreadStart(currentPage);
+  const secondPage =
+    !isSinglePage && viewStart + 1 <= numberOfPages ? viewStart + 1 : null;
+  const lastViewStart = isSinglePage
+    ? Math.max(1, numberOfPages)
+    : getMaximumSpreadStart(numberOfPages);
+  const isReady = pdfState.status === "ready";
+
+  useEffect(() => {
+    if (!isReady || !isDialog) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "ArrowRight") {
+        setCurrentPage(Math.min(lastViewStart, viewStart + pagesPerView));
+      } else if (event.key === "ArrowLeft") {
+        setCurrentPage(Math.max(1, viewStart - pagesPerView));
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isDialog, isReady, lastViewStart, pagesPerView, viewStart]);
 
   return (
     <div
@@ -263,27 +307,28 @@ function ReaderExperience({
         className,
       )}
     >
-      <div className="flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-white/12 bg-[#171717] px-3 py-2 sm:px-4">
+      <div className="flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-white/12 bg-[#171717] px-2 py-2 sm:px-4">
         <div className="flex items-center gap-1">
           <ReaderIconButton
-            disabled={spreadStart <= 1 || pdfState.status !== "ready"}
-            label="Previous two pages"
-            onClick={() => setSpreadStart((page) => Math.max(1, page - 2))}
+            disabled={viewStart <= 1 || !isReady}
+            label={isSinglePage ? "Previous page" : "Previous two pages"}
+            onClick={() => setCurrentPage(Math.max(1, viewStart - pagesPerView))}
           >
             <ChevronLeft aria-hidden="true" size={18} />
           </ReaderIconButton>
-          <p className="min-w-[8.5rem] text-center text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-white/72">
-            {pdfState.status === "ready"
-              ? `Pages ${spreadStart}${secondPage ? `–${secondPage}` : ""} of ${numberOfPages}`
+          <p
+            aria-live="polite"
+            className="min-w-[7.5rem] text-center text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-white/72 sm:min-w-[8.5rem]"
+          >
+            {isReady
+              ? `${secondPage ? "Pages" : "Page"} ${viewStart}${secondPage ? `–${secondPage}` : ""} of ${numberOfPages}`
               : "Preparing pages"}
           </p>
           <ReaderIconButton
-            disabled={
-              spreadStart >= maximumSpreadStart || pdfState.status !== "ready"
-            }
-            label="Next two pages"
+            disabled={viewStart >= lastViewStart || !isReady}
+            label={isSinglePage ? "Next page" : "Next two pages"}
             onClick={() =>
-              setSpreadStart((page) => Math.min(maximumSpreadStart, page + 2))
+              setCurrentPage(Math.min(lastViewStart, viewStart + pagesPerView))
             }
           >
             <ChevronRight aria-hidden="true" size={18} />
@@ -298,13 +343,13 @@ function ReaderExperience({
           >
             <Minus aria-hidden="true" size={16} />
           </ReaderIconButton>
-          <span className="w-12 text-center text-[0.65rem] tabular-nums text-white/58">
+          <span className="w-11 text-center text-[0.65rem] tabular-nums text-white/58">
             {Math.round(zoom * 100)}%
           </span>
           <ReaderIconButton
-            disabled={zoom >= 1.5}
+            disabled={zoom >= 2}
             label="Zoom in"
-            onClick={() => setZoom((value) => Math.min(1.5, value + 0.25))}
+            onClick={() => setZoom((value) => Math.min(2, value + 0.25))}
           >
             <Plus aria-hidden="true" size={16} />
           </ReaderIconButton>
@@ -317,7 +362,7 @@ function ReaderExperience({
             <Download aria-hidden="true" size={16} />
           </a>
           {!isDialog && onOpenFullScreen ? (
-            <ReaderIconButton label="Open full-screen two-page reader" onClick={onOpenFullScreen}>
+            <ReaderIconButton label="Open full-screen reader" onClick={onOpenFullScreen}>
               <Maximize2 aria-hidden="true" size={16} />
             </ReaderIconButton>
           ) : null}
@@ -325,17 +370,25 @@ function ReaderExperience({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto p-3 sm:p-5">
-        {pdfState.status === "ready" ? (
+        {isReady ? (
           <div
-            className="mx-auto grid min-h-full grid-cols-2 items-center gap-2 sm:gap-4"
-            style={{ width: `${zoom * 100}%` }}
+            className={cn(
+              "mx-auto grid min-h-full items-center gap-2 sm:gap-4",
+              isSinglePage ? "grid-cols-1" : "grid-cols-2",
+            )}
+            style={{
+              // In full screen, fit the whole spread to the viewport height at 100%.
+              width: isDialog
+                ? `min(${zoom * 100}%, calc((100dvh - 9.5rem) * ${isSinglePage ? 0.75 : 1.5} * ${zoom}))`
+                : `${zoom * 100}%`,
+            }}
           >
             <ReaderPage
               document={pdfState.document}
-              pageNumber={spreadStart}
+              pageNumber={viewStart}
               title={title}
             />
-            {secondPage ? (
+            {isSinglePage ? null : secondPage ? (
               <ReaderPage
                 document={pdfState.document}
                 pageNumber={secondPage}
@@ -365,9 +418,17 @@ function ReaderExperience({
             </div>
           </div>
         ) : (
-          <div className="grid min-h-[26rem] grid-cols-2 items-center gap-3" role="status">
+          <div
+            className={cn(
+              "mx-auto grid min-h-[26rem] max-w-5xl items-center gap-3",
+              isSinglePage ? "grid-cols-1" : "grid-cols-2",
+            )}
+            role="status"
+          >
             <div className="skeleton-pulse aspect-[3/4] bg-white/10" />
-            <div className="skeleton-pulse aspect-[3/4] bg-white/10" />
+            {isSinglePage ? null : (
+              <div className="skeleton-pulse aspect-[3/4] bg-white/10" />
+            )}
             <span className="sr-only">Loading {title}</span>
           </div>
         )}
@@ -414,6 +475,7 @@ function PdfPageCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
   const [width, setWidth] = useState(0);
+  const [isRendered, setIsRendered] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -463,6 +525,7 @@ function PdfPageCanvas({
 
       try {
         await renderTask.promise;
+        if (!isCancelled) setIsRendered(true);
       } catch (error) {
         if (!(error instanceof Error) || error.name !== "RenderingCancelledException") {
           throw error;
@@ -470,7 +533,9 @@ function PdfPageCanvas({
       }
     }
 
-    void renderPage();
+    renderPage().catch((error: unknown) => {
+      if (!isCancelled) console.error("[lookbook] Failed to render PDF page.", error);
+    });
 
     return () => {
       isCancelled = true;
@@ -479,10 +544,13 @@ function PdfPageCanvas({
   }, [document, pageNumber, width]);
 
   return (
-    <div className="aspect-[3/4] w-full bg-white" ref={containerRef}>
+    <div className="relative aspect-[3/4] w-full bg-white" ref={containerRef}>
+      {isRendered ? null : (
+        <div aria-hidden="true" className="skeleton-pulse absolute inset-0" />
+      )}
       <canvas
         aria-label={label}
-        className="block size-full min-w-0 max-w-full object-contain"
+        className="relative block size-full min-w-0 max-w-full object-contain"
         ref={canvasRef}
         role="img"
       />
@@ -528,7 +596,7 @@ function PdfFallback({ message, title }: { message: string; title: string }) {
   );
 }
 
-function usePdfDocument(src: string | null): PdfLoadState {
+function usePdfDocument(src: string | null, fileSize?: number): PdfLoadState {
   const [snapshot, setSnapshot] = useState<{
     src: string;
     state: PdfLoadState;
@@ -542,25 +610,16 @@ function usePdfDocument(src: string | null): PdfLoadState {
 
     const pdfUrl = src;
     let isCancelled = false;
-    let loadingTask: ReturnType<(typeof import("pdfjs-dist"))["getDocument"]> | null = null;
 
-    async function loadDocument() {
-      try {
-        const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-        loadingTask = pdfjs.getDocument({ url: pdfUrl });
-        const document = await loadingTask.promise;
-
-        if (isCancelled) {
-          await loadingTask.destroy();
-          return;
-        }
-
+    loadPdfDocument(pdfUrl, fileSize)
+      .then((document) => {
+        if (isCancelled) return;
         setSnapshot({
           src: pdfUrl,
           state: { status: "ready", document, message: null },
         });
-      } catch (error) {
+      })
+      .catch((error: unknown) => {
         if (isCancelled) return;
 
         console.error("[lookbook] Failed to load PDF preview.", error);
@@ -572,18 +631,110 @@ function usePdfDocument(src: string | null): PdfLoadState {
             message: "Use the original PDF link or try again after refreshing the page.",
           },
         });
-      }
-    }
-
-    void loadDocument();
+      });
 
     return () => {
       isCancelled = true;
-      void loadingTask?.destroy();
     };
-  }, [src]);
+  }, [src, fileSize]);
 
   return src && snapshot.src === src ? snapshot.state : loadingPdfState;
+}
+
+/**
+ * One shared document per PDF URL for the whole page: the hero cover, the
+ * archive cards, and the reader all reuse it instead of each downloading the
+ * file again.
+ */
+const pdfDocumentCache = new Map<string, Promise<PDFDocumentProxy>>();
+
+const RANGE_CHUNK_SIZE = 256 * 1024;
+const RANGE_FETCH_ATTEMPTS = 3;
+
+function loadPdfDocument(url: string, fileSize?: number) {
+  const cached = pdfDocumentCache.get(url);
+  if (cached) return cached;
+
+  const loading = openPdfDocument(url, fileSize);
+  pdfDocumentCache.set(url, loading);
+  loading.catch(() => pdfDocumentCache.delete(url));
+
+  return loading;
+}
+
+async function openPdfDocument(url: string, fileSize?: number) {
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+  // Vercel Blob answers byte ranges but does not expose Accept-Ranges to
+  // scripts, so pdf.js's own range detection falls back to downloading the
+  // whole (often 40 MB+) file. Feeding it ranges ourselves means a cover
+  // needs only the few chunks that hold page one.
+  if (fileSize && fileSize > RANGE_CHUNK_SIZE * 2) {
+    const initialData = await fetchPdfRange(url, 0, RANGE_CHUNK_SIZE).catch(
+      () => null,
+    );
+
+    if (initialData) {
+      const transport = new pdfjs.PDFDataRangeTransport(fileSize, initialData);
+
+      transport.requestDataRange = (begin: number, end: number) => {
+        void fetchPdfRangeWithRetry(url, begin, end).then((chunk) =>
+          transport.onDataRange(begin, chunk),
+        );
+      };
+
+      return pdfjs.getDocument({
+        range: transport,
+        rangeChunkSize: RANGE_CHUNK_SIZE,
+        disableAutoFetch: true,
+      }).promise;
+    }
+  }
+
+  return pdfjs.getDocument({ url }).promise;
+}
+
+/** Resolves to the requested bytes, or null when the server ignored the range. */
+async function fetchPdfRange(url: string, begin: number, end: number) {
+  const response = await fetch(url, {
+    headers: { Range: `bytes=${begin}-${end - 1}` },
+  });
+
+  if (response.status !== 206) {
+    void response.body?.cancel();
+    return null;
+  }
+
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+async function fetchPdfRangeWithRetry(url: string, begin: number, end: number) {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < RANGE_FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      const chunk = await fetchPdfRange(url, begin, end);
+      if (chunk) return chunk;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  console.error("[lookbook] Failed to load a PDF byte range.", lastError);
+  return null;
+}
+
+function useMediaQuery(query: string) {
+  return useSyncExternalStore(
+    (onChange) => {
+      const media = window.matchMedia(query);
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
 }
 
 const loadingPdfState: PdfLoadState = {
@@ -591,6 +742,11 @@ const loadingPdfState: PdfLoadState = {
   document: null,
   message: null,
 };
+
+/** Spreads open on odd pages: 1–2, 3–4, … */
+function toSpreadStart(page: number) {
+  return page % 2 === 0 ? page - 1 : page;
+}
 
 function getMaximumSpreadStart(numberOfPages: number) {
   if (numberOfPages <= 2) return 1;
