@@ -39,6 +39,8 @@ class ArticleActionError extends Error {
 }
 
 export async function createArticle(input: ArticleInput): Promise<Article> {
+  if (!(await hasAdminSession())) redirect("/admin/login");
+
   const parsedInput = validateArticleInput(input);
 
   if (!parsedInput.success) {
@@ -90,6 +92,8 @@ export async function createArticle(input: ArticleInput): Promise<Article> {
         status: articleInput.status,
         publishedAt,
         views: 0,
+        manualViews: articleInput.manualViews ?? 0,
+        viewCountMode: articleInput.viewCountMode ?? "actual",
         contentJson: articleInput.contentJson,
       })
       .returning();
@@ -162,6 +166,8 @@ export async function updateArticle(
   id: string,
   input: ArticleInput,
 ): Promise<Article> {
+  if (!(await hasAdminSession())) redirect("/admin/login");
+
   const parsedInput = validateArticleInput(input);
 
   if (!parsedInput.success) {
@@ -220,6 +226,9 @@ export async function updateArticle(
         publishedAt,
         contentJson: articleInput.contentJson,
         updatedAt: new Date(),
+        // Never write the actual counter from an editor's stale form snapshot.
+        manualViews: articleInput.manualViews,
+        viewCountMode: articleInput.viewCountMode,
       })
       .where(eq(articlesTable.id, id))
       .returning();

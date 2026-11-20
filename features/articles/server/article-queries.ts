@@ -32,6 +32,10 @@ const articleListSelection = {
   contentJson: sql<null>`null`,
 };
 
+// Public popularity follows the same count readers see. Admin analytics keep
+// using `views`, the actual measured count, regardless of this display setting.
+const displayedViews = sql<number>`case when ${articlesTable.viewCountMode} = 'manual' then ${articlesTable.manualViews} else ${articlesTable.views} end`;
+
 export type ArticleSort = "latest" | "popular";
 
 export type PublishedArticleFilters = {
@@ -107,7 +111,7 @@ export async function listPublishedArticles(
 
   const orderBy =
     filters.sort === "popular"
-      ? [desc(articlesTable.views), desc(articlesTable.publishedAt)]
+      ? [desc(displayedViews), desc(articlesTable.publishedAt)]
       : [desc(articlesTable.publishedAt), desc(articlesTable.createdAt)];
   const queryBuilder = db
     .select(articleListSelection)
@@ -175,7 +179,7 @@ export async function getRelatedArticles(
         relatedMatch,
       ),
     )
-    .orderBy(desc(articlesTable.publishedAt), desc(articlesTable.views))
+    .orderBy(desc(articlesTable.publishedAt), desc(displayedViews))
     .limit(limit);
 }
 

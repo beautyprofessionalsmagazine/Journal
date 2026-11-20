@@ -5,6 +5,11 @@ import { ArticleBody } from "@/features/articles/components/ArticleBody";
 import { ArticleGrid } from "@/features/articles/components/ArticleGrid";
 import { ArticleHeroMedia } from "@/features/articles/components/ArticleHeroMedia";
 import { ArticleMetadata } from "@/features/articles/components/ArticleMetadata";
+import {
+  ArticleViewCount,
+  ArticleViewTracker,
+} from "@/features/articles/components/ArticleViews";
+import { getDisplayedArticleViews } from "@/features/articles/lib/article-views";
 import { TagBadge } from "@/features/articles/components/TagBadge";
 import { getArticleJsonLd } from "@/features/articles/seo/article-seo";
 import {
@@ -45,6 +50,7 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
   return (
     <main className="bg-white">
       <JsonLd data={getArticleJsonLd(article, breadcrumbs)} />
+      <ArticleViewTracker id={article.id} initialViews={getDisplayedArticleViews(article)} key={article.id}>
       <article>
         <header className="site-container py-[clamp(2rem,5vw,5rem)]">
           <Breadcrumbs items={breadcrumbs} />
@@ -91,13 +97,14 @@ export async function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
 
         <footer className="mx-auto flex max-w-[54rem] flex-col gap-5 border-t border-black px-[var(--page-padding)] py-10 sm:flex-row sm:items-center sm:justify-between">
           <p className="[font-family:var(--font-editorial-body-sans)] text-sm italic text-black/58">
-            {article.views.toLocaleString()} views
+            <ArticleViewCount initialViews={getDisplayedArticleViews(article)} />
           </p>
           <ButtonLink href="/articles" variant="secondary">
             Return to all stories
           </ButtonLink>
         </footer>
       </article>
+      </ArticleViewTracker>
 
       <section className="border-t border-black bg-[#f6f4ef] py-[var(--section-space)]">
         <div className="site-container">

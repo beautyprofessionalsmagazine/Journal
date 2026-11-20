@@ -1,7 +1,8 @@
 import { sql } from "drizzle-orm";
 import {
+  bigint,
+  check,
   index,
-  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -12,9 +13,17 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { articleStatusValues } from "@/features/articles/types/article";
+import {
+  articleViewModeValues,
+  MAX_ARTICLE_VIEWS,
+} from "@/features/articles/lib/article-views";
 import type { CoverImageData } from "@/features/articles/lib/cover-image-settings";
 
 export const articleStatusEnum = pgEnum("article_status", articleStatusValues);
+export const articleViewModeEnum = pgEnum(
+  "article_view_mode",
+  articleViewModeValues,
+);
 
 export const articlesTable = pgTable(
   "articles",
@@ -37,7 +46,11 @@ export const articlesTable = pgTable(
       withTimezone: true,
       mode: "date",
     }),
-    views: integer("views").notNull().default(0),
+    views: bigint("views", { mode: "number" }).notNull().default(0),
+    manualViews: bigint("manual_views", { mode: "number" }).notNull().default(0),
+    viewCountMode: articleViewModeEnum("view_count_mode")
+      .notNull()
+      .default("actual"),
     contentJson: jsonb("content_json"),
     createdAt: timestamp("created_at", {
       withTimezone: true,
@@ -54,6 +67,14 @@ export const articlesTable = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => ({
+    viewsRange: check(
+      "articles_views_range",
+      sql`${table.views} between 0 and ${sql.raw(String(MAX_ARTICLE_VIEWS))}`,
+    ),
+    manualViewsRange: check(
+      "articles_manual_views_range",
+      sql`${table.manualViews} between 0 and ${sql.raw(String(MAX_ARTICLE_VIEWS))}`,
+    ),
     slugUniqueIdx: uniqueIndex("articles_slug_unique_idx").on(table.slug),
     categoryIdx: index("articles_category_idx").on(table.category),
     statusIdx: index("articles_status_idx").on(table.status),

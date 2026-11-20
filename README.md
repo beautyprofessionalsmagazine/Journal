@@ -28,6 +28,57 @@ Then open [http://localhost:3000](http://localhost:3000).
 Public and admin article pages always read from the database configured by
 `DATABASE_URL`, in both `next dev` and production.
 
+## Article views
+
+Apply migration `0007_article_view_counts.sql` with `npm run db:migrate` using
+the target environment's `DATABASE_URL` before deploying this code. Drizzle
+Kit reads the environment variable; export it in the shell running migrations.
+Existing nonzero counts are preserved as **manual** values because the previous
+implementation did not measure visits. Measured counts start at zero. New
+articles default to **Actual views**.
+
+In each article's admin editor, **Display views from** selects actual or manual
+views. **Manual view count** sets the exact displayed number (not an offset).
+Use **Save view settings** to apply it. This saves independently of the article
+body, image validation, and cover generation, without changing its editorial
+date. New articles set their initial view settings with their first article save.
+Actual counts remain read-only and keep increasing in
+either mode. The article list shows both the displayed count/mode and actual
+count; analytics always uses actual counts. Public popularity sorting uses the
+selected display count.
+
+A view is one visible activation of a published article page, including reloads,
+repeat visits, and back/forward navigation. It is not a unique-visitor count.
+The client sends one POST after activation; server rendering, metadata, link
+prefetching, drafts, and recognized bots do not count. React Strict Mode's
+effect rehearsal is canceled. PostgreSQL increments atomically without changing
+the editorial `updated_at`. No cookies, IP addresses, or visitor IDs are stored.
+
+The POST returns the current display count to both counters on the open article,
+even if its HTML was cached. Tracking does not invalidate pages on every view.
+Admin saves use the existing public-page revalidation. This lightweight counter
+is best-effort: disabled JavaScript, blocked requests, or network failures can
+undercount; it is not fraud-proof. Failed requests are not retried because an
+ambiguous response could already have incremented the count. Origin checks,
+a required custom header, and bot detection reject common unwanted requests;
+deployment-level WAF/rate limits can address abuse without deduplicating genuine
+repeat visits.
+
+When another local app already owns `localhost:3000`, run Journal on its own
+port, or bind it explicitly to `127.0.0.1` and use that address in the browser.
+The tracking endpoint checks the incoming `Host` rather than Next's internal
+request hostname, so IP addresses and deployment hostnames work correctly.
+
+References: [Next.js prefetch side effects](https://nextjs.org/docs/app/guides/prefetching#triggering-unwanted-side-effects-during-prefetching),
+[PostgreSQL concurrent updates](https://www.postgresql.org/docs/current/transaction-iso.html#XACT-READ-COMMITTED),
+and [GoatCounter's separate public counter](https://www.goatcounter.com/help/visitor-counter).
+
+`npm test` covers display selection, validation, request guards, and browser
+tracking lifecycle. To include the database concurrency test, apply migrations
+to a disposable local PostgreSQL database and run `npm test` with
+`ARTICLE_VIEWS_TEST_DATABASE_URL` set to its connection URL. That test never
+falls back to the application's `DATABASE_URL`.
+
 ## Subscriptions
 
 Three subscription types are collected at `/subscribe` and stored in the

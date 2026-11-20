@@ -40,6 +40,7 @@ import {
 } from "@/features/articles/types/article";
 import { defaultCoverImageSettings } from "@/features/articles/lib/cover-image-settings";
 import { getTiptapImages } from "@/features/articles/lib/article-text";
+import { MAX_ARTICLE_VIEWS } from "@/features/articles/lib/article-views";
 import {
   getArticleFieldErrors,
   hasMeaningfulTiptapContent,
@@ -692,6 +693,55 @@ export function ArticleEditorForm({ article }: ArticleEditorFormProps) {
                 />
               </FormField>
 
+              {!article ? <div className="space-y-5 border-y border-black/10 py-4">
+                <p className="text-sm">
+                  Actual views: <strong>0</strong>
+                </p>
+                <FormField
+                  error={getFieldError("viewCountMode")}
+                  help="Actual views keep counting even when a manual count is displayed."
+                  id="article-view-mode"
+                  label="Display views from"
+                >
+                  <Select
+                    ariaDescribedBy={getFieldError("viewCountMode") ? "article-view-mode-error" : "article-view-mode-help"}
+                    disabled={isPending || isSubmitLocked}
+                    id="article-view-mode"
+                    invalid={Boolean(getFieldError("viewCountMode"))}
+                    name="viewCountMode"
+                    onChange={(value) => updateField("viewCountMode", value as ArticleFormValues["viewCountMode"])}
+                    options={[
+                      { label: "Actual views", value: "actual" },
+                      { label: "Manual views", value: "manual" },
+                    ]}
+                    value={values.viewCountMode}
+                  />
+                </FormField>
+                <FormField
+                  error={getFieldError("manualViews")}
+                  help="Used only when Manual views is selected."
+                  id="article-manual-views"
+                  label="Manual view count"
+                >
+                  <input
+                    aria-describedby={getFieldError("manualViews") ? "article-manual-views-error" : "article-manual-views-help"}
+                    aria-invalid={Boolean(getFieldError("manualViews"))}
+                    className="article-form-control"
+                    id="article-manual-views"
+                    inputMode="numeric"
+                    max={MAX_ARTICLE_VIEWS}
+                    min={0}
+                    name="manualViews"
+                    onBlur={() => validateField("manualViews")}
+                    onChange={(event) => updateField("manualViews", event.target.value)}
+                    readOnly={isPending || isSubmitLocked}
+                    step={1}
+                    type="number"
+                    value={values.manualViews}
+                  />
+                </FormField>
+              </div> : null}
+
               {isPublishing ? (
                 <FormField
                   error={getFieldError("publishedAt")}
@@ -881,7 +931,7 @@ function FormField({
           {error}
         </p>
       ) : help ? (
-        <p className="mt-2 text-xs leading-5 text-black/48">{help}</p>
+        <p className="mt-2 text-xs leading-5 text-black/48" id={`${id}-help`}>{help}</p>
       ) : null}
     </div>
   );
