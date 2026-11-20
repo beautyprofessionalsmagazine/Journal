@@ -1,4 +1,6 @@
 import type { Article } from "@/features/articles/types/article";
+import { ArticleViewCount } from "@/features/articles/components/ArticleViews";
+import { getDisplayedArticleViews } from "@/features/articles/lib/article-views";
 import { getArticleDates } from "@/features/articles/lib/article-dates";
 import { getAuthorName } from "@/shared/seo/text";
 
@@ -31,8 +33,8 @@ export function ArticleMetadata({
           </time>
         </span>
       ) : null}
-      {includeCredits && article.views > 0 ? (
-        <span>{article.views.toLocaleString()} views</span>
+      {includeCredits ? (
+        <ArticleViewCount initialViews={getDisplayedArticleViews(article)} />
       ) : null}
     </div>
   );

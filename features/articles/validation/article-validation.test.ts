@@ -93,3 +93,31 @@ describe("article publishing SEO guardrails", () => {
     }
   });
 });
+
+describe("article view settings", () => {
+  it("accepts either mode and a zero or large manual count", () => {
+    for (const viewCountMode of ["actual", "manual"] as const) {
+      for (const manualViews of [0, "0", " 1234 ", 3_000_000_000, Number.MAX_SAFE_INTEGER]) {
+        const result = validateArticleInput(validInput({ viewCountMode, manualViews }));
+        assert.equal(result.success, true);
+        if (result.success) assert.equal(result.data.manualViews, Number(manualViews));
+      }
+    }
+  });
+
+  it("rejects blank, fractional, negative, non-numeric and unsafe counts", () => {
+    for (const manualViews of ["", " ", "1e3", "0x10", "1.5", "-1", -1, 1.5, Infinity, NaN, Number.MAX_SAFE_INTEGER + 1]) {
+      const result = validateArticleInput(validInput({ manualViews }));
+      assert.equal(result.success, false, String(manualViews));
+      if (!result.success) assert.ok(result.error.flatten().fieldErrors.manualViews);
+    }
+    const result = validateArticleInput({ ...validInput(), viewCountMode: "invalid" } as unknown as ArticleInput);
+    assert.equal(result.success, false);
+  });
+
+  it("does not accept an actual counter from admin input", () => {
+    const result = validateArticleInput({ ...validInput(), views: 999 } as ArticleInput);
+    assert.equal(result.success, true);
+    if (result.success) assert.equal("views" in result.data, false);
+  });
+});

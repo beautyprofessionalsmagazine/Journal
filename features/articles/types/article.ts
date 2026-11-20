@@ -5,6 +5,7 @@ import {
   type CoverImageSettings,
   normalizeCoverImageSettings,
 } from "@/features/articles/lib/cover-image-settings";
+import type { ArticleViewMode } from "@/features/articles/lib/article-views";
 
 export const articleStatusValues = ["draft", "published"] as const;
 
@@ -87,12 +88,16 @@ export type Article = {
   status: ArticleStatus;
   publishedAt: Date | null;
   views: number;
+  manualViews: number;
+  viewCountMode: ArticleViewMode;
   contentJson: unknown | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type ArticleInput = {
+  manualViews?: number | string;
+  viewCountMode?: ArticleViewMode;
   title: string;
   slug: string;
   category: string;
@@ -108,6 +113,8 @@ export type ArticleInput = {
 };
 
 export type ArticleFormValues = {
+  manualViews: string;
+  viewCountMode: ArticleViewMode;
   title: string;
   slug: string;
   category: string;
@@ -142,6 +149,8 @@ export const emptyTiptapDocument: TiptapDocument = {
 };
 
 export const emptyArticleFormValues: ArticleFormValues = {
+  manualViews: "0",
+  viewCountMode: "actual",
   title: "",
   slug: "",
   category: "Beauty",
@@ -165,6 +174,8 @@ export function getArticleFormValues(article: Article): ArticleFormValues {
   const coverImage = normalizeCoverImageData(article.coverImage);
 
   return {
+    manualViews: String(article.manualViews),
+    viewCountMode: article.viewCountMode,
     title: article.title,
     slug: article.slug,
     category: article.category,

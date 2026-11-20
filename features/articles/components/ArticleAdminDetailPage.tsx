@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { AdminLayout } from "@/features/admin";
 import { ArticleEditorForm } from "@/features/articles/components/ArticleEditorForm";
+import { ArticleViewSettingsForm } from "@/features/articles/components/ArticleViewSettingsForm";
 import { getArticleById } from "@/features/articles/server/article-queries";
 import { ButtonLink } from "@/shared/components/ui";
 
@@ -38,6 +39,7 @@ export async function ArticleAdminDetailPage({
       description="Edit the canonical article record, rich-text body, cover, and publishing settings."
       title="Edit Article"
     >
+      <ArticleViewSettingsForm article={article} key={article.id} />
       <ArticleEditorForm article={article} />
     </AdminLayout>
   );

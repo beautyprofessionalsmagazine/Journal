@@ -1,5 +1,9 @@
 import { type ZodError, z } from "zod";
 
+import {
+  articleViewModeValues,
+} from "@/features/articles/lib/article-views";
+import { manualViewsSchema } from "@/features/articles/validation/article-view-validation";
 import { getTiptapImages } from "@/features/articles/lib/article-text";
 import {
   articleImageAlignValues,
@@ -72,6 +76,8 @@ const allowedTiptapMarkTypes = new Set([
 
 const createArticleInputSchema = z
   .object({
+    viewCountMode: z.enum(articleViewModeValues).optional(),
+    manualViews: manualViewsSchema.optional(),
     title: z.string().trim().min(1, "Title is required."),
     slug: z
       .string()
@@ -395,6 +401,10 @@ export function getArticleInputFromFormData(formData: FormData): ArticleInput {
     coverImageSettings: readString(formData, "coverImageSettings"),
     tags: readString(formData, "tags"),
     status: readString(formData, "status") as ArticleInput["status"],
+    viewCountMode: formData.has("viewCountMode")
+      ? readString(formData, "viewCountMode") as ArticleInput["viewCountMode"]
+      : undefined,
+    manualViews: formData.has("manualViews") ? readString(formData, "manualViews") : undefined,
     publishedAt: readString(formData, "publishedAt"),
     contentJson: readString(formData, "contentJson"),
   };

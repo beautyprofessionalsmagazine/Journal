@@ -50,6 +50,13 @@
       "when": 1789680455513,
       "tag": "0006_unusual_captain_cross",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795142550941,
+      "tag": "0007_article_view_counts",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/features/admin";
+import { getDisplayedArticleViews } from "@/features/articles/lib/article-views";
 import { ArticleCoverImage } from "@/features/articles/components/ArticleCoverImage";
 import { coverFrameProps } from "@/features/articles/lib/cover-placements";
 import { listArticles } from "@/features/articles/server/article-queries";
@@ -84,7 +85,10 @@ export async function ArticleAdminListPage() {
                     <dt className="font-semibold uppercase text-black/45">
                       Views
                     </dt>
-                    <dd className="mt-1">{article.views.toLocaleString()}</dd>
+                    <dd className="mt-1">
+                      {getDisplayedArticleViews(article).toLocaleString("en-US")} ({article.viewCountMode})
+                      <span className="mt-1 block">Actual: {article.views.toLocaleString("en-US")}</span>
+                    </dd>
                   </div>
                   <div>
                     <dt className="font-semibold uppercase text-black/45">
@@ -182,7 +186,8 @@ export async function ArticleAdminListPage() {
                     </span>
                   </td>
                   <td className="px-4 py-4 [font-family:var(--font-editorial-sans)] text-sm">
-                    {article.views}
+                    {getDisplayedArticleViews(article).toLocaleString("en-US")} ({article.viewCountMode})
+                    <span className="mt-1 block text-black/58">Actual: {article.views.toLocaleString("en-US")}</span>
                   </td>
                   <td className="px-4 py-4 [font-family:var(--font-editorial-body-sans)] text-sm italic text-black/62">
                     {article.updatedAt.toLocaleDateString()}
