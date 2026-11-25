@@ -6,8 +6,8 @@ import type { CSSProperties } from "react";
  * shape from here, so one placement always means one visual shape.
  *
  * Ratios come from the real layouts that render each placement:
- * - homepageFeature: the homepage lead story (4:3 frame; fills the lead panel
- *   on desktop) and the dark editorial spotlight background.
+ * - homepageFeature: the homepage lead story and dark editorial spotlight
+ *   background (4:3 frames, centered when the copy makes the panel taller).
  * - storyCard: every standard story card — article lists, category pages,
  *   related stories, and the homepage recent/latest/archive rails.
  * - portraitRail: compact rail cards and the admin article list.
@@ -90,9 +90,8 @@ export function isCoverImagePlacement(value: unknown): value is CoverImagePlacem
 
 /**
  * Props for any element that frames a cover. The matching rule in
- * globals.css turns the variable into `aspect-ratio`, inside a cascade layer
- * so a layout that must fill a text-driven box can still opt out with
- * `lg:aspect-auto`.
+ * globals.css turns the variable into `aspect-ratio`. Text-driven layouts
+ * must keep this frame separate from their copy so they never crop it again.
  */
 export function coverFrameProps(placement: CoverImagePlacement) {
   const { width, height } = COVER_PLACEMENTS[placement];

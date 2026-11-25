@@ -72,15 +72,14 @@ function FeaturedStory({ article }: { article: Article }) {
 
   return (
     <article
-      className="home-feature relative min-w-0 border-b border-black bg-[#e9e5de] lg:min-h-[42rem] lg:border-b-0"
+      className="home-feature relative min-w-0 border-b border-black bg-[#e9e5de] lg:grid lg:min-h-[42rem] lg:border-b-0"
       data-motion-managed
     >
-      {/* Desktop fills the lead panel, whose height follows the headline and
-          the recent-stories rail; it stays close to 4:3 at common widths. */}
+      {/* The image retains its configured frame even when the copy is taller. */}
       <Link
         {...coverFrameProps("homepageFeature")}
         aria-label={`Read ${article.title}`}
-        className="home-feature-media focus-ring group relative block overflow-hidden lg:absolute lg:inset-0 lg:aspect-auto"
+        className="home-feature-media focus-ring group relative block overflow-hidden lg:self-center lg:[grid-area:1/1]"
         data-motion-feature-media
         data-motion-story-hover
         href={href}
@@ -99,7 +98,7 @@ function FeaturedStory({ article }: { article: Article }) {
       />
 
       <div
-        className="home-feature-copy relative z-10 bg-white px-0 pb-7 pt-6 lg:absolute lg:inset-y-0 lg:left-0 lg:flex lg:w-[57%] lg:flex-col lg:justify-center lg:bg-transparent lg:p-[clamp(2rem,4vw,4.25rem)]"
+        className="home-feature-copy relative z-10 bg-white px-0 pb-7 pt-6 lg:relative lg:[grid-area:1/1] lg:flex lg:w-[57%] lg:flex-col lg:justify-center lg:bg-transparent lg:p-[clamp(2rem,4vw,4.25rem)]"
         data-motion-feature-copy
       >
         <p className="editorial-kicker text-[var(--champagne-dark)]">
@@ -266,19 +265,24 @@ function SpotlightStory({ article, dark }: { article: Article; dark: boolean }) 
   if (dark) {
     return (
       <article
-        className="group relative min-h-[29rem] overflow-hidden bg-black text-white"
+        className="group relative grid min-h-[29rem] overflow-hidden bg-black text-white"
         data-reveal
         data-motion-story-hover
       >
-        {/* A background behind the copy: the panel's height follows the
-            text, so this is the one place a frame cannot hold a ratio. */}
-        <StoryImage
-          article={article}
-          placement="homepageFeature"
-          sizes="(min-width: 1024px) 50vw, 100vw"
-        />
+        <div
+          {...coverFrameProps("homepageFeature")}
+          className="relative w-full self-center overflow-hidden [grid-area:1/1]"
+        >
+          <StoryImage
+            article={article}
+            placement="homepageFeature"
+            sizes="(min-width: 1024px) 50vw, 100vw"
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/54 to-black/10" />
-        <SpotlightCopy article={article} href={href} inverted />
+        <div className="relative self-center [grid-area:1/1]">
+          <SpotlightCopy article={article} href={href} inverted />
+        </div>
       </article>
     );
   }

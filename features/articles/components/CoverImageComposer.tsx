@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import Cropper, { type Area } from "react-easy-crop";
 import {
-  type CSSProperties,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -31,9 +30,9 @@ import {
   coverFrameProps,
   formatPlacementSize,
   getCoverPlacement,
-  getRotatedSize,
   isPositiveArea,
 } from "@/features/articles/lib/cover-placements";
+import { CoverCropImage } from "@/features/articles/components/CoverCropImage";
 import { Button } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/cn";
 
@@ -379,8 +378,10 @@ export function CoverImageComposer({
                         className="relative w-full overflow-hidden bg-[#151515]"
                       >
                         {crop && naturalSize ? (
-                          <CoverPlacementPreview
+                          <CoverCropImage
+                            alt=""
                             crop={crop}
+                            placement={placement.id}
                             imageUrl={imageUrl}
                             naturalSize={naturalSize}
                           />
@@ -508,62 +509,6 @@ export function CoverImageComposer({
         </footer>
       </div>
     </dialog>
-  );
-}
-
-type CoverPlacementPreviewProps = {
-  /** A resolved crop: valid and already in the placement aspect. */
-  crop: CoverCropMetadata;
-  imageUrl: string;
-  naturalSize: NaturalSize;
-};
-
-/**
- * Draws a placement exactly as the server will cut it: the frame has the
- * placement aspect and the image is positioned from the same percentage area
- * that becomes croppedAreaPixels. Plain CSS, so it follows every drag and
- * zoom of the main cropper live instead of remounting a cropper per change.
- */
-function CoverPlacementPreview({
-  crop,
-  imageUrl,
-  naturalSize,
-}: CoverPlacementPreviewProps) {
-  const area = crop.croppedArea;
-  const rotation = crop.rotation;
-  const rotated = getRotatedSize(naturalSize.width, naturalSize.height, rotation);
-
-  const boxStyle: CSSProperties = {
-    position: "absolute",
-    left: `${(-area.x / area.width) * 100}%`,
-    top: `${(-area.y / area.height) * 100}%`,
-    width: `${(100 / area.width) * 100}%`,
-    height: `${(100 / area.height) * 100}%`,
-  };
-  const quarterTurned = rotation % 180 !== 0;
-  // The box is the rotated bounding box. A quarter-turned image is laid out
-  // with its unrotated sides, centered, then turned into place.
-  const imageStyle: CSSProperties = {
-    position: "absolute",
-    left: "50%",
-    top: "50%",
-    maxWidth: "none",
-    width: quarterTurned ? `${(rotated.height / rotated.width) * 100}%` : "100%",
-    height: quarterTurned ? `${(rotated.width / rotated.height) * 100}%` : "100%",
-    transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-  };
-
-  return (
-    <div aria-hidden="true" style={boxStyle}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- positioned by percentage crop math that next/image cannot express */}
-      <img
-        alt=""
-        className="cover-cropper-preview-media"
-        draggable={false}
-        src={imageUrl}
-        style={imageStyle}
-      />
-    </div>
   );
 }
 
