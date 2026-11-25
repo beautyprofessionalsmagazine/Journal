@@ -72,6 +72,7 @@ export function CoverImageUploader({
 
   useEffect(() => {
     return () => {
+      uploadSequenceRef.current += 1;
       uploadControllerRef.current?.abort();
       revokeObjectUrl();
     };
@@ -84,6 +85,13 @@ export function CoverImageUploader({
     if (!file) {
       return;
     }
+
+    // Own the entire selection, including compression. Removal, replacement,
+    // or unmount must invalidate work before an upload controller exists.
+    const selectionSequence = ++uploadSequenceRef.current;
+    uploadControllerRef.current?.abort();
+    uploadControllerRef.current = null;
+    setCanRetry(false);
 
     const validationError = validateCoverImageFile(file);
 
@@ -120,6 +128,8 @@ export function CoverImageUploader({
       }
     }
 
+    if (selectionSequence !== uploadSequenceRef.current) return;
+
     selectedFileRef.current = fileToUpload;
     setFileName(file.name);
     setUploadError(null);
@@ -129,8 +139,6 @@ export function CoverImageUploader({
       isUploading: false,
     });
     onChange("");
-
-    uploadControllerRef.current?.abort();
     revokeObjectUrl();
 
     if (fileToUpload.type.startsWith("image/")) {
@@ -141,12 +149,14 @@ export function CoverImageUploader({
       setPreviewUrl(null);
     }
 
-    await uploadFile(fileToUpload);
+    await uploadFile(fileToUpload, selectionSequence);
   }
 
-  async function uploadFile(file: File) {
-    const uploadSequence = uploadSequenceRef.current + 1;
-    uploadSequenceRef.current = uploadSequence;
+  async function uploadFile(
+    file: File,
+    uploadSequence = ++uploadSequenceRef.current,
+  ) {
+    if (uploadSequence !== uploadSequenceRef.current) return;
     const controller = new AbortController();
     uploadControllerRef.current = controller;
     setUploadError(null);
@@ -361,9 +371,11 @@ export function CoverImageUploader({
           >
             {isUploading
               ? "Securing upload…"
-              : hasImage
-                ? "Ready to use"
-                : "Landscape images work best"}
+              : uploadError
+                ? "Upload failed"
+                : hasImage
+                  ? "Ready to use"
+                  : "Landscape images work best"}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -389,7 +401,7 @@ export function CoverImageUploader({
         </div>
       </div>
 
-      {hasImage && !isUploading ? (
+      {value && !isUploading && !uploadError ? (
         <Button
           className="mt-4 w-full"
           onClick={onCompositionRequested}

@@ -23,9 +23,14 @@ export function CoverCropImage({
   // at mount as well, otherwise a valid legacy cover stays invisible.
   const readSize = useCallback((image: HTMLImageElement | null) => {
     if (image?.naturalWidth && image.naturalHeight) {
-      setDecoded({ url: imageUrl, width: image.naturalWidth, height: image.naturalHeight });
+      const { naturalWidth: width, naturalHeight: height } = image;
+      setDecoded((previous) => previous?.url === imageUrl && previous.width === width && previous.height === height
+        ? previous
+        : { url: imageUrl, width, height });
+    } else if (image?.complete) {
+      onError?.();
     }
-  }, [imageUrl]);
+  }, [imageUrl, onError]);
   const size = naturalSize ?? (decoded?.url === imageUrl ? decoded : null);
   const resolved = size ? resolveCoverCrop(crop, placement, size.width, size.height) : null;
   const area = resolved?.croppedArea;
