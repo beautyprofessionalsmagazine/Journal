@@ -195,7 +195,8 @@ export function getCoverCrop(
 /**
  * The URL to render for a placement: its generated derivative when that file
  * was produced at the placement's canonical size, otherwise the original
- * upload (which a placement frame then centers, matching the default crop).
+ * upload. Original-image renderers must also apply resolveCoverCrop; this URL
+ * alone cannot encode saved positioning, zoom, or rotation.
  */
 export function getCoverImageSource(
   coverImage: CoverImageData | null | undefined,

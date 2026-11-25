@@ -171,10 +171,11 @@ reads the ratio through `coverFrameProps()`:
 
 Saving an article generates one WebP per placement from the untouched original
 and stores the exact crop used. Older records load as-is: a variant whose size
-no longer matches its placement is ignored (the original is shown centered
-until the article is saved again), and a crop saved for another ratio is
-re-fitted around its center. Changing a placement size therefore needs no
-migration — re-saving an article regenerates its files.
+no longer matches its placement is ignored. The original is rendered using
+the saved crop by the same component as the admin preview; a crop saved for
+another ratio is re-fitted around its center. No recropping or resaving is
+required. A later normal save regenerates the derivatives. Homepage overlays
+keep a separate placement frame even when their text makes the panel taller.
 
 ## SEO
 

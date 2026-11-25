@@ -30,8 +30,7 @@
 
 /*
  * Cover frames take their ratio from the shared placement config through
- * coverFrameProps(). Layered so a text-driven layout can still opt out with a
- * utility such as lg:aspect-auto.
+ * coverFrameProps(). Text-driven panels contain a separate fixed-ratio frame.
  */
 @layer components {
   [data-cover-placement] {

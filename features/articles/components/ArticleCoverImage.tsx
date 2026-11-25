@@ -4,9 +4,10 @@ import Image from "next/image";
 import { type ReactNode, useState } from "react";
 
 import {
-  getCoverImageSource,
+  normalizeCoverImageSettings,
   type CoverImageData,
 } from "@/features/articles/lib/cover-image-settings";
+import { CoverCropImage } from "@/features/articles/components/CoverCropImage";
 import type { CoverImagePlacement } from "@/features/articles/lib/cover-placements";
 import { cn } from "@/shared/lib/cn";
 
@@ -14,19 +15,13 @@ type ArticleCoverImageProps = {
   alt: string;
   className?: string;
   coverImage: CoverImageData | null;
-  /** Shown when the article has no cover or the file fails to load. */
   fallback: ReactNode;
   placement: CoverImagePlacement;
   priority?: boolean;
   sizes: string;
 };
 
-/**
- * Fills a placement frame (see coverFrameProps) with that placement's
- * generated file. The frame and the file share one aspect, so object-cover
- * never trims a generated crop; it only centers the original upload for
- * articles whose variants have not been generated yet.
- */
+/** Renders a derivative or the same resolved crop directly from the original. */
 export function ArticleCoverImage({
   alt,
   className,
@@ -36,10 +31,27 @@ export function ArticleCoverImage({
   priority = false,
   sizes,
 }: ArticleCoverImageProps) {
-  const [failed, setFailed] = useState(false);
-  const source = getCoverImageSource(coverImage, placement);
+  const [failedSources, setFailedSources] = useState<string[]>([]);
+  const settings = normalizeCoverImageSettings(coverImage?.settings);
+  const generated = settings.generatedImages[placement]?.url;
+  const source = generated && !failedSources.includes(generated) ? generated : coverImage?.src;
 
-  if (!source || failed) return fallback;
+  if (!source || failedSources.includes(source) || !coverImage) return fallback;
+
+  if (source === coverImage.src) {
+    return (
+      <div className={cn("absolute inset-0", className)}>
+        <CoverCropImage
+          alt={alt}
+          crop={settings.crops[placement]}
+          imageUrl={source}
+          onError={() => setFailedSources((current) => [...current, source])}
+          placement={placement}
+          priority={priority}
+        />
+      </div>
+    );
+  }
 
   return (
     <Image
@@ -49,7 +61,7 @@ export function ArticleCoverImage({
       // to fetch it ahead of the sponsor strip and other early images.
       fetchPriority={priority ? "high" : undefined}
       fill
-      onError={() => setFailed(true)}
+      onError={() => setFailedSources((current) => [...current, source])}
       priority={priority}
       sizes={sizes}
       src={source}
